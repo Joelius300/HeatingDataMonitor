@@ -1,0 +1,45 @@
+﻿@page "/"
+@using DataHandler
+@inject IDataHandler dataHandler
+@implements IDisposable
+
+<h1>Crazy stuff yee</h1>
+
+@if (dataHandler.CurrentData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Boiler 1</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@dataHandler.CurrentData.Datum</td>
+                <td>@dataHandler.CurrentData.Boiler_1</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@functions{
+    private Action changed;
+
+    protected override void OnInit()
+    {
+        changed = () => base.Invoke(base.StateHasChanged);
+        dataHandler.Changed += changed;
+
+        base.OnInit();
+    }
+
+    public void Dispose() {
+        dataHandler.Changed -= changed;
+    }
+}
