@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <HostIP>192.168.38.103</HostIP>
+  <Port>5000</Port>
+  <SerialPortName>/dev/ttyS0</SerialPortName>
+  <ExpectedReadInterval>6000</ExpectedReadInterval>
+</Config>

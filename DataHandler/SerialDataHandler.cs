@@ -6,6 +6,9 @@ using System.IO;
 using System.Timers;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
+using DataHandler.Exceptions;
+using System.CodeDom.Compiler;
 
 namespace DataHandler
 {
@@ -16,34 +19,33 @@ namespace DataHandler
         public bool NoDataReceived { get; private set; }
         public string FaultyDataReceived { get; private set; }
         public int ExpectedReadInterval { get; private set; }
+        
 
-        private readonly Config config;
         private CancellationTokenSource cts;
         private Task loopTask;
 
         public event Action Changed;
 
-        public SerialDataHandler()
+        public SerialDataHandler(Config config)
         {
-            config = Config.Deserialize();
-            ExpectedReadInterval = config.ExpectedReadTimeout;
-            port = CreateSerialPort();
+            ExpectedReadInterval = config.ExpectedReadInterval;
+            port = CreateSerialPort(config);
             Start();
         }
 
-        protected virtual SerialPort CreateSerialPort() {
+        protected virtual SerialPort CreateSerialPort(Config config) {
             return new SerialPort()
             {
-                PortName = config.SerialPortName,   // COM1 (Win), /dev/ttyS0 (raspian)
-                BaudRate = 9600,                    // def from specs (heizung)
-                DataBits = 8,                       // def from specs (heizung)
-                Parity = Parity.None,               // def from specs (heizung)
-                Handshake = Handshake.None,         // def from specs (heizung)
-                StopBits = StopBits.One,            // def from specs (heizung)
-                Encoding = Encoding.ASCII,          // def from specs (heizung)
-                DiscardNull = true,
-                ReadTimeout = ExpectedReadInterval * 3
-                //ReadTimeout = -1
+                PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspian)
+                BaudRate = 9600,                        // def from specs (heizung-sps)
+                DataBits = 8,                           // def from specs (heizung-sps)
+                Parity = Parity.None,                   // def from specs (heizung-sps)
+                Handshake = Handshake.None,             // def from specs (heizung-sps)
+                StopBits = StopBits.One,                // def from specs (heizung-sps)
+                Encoding = Encoding.ASCII,              // def from specs (heizung-sps)
+                DiscardNull = true,                     // we don't need that
+                ReadTimeout = ExpectedReadInterval * 2, // give enough time
+                NewLine = "\r\n"                        // define newline used by sps
             };
         }
 
@@ -66,21 +68,37 @@ namespace DataHandler
             string serialData;
             try
             {
+                Console.WriteLine("Now awaiting data: ");
                 serialData = port.ReadLine();
-                Console.WriteLine($"Incoming serial-data: {serialData}");
             }
-            catch (TimeoutException)
+            catch (TimeoutException e)
             {
+                Console.WriteLine("Timeout: ");
+                Console.WriteLine(e.Message);
+
                 NoDataReceived = true;
                 return;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException e)
             {
+                Console.WriteLine("Canceled: ");
+                Console.WriteLine(e.Message);
+
                 NoDataReceived = true;
                 return;
             }
-            catch (InvalidOperationException)
-            { 
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine("InvalidOperation: ");
+                Console.WriteLine(e.Message);
+
+                NoDataReceived = true;
+                return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
                 NoDataReceived = true;
                 return;
             }
@@ -88,10 +106,16 @@ namespace DataHandler
             Data newData = Data.Convert(serialData);
             if (newData == null)
             {
+                Console.WriteLine("Received invalid Data: ");
+                Console.WriteLine(serialData);
+
                 FaultyDataReceived = serialData;
                 NoDataReceived = true;
                 return;
             }
+
+            Console.WriteLine("Received valid Data: ");
+            Console.WriteLine(serialData);
 
             CurrentData = newData;
             NoDataReceived = false;
@@ -99,9 +123,18 @@ namespace DataHandler
 
         private void Start()
         {
-            port.Open();
-            cts = new CancellationTokenSource();
-            loopTask = LoopAsync(cts.Token);
+            Console.WriteLine("Opening serial port " + port.PortName);
+            try
+            {
+                port.Open();
+                cts = new CancellationTokenSource();
+                loopTask = LoopAsync(cts.Token);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception when starting the serial-port reader: ");
+                Console.WriteLine(e.Message);
+            }
         }
 
         private void Stop()

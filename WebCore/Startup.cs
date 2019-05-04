@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebCore.Data;
 using DataHandler;
+using RaspberryPIUtils;
 
 namespace WebCore
 {
@@ -21,8 +22,8 @@ namespace WebCore
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
-            services.AddSingleton<IDataHandler, SerialDataHandler>();
-            //services.AddSingleton<IDataHandler, MockDataHandler>();
+            services.AddSingleton<RaspberryPI>();
+            services.AddSingleton<IDataHandler>(new SerialDataHandler(Program.Config));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

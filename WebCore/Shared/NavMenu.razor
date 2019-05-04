@@ -1,5 +1,10 @@
+@inject RaspberryPIUtils.RaspberryPI raspi
+@inject DataHandler.IDataHandler dataHandler
+@using static DataHandler.Extensions
+@implements IDisposable
+
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">WebCore</a>
+    <a class="navbar-brand" href="">Heizungsmonitor</a>
     <button class="navbar-toggler" onclick="@ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -7,9 +12,19 @@
 
 <div class="@NavMenuCssClass" onclick="@ToggleNavMenu">
     <ul class="nav flex-column">
+        <li class="nav-item px3 flow-item">
+            <div class="smallItem">
+                <p style="font-weight: bold">Temp:</p>
+                <p>@temp.GetStringShort("°C")</p>
+            </div>
+            <div class="smallItem">
+                <p style="font-weight: bold">Freq:</p>
+                <p>@freq.GetStringShort("MHz.")</p>
+            </div>
+        </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+                <span class="oi oi-home" aria-hidden="true"></span> Übersicht
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -26,6 +41,31 @@
 </div>
 
 @functions {
+    private decimal? temp;
+    private int? freq;
+
+    private Action changed;
+
+    protected override void OnInit()
+    {
+        changed = () =>
+        {
+            temp = raspi.GetCurrentTemp();
+            freq = raspi.GetCurrentFrequency();
+            base.Invoke(base.StateHasChanged);
+        };
+
+        dataHandler.Changed += changed;
+
+        changed();
+        base.OnInit();
+    }
+
+    public void Dispose() {
+        dataHandler.Changed -= changed;
+    }
+
+
     bool collapseNavMenu = true;
 
     string NavMenuCssClass => collapseNavMenu ? "collapse" : null;

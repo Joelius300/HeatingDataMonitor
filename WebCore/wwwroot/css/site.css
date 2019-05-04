@@ -49,6 +49,22 @@ app {
     padding-bottom: 0.5rem;
 }
 
+    .flow-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .smallItem {
+        display: block;
+        width: 30%;
+        margin: 0 auto;
+    }
+
+    .smallItem p {
+        line-height: 50%;
+        color: white;
+    }
+
     .nav-item:first-of-type {
         padding-top: 1rem;
     }

@@ -68,9 +68,20 @@ namespace DataHandler
 
         #endregion
 
+        #region Props (custom)
 
-        private const string SAMPLECSV =
-            "23.04.19;14:20:15;39.1;33.7;28;;12.0;0.0;9000;62.8;50.6;27.4;0;22.2;34.5;36.8;0;;;;25.1;28.1;0;;;;;;;;;;;;;;;;55.90;;0;1;1;1;0;0;0;1;1;1;1;0;0;0;0;0;0;0;";
+        public DateTime? DatumZeit { get; private set; }
+
+        #endregion
+
+        //public List<(string header, string value)> GetDisplayableValues() 
+        //{
+
+        //}
+
+        public void CalcCustomProps() {
+            DatumZeit = Datum.HasValue && Uhrzeit.HasValue ? new DateTime(Datum.Value.Year, Datum.Value.Month, Datum.Value.Day, Uhrzeit.Value.Hour, Uhrzeit.Value.Minute, Uhrzeit.Value.Second) : (DateTime?)null;
+        }
 
         public static Data Convert(string serialData)
         {
@@ -151,6 +162,7 @@ namespace DataHandler
                     A_PHASE_3 = int.TryParse(list[56], out int vA_PHASE_3) ? (int?)vA_PHASE_3 : null,
                     A_PHASE_4 = int.TryParse(list[57], out int vA_PHASE_4) ? (int?)vA_PHASE_4 : null
                 };
+                data.CalcCustomProps();
             }
             catch
             {
@@ -224,74 +236,6 @@ namespace DataHandler
             //};
 
             #endregion
-        }
-
-        private static readonly Random rnd = new Random();
-        public static Data GetRandomData()
-        {
-            Data data = new Data
-            {
-                Datum = DateTime.UtcNow,
-                Uhrzeit = DateTime.UtcNow,
-                Kessel = float.Parse(rnd.NextDouble().ToString()),
-                Ruecklauf = float.Parse(rnd.NextDouble().ToString()),
-                Abgas = float.Parse(rnd.NextDouble().ToString()),
-                Brennkammer = float.Parse(rnd.NextDouble().ToString()),
-                CO2_Soll = float.Parse(rnd.NextDouble().ToString()),
-                CO2_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Saugzug_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Puffer_Oben = float.Parse(rnd.NextDouble().ToString()),
-                Puffer_Unten = float.Parse(rnd.NextDouble().ToString()),
-                Platine = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_Kessel = rnd.Next(500),
-                Aussen = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK1_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK1_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK1 = rnd.Next(500),
-                Betriebsart_Fern_HK1 = rnd.Next(500),
-                Verschiebung_Fern_HK1 = float.Parse(rnd.NextDouble().ToString()),
-                Freigabekontakt_HK1 = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK2_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK2_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK2 = rnd.Next(500),
-                Betriebsart_Fern_HK2 = rnd.Next(500),
-                Verschiebung_Fern_HK2 = float.Parse(rnd.NextDouble().ToString()),
-                Freigabekontakt_HK2 = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK3_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK3_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK3 = rnd.Next(500),
-                Betriebsart_Fern_HK3 = rnd.Next(500),
-                Verschiebung_Fern_HK3 = float.Parse(rnd.NextDouble().ToString()),
-                Freigabekontakt_HK3 = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK4_Ist = float.Parse(rnd.NextDouble().ToString()),
-                Vorlauf_HK4_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK4 = rnd.Next(500),
-                Betriebsart_Fern_HK4 = rnd.Next(500),
-                Verschiebung_Fern_HK4 = float.Parse(rnd.NextDouble().ToString()),
-                Freigabekontakt_HK4 = float.Parse(rnd.NextDouble().ToString()),
-                Boiler_1 = float.Parse(rnd.NextDouble().ToString()),
-                Boiler_2 = float.Parse(rnd.NextDouble().ToString()),
-                DI_0 = rnd.Next(500),
-                DI_1 = rnd.Next(500),
-                DI_2 = rnd.Next(500),
-                DI_3 = rnd.Next(500),
-                A_W_0 = rnd.Next(500),
-                A_W_1 = rnd.Next(500),
-                A_W_2 = rnd.Next(500),
-                A_W_3 = rnd.Next(500),
-                A_EA_0 = rnd.Next(500),
-                A_EA_1 = rnd.Next(500),
-                A_EA_2 = rnd.Next(500),
-                A_EA_3 = rnd.Next(500),
-                A_EA_4 = rnd.Next(500),
-                A_PHASE_0 = rnd.Next(500),
-                A_PHASE_1 = rnd.Next(500),
-                A_PHASE_2 = rnd.Next(500),
-                A_PHASE_3 = rnd.Next(500),
-                A_PHASE_4 = rnd.Next(500)
-            };
-
-            return data;
         }
     }
 }

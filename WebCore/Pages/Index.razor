@@ -3,9 +3,9 @@
 @inject IDataHandler dataHandler
 @implements IDisposable
 
-<h1>Crazy stuff yee</h1>
+<h1>Aktueller Zustand</h1>
 
-@if (dataHandler.CurrentData == null)
+@if (data == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -14,15 +14,18 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Datum</th>
+                <th>Zeit</th>
                 <th>Boiler 1</th>
+                <th>Puffer oben</th>
+                <th>Puffer unten</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>@dataHandler.CurrentData.Datum</td>
-                <td>@dataHandler.CurrentData.Boiler_1</td>
-                <td></td>
+                <td>@data.DatumZeit.Value.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                <td>@data.Boiler_1.GetString("°C")</td>
+                <td>@data.Puffer_Oben.GetString("°C")</td>
+                <td>@data.Puffer_Unten.GetString("°C")</td>
             </tr>
         </tbody>
     </table>
@@ -30,12 +33,19 @@ else
 
 @functions{
     private Action changed;
+    private Data data;
 
     protected override void OnInit()
     {
-        changed = () => base.Invoke(base.StateHasChanged);
+        changed = () =>
+        {
+            data = dataHandler.CurrentData;
+            base.Invoke(base.StateHasChanged);
+        };
+            
         dataHandler.Changed += changed;
 
+        changed();
         base.OnInit();
     }
 
