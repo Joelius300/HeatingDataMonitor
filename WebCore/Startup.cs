@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WebCore.Data;
 using DataHandler;
 using RaspberryPIUtils;
 
@@ -21,7 +20,6 @@ namespace WebCore
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<RaspberryPI>();
             services.AddSingleton<IDataHandler>(new SerialDataHandler(Program.Config));
         }

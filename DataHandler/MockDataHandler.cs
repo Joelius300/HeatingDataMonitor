@@ -47,7 +47,7 @@ namespace DataHandler
         protected virtual void ReadToProp()
         {
             CurrentData = GetRandomData();
-            Thread.Sleep(6000);
+            Thread.Sleep(ExpectedReadInterval);
         }
 
         private Data GetRandomData()
