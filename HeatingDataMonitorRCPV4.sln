@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebCore", "WebCore\WebCore.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataHandler", "DataHandler\DataHandler.csproj", "{D59D651E-81B8-4411-979F-76AB2993D64C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaspberryPIUtils", "RaspberryPIUtils\RaspberryPIUtils.csproj", "{203C93EE-DF10-451D-AED0-EBB222139937}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaspberryPIUtils", "RaspberryPIUtils\RaspberryPIUtils.csproj", "{203C93EE-DF10-451D-AED0-EBB222139937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

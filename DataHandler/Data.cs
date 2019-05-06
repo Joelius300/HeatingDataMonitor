@@ -5,10 +5,10 @@ namespace DataHandler
 {
     public class Data
     {
-        #region Props (from CSV)
+        private static Random rnd;
 
-        public DateTime? Datum { get; set; }
-        public DateTime? Uhrzeit { get; set; }
+        #region Props (from CSV)
+        public DateTime? DatumZeit { get; set; }
         public float? Kessel { get; set; }
         public float? Ruecklauf { get; set; }
         public float? Abgas { get; set; }
@@ -70,17 +70,77 @@ namespace DataHandler
 
         #region Props (custom)
 
-        public DateTime? DatumZeit { get; private set; }
+        public List<(string Header, string Data)> DisplayableList { get; private set; }
 
         #endregion
 
-        //public List<(string header, string value)> GetDisplayableValues() 
-        //{
+        public void SetDisplayableValues()
+        {
+            DisplayableList = new List<(string Header, string Data)>()
+            {
+                ("Zeit", DatumZeit.Value.ToString("dd.MM.yyyy HH:mm:ss")),
+                ("Kessel", Kessel.GetString("°C")),
+                ("Rücklauf", Ruecklauf.GetString()),
+                ("Abgas", Abgas.GetString("??")),
+                ("Brennkammer", Brennkammer.GetString("°C")),
+                ("CO2 Soll", CO2_Soll.GetString("%")),
+                ("CO2 Ist", CO2_Ist.GetString("%")),
+                ("Saugzug Ist", Saugzug_Ist.GetString("rpm")),
+                ("Puffer oben", Puffer_Oben.GetString("°C")),
+                ("Puffer unten", Puffer_Unten.GetString("°C")),
+                ("Platine", Platine.GetString("°C")),
+                ("Betriebsphase_Kessel", Betriebsphase_Kessel.GetString()),
+                ("Aussen", Aussen.GetString("°C")),
+                ("Vorlauf HK1 Ist", Vorlauf_HK1_Ist.GetString("°C")),
+                ("Vorlauf HK1 Soll", Vorlauf_HK1_Soll.GetString("°C")),
+                ("Betriebsphase HK1", Betriebsphase_HK1.GetString()),
+                ("Betriebsart Fern HK1", Betriebsart_Fern_HK1.GetString()),
+                ("Verschiebung Fern HK1", Verschiebung_Fern_HK1.GetString()),
+                ("Freigabekontakt HK1", Freigabekontakt_HK1.GetString()),
+                ("Vorlauf HK2 Ist", Vorlauf_HK2_Ist.GetString("°C")),
+                ("Vorlauf HK2 Soll", Vorlauf_HK2_Soll.GetString("°C")),
+                ("Betriebsphase HK2", Betriebsphase_HK2.GetString()),
+                ("Betriebsart Fern HK2", Betriebsart_Fern_HK2.GetString()),
+                ("Verschiebung Fern HK2", Verschiebung_Fern_HK2.GetString()),
+                ("Freigabekontakt HK2", Freigabekontakt_HK2.GetString()),
+                ("Vorlauf HK3 Ist", Vorlauf_HK3_Ist.GetString("°C")),
+                ("Vorlauf HK3 Soll", Vorlauf_HK3_Soll.GetString("°C")),
+                ("Betriebsphase HK3", Betriebsphase_HK3.GetString()),
+                ("Betriebsart Fern HK3", Betriebsart_Fern_HK3.GetString()),
+                ("Verschiebung Fern HK3", Verschiebung_Fern_HK3.GetString()),
+                ("Freigabekontakt HK3", Freigabekontakt_HK3.GetString()),
+                ("Vorlauf HK4 Ist", Vorlauf_HK4_Ist.GetString("°C")),
+                ("Vorlauf HK4 Soll", Vorlauf_HK4_Soll.GetString("°C")),
+                ("Betriebsphase HK4", Betriebsphase_HK4.GetString()),
+                ("Betriebsart Fern HK4", Betriebsart_Fern_HK4.GetString()),
+                ("Verschiebung Fern HK4", Verschiebung_Fern_HK4.GetString()),
+                ("Freigabekontakt HK4", Freigabekontakt_HK4.GetString()),
+                ("Boiler 1", Boiler_1.GetString("°C")),
+                ("Boiler 2", Boiler_2.GetString("°C")),
+                ("DI 0", DI_0.GetString()),
+                ("DI 1", DI_1.GetString()),
+                ("DI 2", DI_2.GetString()),
+                ("DI 3", DI_3.GetString()),
+                ("A_W 0", A_W_0.GetString()),
+                ("A_W 1", A_W_1.GetString()),
+                ("A_W 2", A_W_2.GetString()),
+                ("A_W 3", A_W_3.GetString()),
+                ("A_EA 0", A_EA_0.GetString()),
+                ("A_EA 1", A_EA_1.GetString()),
+                ("A_EA 2", A_EA_2.GetString()),
+                ("A_EA 3", A_EA_3.GetString()),
+                ("A_EA 4", A_EA_4.GetString()),
+                ("A_Phase 0", A_PHASE_0.GetString()),
+                ("A_Phase 1", A_PHASE_1.GetString()),
+                ("A_Phase 2", A_PHASE_2.GetString()),
+                ("A_Phase 3", A_PHASE_3.GetString()),
+                ("A_Phase 4", A_PHASE_4.GetString())
+            };
+        }
 
-        //}
-
-        public void CalcCustomProps() {
-            DatumZeit = Datum.HasValue && Uhrzeit.HasValue ? new DateTime(Datum.Value.Year, Datum.Value.Month, Datum.Value.Day, Uhrzeit.Value.Hour, Uhrzeit.Value.Minute, Uhrzeit.Value.Second) : (DateTime?)null;
+        public void CalcCustomProps()
+        {
+            SetDisplayableValues();
         }
 
         public static Data Convert(string serialData)
@@ -103,8 +163,7 @@ namespace DataHandler
             {
                 data = new Data
                 {
-                    Datum = DateTime.TryParse(list[0], out DateTime vDatum) ? (DateTime?)vDatum : null,
-                    Uhrzeit = DateTime.TryParse(list[1], out DateTime vUhrzeit) ? (DateTime?)vUhrzeit : null,
+                    DatumZeit = DateTime.TryParse($"{list[0]} {list[1]}", out DateTime vDatum) ? (DateTime?)vDatum : null,
                     Kessel = float.TryParse(list[2], out float vKessel) ? (float?)vKessel : null,
                     Ruecklauf = float.TryParse(list[3], out float vRuecklauf) ? (float?)vRuecklauf : null,
                     Abgas = float.TryParse(list[4], out float vAbgas) ? (float?)vAbgas : null,
@@ -162,6 +221,7 @@ namespace DataHandler
                     A_PHASE_3 = int.TryParse(list[56], out int vA_PHASE_3) ? (int?)vA_PHASE_3 : null,
                     A_PHASE_4 = int.TryParse(list[57], out int vA_PHASE_4) ? (int?)vA_PHASE_4 : null
                 };
+
                 data.CalcCustomProps();
             }
             catch
@@ -236,6 +296,75 @@ namespace DataHandler
             //};
 
             #endregion
+        }
+
+        public static Data GetRandomData()
+        {
+            if (rnd == null) rnd = new Random();
+
+            Data data = new Data
+            {
+                DatumZeit = DateTime.UtcNow,
+                Kessel = float.Parse(rnd.NextDouble().ToString()),
+                Ruecklauf = float.Parse(rnd.NextDouble().ToString()),
+                Abgas = float.Parse(rnd.NextDouble().ToString()),
+                Brennkammer = float.Parse(rnd.NextDouble().ToString()),
+                CO2_Soll = float.Parse(rnd.NextDouble().ToString()),
+                CO2_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Saugzug_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Puffer_Oben = float.Parse(rnd.NextDouble().ToString()),
+                Puffer_Unten = float.Parse(rnd.NextDouble().ToString()),
+                Platine = float.Parse(rnd.NextDouble().ToString()),
+                Betriebsphase_Kessel = rnd.Next(500),
+                Aussen = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK1_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK1_Soll = float.Parse(rnd.NextDouble().ToString()),
+                Betriebsphase_HK1 = rnd.Next(500),
+                Betriebsart_Fern_HK1 = rnd.Next(500),
+                Verschiebung_Fern_HK1 = float.Parse(rnd.NextDouble().ToString()),
+                Freigabekontakt_HK1 = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK2_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK2_Soll = float.Parse(rnd.NextDouble().ToString()),
+                Betriebsphase_HK2 = rnd.Next(500),
+                Betriebsart_Fern_HK2 = rnd.Next(500),
+                Verschiebung_Fern_HK2 = float.Parse(rnd.NextDouble().ToString()),
+                Freigabekontakt_HK2 = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK3_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK3_Soll = float.Parse(rnd.NextDouble().ToString()),
+                Betriebsphase_HK3 = rnd.Next(500),
+                Betriebsart_Fern_HK3 = rnd.Next(500),
+                Verschiebung_Fern_HK3 = float.Parse(rnd.NextDouble().ToString()),
+                Freigabekontakt_HK3 = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK4_Ist = float.Parse(rnd.NextDouble().ToString()),
+                Vorlauf_HK4_Soll = float.Parse(rnd.NextDouble().ToString()),
+                Betriebsphase_HK4 = rnd.Next(500),
+                Betriebsart_Fern_HK4 = rnd.Next(500),
+                Verschiebung_Fern_HK4 = float.Parse(rnd.NextDouble().ToString()),
+                Freigabekontakt_HK4 = float.Parse(rnd.NextDouble().ToString()),
+                Boiler_1 = float.Parse(rnd.NextDouble().ToString()),
+                Boiler_2 = float.Parse(rnd.NextDouble().ToString()),
+                DI_0 = rnd.Next(500),
+                DI_1 = rnd.Next(500),
+                DI_2 = rnd.Next(500),
+                DI_3 = rnd.Next(500),
+                A_W_0 = rnd.Next(500),
+                A_W_1 = rnd.Next(500),
+                A_W_2 = rnd.Next(500),
+                A_W_3 = rnd.Next(500),
+                A_EA_0 = rnd.Next(500),
+                A_EA_1 = rnd.Next(500),
+                A_EA_2 = rnd.Next(500),
+                A_EA_3 = rnd.Next(500),
+                A_EA_4 = rnd.Next(500),
+                A_PHASE_0 = rnd.Next(500),
+                A_PHASE_1 = rnd.Next(500),
+                A_PHASE_2 = rnd.Next(500),
+                A_PHASE_3 = rnd.Next(500),
+                A_PHASE_4 = rnd.Next(500)
+            };
+            data.CalcCustomProps();
+
+            return data;
         }
     }
 }
