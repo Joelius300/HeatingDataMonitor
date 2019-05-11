@@ -1,6 +1,7 @@
-@inject RaspberryPIUtils.RaspberryPI raspi
-@inject DataHandler.IDataHandler dataHandler
+@using DataHandler
 @using static DataHandler.Extensions
+@inject RaspberryPIUtils.RaspberryPI raspi
+@inject DataStorage dataStorage
 @implements IDisposable
 
 <div class="top-row pl-4 navbar navbar-dark">
@@ -39,25 +40,25 @@
     private decimal? temp;
     private int? freq;
 
-    private Action changed;
+    private Action newDataReceived;
 
     protected override void OnInit()
     {
-        changed = () =>
+        newDataReceived = () =>
         {
             temp = raspi.GetCurrentTemp();
             freq = raspi.GetCurrentFrequency();
             base.Invoke(base.StateHasChanged);
         };
 
-        dataHandler.Changed += changed;
+        dataStorage.NewDataReceived += newDataReceived;
 
-        changed();
+        newDataReceived();
         base.OnInit();
     }
 
     public void Dispose() {
-        dataHandler.Changed -= changed;
+        dataStorage.NewDataReceived -= newDataReceived;
     }
 
 

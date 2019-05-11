@@ -3,5 +3,7 @@
   <HostIP>192.168.38.103</HostIP>
   <Port>5000</Port>
   <SerialPortName>/dev/ttyS0</SerialPortName>
-  <ExpectedReadInterval>6000</ExpectedReadInterval>
+  <ExpectedReadInterval>6</ExpectedReadInterval>
+  <HistorySaveDelayInMinutes>10</HistorySaveDelayInMinutes>
+  <HistorySQLiteConnectionString>Data Source=~/History.db;</HistorySQLiteConnectionString>
 </Config>

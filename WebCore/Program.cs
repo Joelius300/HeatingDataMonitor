@@ -10,12 +10,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using DataHandler;
 using DataHandler.Exceptions;
+using System.Threading;
 
 namespace WebCore
 {
     public class Program
     {
         public static Config Config { get; private set; }
+        public static CancellationTokenSource CancellationTokenSource { get; private set; }
 
         public static void Main(string[] args)
         {
@@ -25,6 +27,8 @@ namespace WebCore
                 Console.ReadKey(true);
                 return;
             }
+
+            CancellationTokenSource = new CancellationTokenSource();
 
             CreateHostBuilder(args).Build().Run();
         }

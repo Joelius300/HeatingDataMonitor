@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using DataHandler;
+using DataHandler.Services;
 using RaspberryPIUtils;
+using DataHistory;
+using System.Threading;
 
 namespace WebCore
 {
@@ -21,13 +24,20 @@ namespace WebCore
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<RaspberryPI>();
+            services.AddSingleton<Config>(Program.Config);
+            services.AddSingleton<DataStorage>();
 
 #if DEBUG
-            services.AddSingleton<IDataHandler, MockDataHandler>();
+            services.AddHostedService<MockDataService>();
 #endif
 #if RELEASE
-            services.AddSingleton<IDataHandler>(new SerialDataHandler(Program.Config));
+            services.AddHostedService<SerialDataService>();
 #endif
+
+            bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) && Program.Config.HistorySaveDelayInMinutes.HasValue;
+            if (historyIsDefined) {
+                services.AddHostedService<HistoryService>();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

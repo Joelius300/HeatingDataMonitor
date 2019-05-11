@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataHandler
 {
@@ -70,6 +72,11 @@ namespace DataHandler
 
         #region Props (custom)
 
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("ID")]
+        public int Data_ID { get; private set; }
+
+        [NotMapped]
         public List<(string Header, string Data)> DisplayableList { get; private set; }
 
         #endregion
@@ -80,8 +87,8 @@ namespace DataHandler
             {
                 ("Zeit", DatumZeit.Value.ToString("dd.MM.yyyy HH:mm:ss")),
                 ("Kessel", Kessel.GetString("°C")),
-                ("Rücklauf", Ruecklauf.GetString()),
-                ("Abgas", Abgas.GetString("??")),
+                ("Rücklauf", Ruecklauf.GetString("°C")),
+                ("Abgas", Abgas.GetString("°C")),
                 ("Brennkammer", Brennkammer.GetString("°C")),
                 ("CO2 Soll", CO2_Soll.GetString("%")),
                 ("CO2 Ist", CO2_Ist.GetString("%")),
@@ -89,7 +96,7 @@ namespace DataHandler
                 ("Puffer oben", Puffer_Oben.GetString("°C")),
                 ("Puffer unten", Puffer_Unten.GetString("°C")),
                 ("Platine", Platine.GetString("°C")),
-                ("Betriebsphase_Kessel", Betriebsphase_Kessel.GetString()),
+                ("Betriebsphase Kessel", Betriebsphase_Kessel.GetString()),
                 ("Aussen", Aussen.GetString("°C")),
                 ("Vorlauf HK1 Ist", Vorlauf_HK1_Ist.GetString("°C")),
                 ("Vorlauf HK1 Soll", Vorlauf_HK1_Soll.GetString("°C")),

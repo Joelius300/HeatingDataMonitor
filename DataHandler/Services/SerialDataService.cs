@@ -10,30 +10,18 @@ using System.Linq;
 using DataHandler.Exceptions;
 using System.CodeDom.Compiler;
 
-namespace DataHandler
+namespace DataHandler.Services
 {
-    public class SerialDataHandler : IDataHandler
+    public class SerialDataService : DataService
     {
         private readonly SerialPort port;
-        public Data CurrentData { get; private set; }
-        public bool NoDataReceived { get; private set; }
-        public string FaultyDataReceived { get; private set; }
-        public int ExpectedReadInterval { get; private set; }
-        
 
-        private CancellationTokenSource cts;
-        private Task loopTask;
-
-        public event Action Changed;
-
-        public SerialDataHandler(Config config)
+        public SerialDataService(DataStorage dataStorage, Config config) : base(dataStorage)
         {
-            ExpectedReadInterval = config.ExpectedReadInterval;
             port = CreateSerialPort(config);
-            Start();
         }
 
-        protected virtual SerialPort CreateSerialPort(Config config) {
+        private SerialPort CreateSerialPort(Config config) {
             return new SerialPort()
             {
                 PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspian)
@@ -44,26 +32,12 @@ namespace DataHandler
                 StopBits = StopBits.One,                // def from specs (heizung-sps)
                 Encoding = Encoding.ASCII,              // def from specs (heizung-sps)
                 DiscardNull = true,                     // we don't need that
-                ReadTimeout = ExpectedReadInterval * 2, // give enough time
+                ReadTimeout = config.ExpectedReadInterval * 2, // give enough time
                 NewLine = "\r\n"                        // define newline used by sps
             };
         }
 
-        private async Task LoopAsync(CancellationToken ct)
-        {
-            await Task.Run(() => {
-                while (!ct.IsCancellationRequested)
-                {
-                    ReadToProp(); // expected to block for a bit
-                     
-                    // notify everyone that there is some new data
-                    var temp = Changed;
-                    temp?.Invoke();
-                }
-            });
-        }
-
-        protected virtual void ReadToProp()
+        private Data GetData()
         {
             string serialData;
             try
@@ -76,31 +50,27 @@ namespace DataHandler
                 Console.WriteLine("Timeout: ");
                 Console.WriteLine(e.Message);
 
-                NoDataReceived = true;
-                return;
+                throw new NoDataReceivedException(e);
             }
             catch (OperationCanceledException e)
             {
                 Console.WriteLine("Canceled: ");
                 Console.WriteLine(e.Message);
 
-                NoDataReceived = true;
-                return;
+                throw new NoDataReceivedException(e);
             }
             catch (InvalidOperationException e)
             {
                 Console.WriteLine("InvalidOperation: ");
                 Console.WriteLine(e.Message);
 
-                NoDataReceived = true;
-                return;
+                throw new NoDataReceivedException(e);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
 
-                NoDataReceived = true;
-                return;
+                throw new NoDataReceivedException(e);
             }
 
             Data newData = Data.Convert(serialData);
@@ -109,46 +79,36 @@ namespace DataHandler
                 Console.WriteLine("Received invalid Data: ");
                 Console.WriteLine(serialData);
 
-                FaultyDataReceived = serialData;
-                NoDataReceived = true;
-                return;
+                throw new FaultyDataReceivedException(serialData);
             }
 
             Console.WriteLine("Received valid Data: ");
             Console.WriteLine(serialData);
 
-            CurrentData = newData;
-            NoDataReceived = false;
+            return newData;
         }
 
-        private void Start()
+        protected override async Task<Data> GetNewData()
         {
-            Console.WriteLine("Opening serial port " + port.PortName);
-            try
-            {
-                port.Open();
-                cts = new CancellationTokenSource();
-                loopTask = LoopAsync(cts.Token);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception when starting the serial-port reader: ");
-                Console.WriteLine(e.Message);
-            }
+            return await Task.Run(() => GetData());
         }
 
-        private void Stop()
+        protected override Task Start()
         {
-            cts.Cancel();
-            loopTask.Wait(3000);
+            port.Open();
+            return Task.CompletedTask;
+        }
+
+        protected override async Task Stop()
+        {
             port.Close();
+            await Task.Delay(300);  // let the loop end
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            Stop();
-            cts?.Dispose();
             port.Dispose();
+            base.Dispose();
         }
     }
 }

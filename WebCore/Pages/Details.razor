@@ -1,6 +1,6 @@
 ﻿@page "/details"
 @using DataHandler
-@inject IDataHandler dataHandler
+@inject DataStorage dataStorage
 @implements IDisposable
 
 <h1>Aktueller Zustand</h1>
@@ -24,24 +24,24 @@ else
 }
 
 @functions{
-    private Action changed;
+    private Action newDataReceived;
     private Data data;
 
     protected override void OnInit()
     {
-        changed = () =>
+        newDataReceived = () =>
         {
-            data = dataHandler.CurrentData;
+            data = dataStorage.CurrentData;
             base.Invoke(base.StateHasChanged);
         };
-  
-        dataHandler.Changed += changed;
 
-        changed();
+        dataStorage.NewDataReceived += newDataReceived;
+
+        newDataReceived();
         base.OnInit();
     }
 
     public void Dispose() {
-        dataHandler.Changed -= changed;
+        dataStorage.NewDataReceived -= newDataReceived;
     }
 }

@@ -1,11 +1,13 @@
 ﻿using DataHandler.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 namespace DataHandler
@@ -17,18 +19,27 @@ namespace DataHandler
         public string SerialPortName { get; set; }
         public int ExpectedReadInterval { get; set; }
 
+        [DefaultValue(null)]
+        [XmlElement(IsNullable = true)]
+        public int? HistorySaveDelayInMinutes { get; set; } = null;
+
+        [DefaultValue(null)]
+        [XmlElement(IsNullable = true)]
+        public string HistorySQLiteConnectionString { get; set; } = null;
+
+
         private const string PATH = "DataConfig.xml";
-        public void Serialize() {
+        public void Serialize(string path = PATH) {
             XmlSerializer serializer = new XmlSerializer(typeof(Config));
-            using FileStream file = new FileStream(PATH, FileMode.Create, FileAccess.Write);
+            using FileStream file = new FileStream(path, FileMode.Create, FileAccess.Write);
             serializer.Serialize(file, this);
         }
 
-        public static Config Deserialize() {
+        public static Config Deserialize(string path = PATH) {
             XmlSerializer serializer = new XmlSerializer(typeof(Config));
             try
             {
-                using FileStream file = new FileStream(PATH, FileMode.Open, FileAccess.Read);
+                using FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
                 return (Config)serializer.Deserialize(file);
             }
             catch (FileNotFoundException)
@@ -40,14 +51,27 @@ namespace DataHandler
             }
         }
 
-        public const int DEFAULT_EXPECTED_READ_INTERVAL = 6000;
+        public const int DEFAULT_EXPECTED_READ_INTERVAL = 6;
 
-        public static Config GetDefault() {
+        public static Config GetDefaultWithHistory() {
             return new Config() {
                 SerialPortName = "COM1",
                 ExpectedReadInterval = DEFAULT_EXPECTED_READ_INTERVAL,
                 HostIP = "192.168.38.121",
                 Port = 5000,
+                HistorySaveDelayInMinutes = 10,
+                HistorySQLiteConnectionString = @$"Data Source={Path.Combine(Environment.CurrentDirectory, "HeatingHistory.db") };Version=3;"
+            };
+        }
+
+        public static Config GetDefaultWithoutHistory()
+        {
+            return new Config()
+            {
+                SerialPortName = "COM1",
+                ExpectedReadInterval = DEFAULT_EXPECTED_READ_INTERVAL,
+                HostIP = "192.168.38.121",
+                Port = 5000
             };
         }
 
@@ -56,13 +80,13 @@ namespace DataHandler
             IEnumerable<string> ports = SerialPort.GetPortNames();
             if (!ports.Contains(this.SerialPortName)) throw new NonExistingSerialPortException(this.SerialPortName);
 
-            if (!IPAddress.TryParse(HostIP, out _) && HostIP != "localhost") throw new InvalidIPAddressException(HostIP);
+            if (!Regex.Match(HostIP, @"^(\d{1,3}\.){3}\d{1,3}$").Success || !IPAddress.TryParse(HostIP, out _)) throw new InvalidIPAddressException(HostIP);
 
-            if (this.ExpectedReadInterval < 1000 || this.ExpectedReadInterval > 600000)
+            if (this.ExpectedReadInterval < 1 || this.ExpectedReadInterval > 60)
             {
                 int old = this.ExpectedReadInterval;
                 this.ExpectedReadInterval = Config.DEFAULT_EXPECTED_READ_INTERVAL;
-                Console.WriteLine($"Das angegebene Leseintervall ({old}ms) ist nicht valid. Es wurde auf {ExpectedReadInterval}ms korrigiert.");
+                Console.WriteLine($"Das angegebene Leseintervall ({old}s) ist nicht valid. Es wurde auf {ExpectedReadInterval}s korrigiert.");
             }
         }
     }
