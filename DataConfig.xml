@@ -3,7 +3,7 @@
   <HostIP>192.168.38.121</HostIP>
   <Port>5000</Port>
   <SerialPortName>COM1</SerialPortName>
-  <ExpectedReadInterval>6000</ExpectedReadInterval>
+  <ExpectedReadInterval>6</ExpectedReadInterval>
   <HistorySaveDelayInMinutes>10</HistorySaveDelayInMinutes>
   <HistorySQLiteConnectionString>Data Source=%USERPROFILE%\Desktop\History.db;</HistorySQLiteConnectionString>
 </Config>
