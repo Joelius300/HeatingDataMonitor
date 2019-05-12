@@ -14,9 +14,8 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Zeit</th>
                 <th>Kessel</th>
-                <th>Boiler 1</th>
+                <th>Boiler</th>
                 <th>Puffer oben</th>
                 <th>Puffer unten</th>
                 <th>Aussen</th>
@@ -24,7 +23,6 @@ else
         </thead>
         <tbody>
             <tr>
-                <td>@data.DatumZeit.Value.ToString("dd.MM.yyyy HH:mm:ss")</td>
                 <td>@data.Kessel.GetString("°C")</td>
                 <td>@data.Boiler_1.GetString("°C")</td>
                 <td>@data.Puffer_Oben.GetString("°C")</td>

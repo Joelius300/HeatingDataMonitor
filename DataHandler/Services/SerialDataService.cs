@@ -24,7 +24,7 @@ namespace DataHandler.Services
         private SerialPort CreateSerialPort(Config config) {
             return new SerialPort()
             {
-                PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspian)
+                PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspi)
                 BaudRate = 9600,                        // def from specs (heizung-sps)
                 DataBits = 8,                           // def from specs (heizung-sps)
                 Parity = Parity.None,                   // def from specs (heizung-sps)
@@ -90,19 +90,20 @@ namespace DataHandler.Services
 
         protected override async Task<Data> GetNewData()
         {
+            // make async call
             return await Task.Run(() => GetData());
         }
 
-        protected override Task Start()
+        protected override Task BeforeLoopStart()
         {
             port.Open();
             return Task.CompletedTask;
         }
 
-        protected override async Task Stop()
+        protected override async Task CleanupOnApplicationShutdown()
         {
-            port.Close();
-            await Task.Delay(300);  // let the loop end
+            port.Close();           // this would raise an OperationCanceledException if the port is still reading
+            await Task.Delay(300);  // give the loop one last chance to end (gracefully)
         }
 
         public override void Dispose()

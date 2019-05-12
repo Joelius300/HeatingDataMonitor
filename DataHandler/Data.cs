@@ -42,10 +42,10 @@ namespace DataHandler
         [DisplayableValue("Saugzug Ist", IsRelevant = false)]
         public float? Saugzug_Ist { get; set; }
 
-        [DisplayableValue("Puffer Oben", Unit = "%")]
+        [DisplayableValue("Puffer Oben", Unit = "°C")]
         public float? Puffer_Oben { get; set; }
 
-        [DisplayableValue("Puffer Unten", Unit = "%")]
+        [DisplayableValue("Puffer Unten", Unit = "°C")]
         public float? Puffer_Unten { get; set; }
 
         [DisplayableValue("Platine", IsRelevant = false, Unit = "°C")]
@@ -156,23 +156,58 @@ namespace DataHandler
 
         #region Unknown Values
 
+        [DisplayableValue("DI_0", IsRelevant = false)]
         public int? DI_0 { get; set; }
+
+        [DisplayableValue("DI_1", IsRelevant = false)]
         public int? DI_1 { get; set; }
+
+        [DisplayableValue("DI_2", IsRelevant = false)]
         public int? DI_2 { get; set; }
+
+        [DisplayableValue("DI_3", IsRelevant = false)]
         public int? DI_3 { get; set; }
+
+        [DisplayableValue("A_W_0", IsRelevant = false)]
         public int? A_W_0 { get; set; }
+
+        [DisplayableValue("A_W_1", IsRelevant = false)]
         public int? A_W_1 { get; set; }
+
+        [DisplayableValue("A_W_2", IsRelevant = false)]
         public int? A_W_2 { get; set; }
+
+        [DisplayableValue("A_W_3", IsRelevant = false)]
         public int? A_W_3 { get; set; }
+
+        [DisplayableValue("A_EA_0", IsRelevant = false)]
         public int? A_EA_0 { get; set; }
+
+        [DisplayableValue("A_EA_1", IsRelevant = false)]
         public int? A_EA_1 { get; set; }
+
+        [DisplayableValue("A_EA_2", IsRelevant = false)]
         public int? A_EA_2 { get; set; }
+
+        [DisplayableValue("A_EA_3", IsRelevant = false)]
         public int? A_EA_3 { get; set; }
+
+        [DisplayableValue("A_EA_4", IsRelevant = false)]
         public int? A_EA_4 { get; set; }
+
+        [DisplayableValue("A_PHASE_0", IsRelevant = false)]
         public int? A_PHASE_0 { get; set; }
+
+        [DisplayableValue("A_PHASE_1", IsRelevant = false)]
         public int? A_PHASE_1 { get; set; }
+
+        [DisplayableValue("A_PHASE_2", IsRelevant = false)]
         public int? A_PHASE_2 { get; set; }
+
+        [DisplayableValue("A_PHASE_3", IsRelevant = false)]
         public int? A_PHASE_3 { get; set; }
+
+        [DisplayableValue("A_PHASE_4", IsRelevant = false)]
         public int? A_PHASE_4 { get; set; }
 
         #endregion
@@ -207,7 +242,7 @@ namespace DataHandler
                 DisplayableValueAttribute attribute = property.GetCustomAttribute<DisplayableValueAttribute>();
 
                 Type actualType;
-                // Get the actual type of the property
+                // Get the type of the property
                 if (property.PropertyType.IsGenericTypeOf(typeof(Nullable<>)))
                 {
                     // if it was a nullable, get the underlying type
@@ -219,8 +254,8 @@ namespace DataHandler
                     actualType = property.PropertyType;
                 }
 
-                // GetValue boxes the propertyvalue -> if it was a nullable it was boxed to null if it didn't have a value, otherwise to the underlying stuct
-                Object value = property.GetValue(this, null);
+                // PropertyInfo.GetValue boxes the propertyvalue -> if it was a nullable without a value it was boxed to null, otherwise to the underlying stuct
+                object value = property.GetValue(this, null);
 
                 // Get the string representation whilst taking in account the unit
                 string stringRep = GetStringRep(actualType, value, attribute.Unit);

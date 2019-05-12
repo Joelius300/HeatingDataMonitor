@@ -5,6 +5,7 @@ using System.Text;
 
 namespace DataHandler.Enums
 {
+    // int values are not according to order in specs (p. 49)
     public enum BetriebsPhaseHK
     {
         Tagbetrieb = 0,
@@ -12,7 +13,6 @@ namespace DataHandler.Enums
         Handbetrieb = 2,
         Kaminkehrerbetrieb = 3,
         Frostschutz = 4,
-        [Description("Unter Freigabetemperatur")]
         Unter_Freigabetemperatur = 5,
         Aus = 6
     }

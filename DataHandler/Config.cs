@@ -57,10 +57,10 @@ namespace DataHandler
             return new Config() {
                 SerialPortName = "COM1",
                 ExpectedReadInterval = DEFAULT_EXPECTED_READ_INTERVAL,
-                HostIP = "192.168.38.121",
+                HostIP = "xxx.xxx.xxx.xxx",
                 Port = 5000,
                 HistorySaveDelayInMinutes = 10,
-                HistorySQLiteConnectionString = @$"Data Source={Path.Combine(Environment.CurrentDirectory, "HeatingHistory.db") };Version=3;"
+                HistorySQLiteConnectionString = @$"Data Source={Path.Combine(Environment.CurrentDirectory, "History.db")};"
             };
         }
 
@@ -70,7 +70,7 @@ namespace DataHandler
             {
                 SerialPortName = "COM1",
                 ExpectedReadInterval = DEFAULT_EXPECTED_READ_INTERVAL,
-                HostIP = "192.168.38.121",
+                HostIP = "xxx.xxx.xxx.xxx",
                 Port = 5000
             };
         }

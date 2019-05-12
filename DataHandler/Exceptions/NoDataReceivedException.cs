@@ -6,13 +6,13 @@ namespace DataHandler.Exceptions
 {
     class NoDataReceivedException : Exception
     {
-        private const string msg = "Es wurden keine Daten empfangen.";
+        private const string MSG = "Es wurden keine Daten empfangen.";
 
-        public NoDataReceivedException() : base(msg)
+        public NoDataReceivedException() : base(MSG)
         {
         }
 
-        public NoDataReceivedException(Exception innerException) : base(msg, innerException)
+        public NoDataReceivedException(Exception innerException) : base(MSG, innerException)
         {
         }
     }

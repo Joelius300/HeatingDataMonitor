@@ -18,6 +18,7 @@ namespace DataHistory
         {
             this.config = config;
             this.dataStorage = dataStorage;
+
             HeatingDataContext.Instance = new HeatingDataContext(config.HistorySQLiteConnectionString);
             HeatingDataContext.Instance.Database.EnsureCreated();
         }

@@ -11,6 +11,8 @@ namespace DataHandler
             return value.ToString("dd.MM.yyyy HH:mm:ss");
         }
 
+        #region GetStringFromNullable
+
         public static string GetString<T>(this T? value) where T : struct
         {
             if (value.HasValue) return value.Value.ToString();
@@ -28,6 +30,10 @@ namespace DataHandler
             if (value.HasValue) return $"{value.Value.ToString()} {unit}";
             return "###";
         }
+
+        #endregion
+
+        #region IsGenericTypeOf
 
         public static bool IsGenericTypeOf(this Type t, Type genericDefinition)
         {
@@ -67,5 +73,7 @@ namespace DataHandler
 
             return isMatch;
         }
+
+        #endregion
     }
 }

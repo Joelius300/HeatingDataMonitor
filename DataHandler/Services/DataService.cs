@@ -31,7 +31,13 @@ namespace DataHandler.Services
                     Console.WriteLine(e.Message);
                     Console.WriteLine(e.FaultyData);
                 }
+                // maybe stops weird OperationCanceledException on shutdown (untested)
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Operation canceled in LoopAsync of DataService");
+                }
 
+                // ignore this cycle if there was an error
                 if (newData == null) continue;
 
                 // update the current data
@@ -44,14 +50,16 @@ namespace DataHandler.Services
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            await Start();  // start configuration
-            await base.StartAsync(cancellationToken);
+            await BeforeLoopStart();                    // some configuration work before the loop starts
+            await base.StartAsync(cancellationToken);   // starts loop
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await base.StopAsync(cancellationToken);
-            await Stop();   // forced stop
+            // blocks until loop ends or until the shutdown timer (default=5s) elapses
+            await base.StopAsync(cancellationToken);    
+            // cleanup after loop ends. You can't be sure if the thread has ended tho because maybe the application triggered the abort signal (timer elapsed)
+            await CleanupOnApplicationShutdown();                               
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -59,9 +67,21 @@ namespace DataHandler.Services
             return LoopAsync(stoppingToken);
         }
 
+        /// <summary>
+        /// Retrieves <see cref="Data"/> from wherever. This method is expected to block until the next <see cref="Data"/> is ready - there is no artificial delay.
+        /// </summary>
+        /// <returns>The new <see cref="Data"/></returns>
         protected abstract Task<Data> GetNewData();
 
-        protected virtual Task Start() => Task.CompletedTask;
-        protected virtual Task Stop() => Task.CompletedTask;
+        /// <summary>
+        /// Override when there's configuration work to do before the service loop can start
+        /// </summary>
+        protected virtual Task BeforeLoopStart() => Task.CompletedTask;
+
+        /// <summary>
+        /// Override when there is cleanup to do after the loop ends. 
+        /// There is no Guarantee that the loop already ended when this method is called.
+        /// </summary>
+        protected virtual Task CleanupOnApplicationShutdown() => Task.CompletedTask;
     }
 }
