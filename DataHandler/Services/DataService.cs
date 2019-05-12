@@ -32,7 +32,7 @@ namespace DataHandler.Services
                     Console.WriteLine(e.FaultyData);
                 }
 
-                if (newData == null) return;
+                if (newData == null) continue;
 
                 // update the current data
                 dataStorage.CurrentData = newData;

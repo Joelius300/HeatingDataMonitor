@@ -4,6 +4,4 @@
   <Port>5000</Port>
   <SerialPortName>COM1</SerialPortName>
   <ExpectedReadInterval>5</ExpectedReadInterval>
-  <HistorySaveDelayInMinutes>1</HistorySaveDelayInMinutes>
-  <HistorySQLiteConnectionString>Data Source=C:\Users\Joel Liechti\Desktop\Projekte\VS 19\Heizungsprojekt\HeatingDataMonitorRCPV4\WebCore\bin\Debug\History.db;</HistorySQLiteConnectionString>
 </Config>

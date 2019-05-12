@@ -32,7 +32,7 @@ namespace DataHandler.Services
                 StopBits = StopBits.One,                // def from specs (heizung-sps)
                 Encoding = Encoding.ASCII,              // def from specs (heizung-sps)
                 DiscardNull = true,                     // we don't need that
-                ReadTimeout = config.ExpectedReadInterval * 2, // give enough time
+                ReadTimeout = config.ExpectedReadInterval * 2000, // give enough time
                 NewLine = "\r\n"                        // define newline used by sps
             };
         }
