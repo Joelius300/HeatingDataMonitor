@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <HostIP>192.168.38.121</HostIP>
+  <Port>5000</Port>
+  <SerialPortName>COM1</SerialPortName>
+  <ExpectedReadInterval>5</ExpectedReadInterval>
+  <HistorySaveDelayInMinutes>1</HistorySaveDelayInMinutes>
+  <HistorySQLiteConnectionString>Data Source=C:\Users\Joel Liechti\Desktop\Projekte\VS 19\Heizungsprojekt\HeatingDataMonitorRCPV4\WebCore\bin\Debug\History.db;</HistorySQLiteConnectionString>
+</Config>

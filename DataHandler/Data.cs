@@ -1,7 +1,12 @@
-﻿using System;
+﻿using DataHandler.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
+using System.Linq;
+using static DataHandler.Extensions;
+using DataHandler.Enums;
 
 namespace DataHandler
 {
@@ -9,46 +14,148 @@ namespace DataHandler
     {
         private static Random rnd;
 
-        #region Props (from CSV)
+        #region Props
+
+        #region General
+
+        [DisplayableValue("Zeit")]
         public DateTime? DatumZeit { get; set; }
+
+        [DisplayableValue("Kessel", Unit = "°C")]
         public float? Kessel { get; set; }
+
+        [DisplayableValue("Rücklauf", Unit = "°C")]
         public float? Ruecklauf { get; set; }
+
+        [DisplayableValue("Abgas", Unit = "°C")]
         public float? Abgas { get; set; }
+
+        [DisplayableValue("Brennkammer", Unit = "°C")]
         public float? Brennkammer { get; set; }
+
+        [DisplayableValue("CO2 Soll", Unit = "%")]
         public float? CO2_Soll { get; set; }
+
+        [DisplayableValue("CO2 Ist", Unit = "%")]
         public float? CO2_Ist { get; set; }
+
+        [DisplayableValue("Saugzug Ist", IsRelevant = false)]
         public float? Saugzug_Ist { get; set; }
+
+        [DisplayableValue("Puffer Oben", Unit = "%")]
         public float? Puffer_Oben { get; set; }
+
+        [DisplayableValue("Puffer Unten", Unit = "%")]
         public float? Puffer_Unten { get; set; }
+
+        [DisplayableValue("Platine", IsRelevant = false, Unit = "°C")]
         public float? Platine { get; set; }
-        public int? Betriebsphase_Kessel { get; set; }
+
+        [DisplayableValue("Betriebsphase Kessel")]
+        public BetriebsPhaseKessel? Betriebsphase_Kessel { get; set; }
+
+        [DisplayableValue("Aussen", Unit = "°C")]
         public float? Aussen { get; set; }
+
+        #endregion
+
+        #region HK1
+
+        [DisplayableValue("Vorlauf HK1 Ist", Unit = "°C")]
         public float? Vorlauf_HK1_Ist { get; set; }
+
+        [DisplayableValue("Vorlauf HK1 Soll", Unit = "°C")]
         public float? Vorlauf_HK1_Soll { get; set; }
-        public int? Betriebsphase_HK1 { get; set; }
+
+        [DisplayableValue("Betriebsphase HK1")]
+        public BetriebsPhaseHK? Betriebsphase_HK1 { get; set; }
+
+        [DisplayableValue("Betriebsart Fern HK1", IsRelevant = false)]
         public int? Betriebsart_Fern_HK1 { get; set; }
+
+        [DisplayableValue("Verschiebung Fern HK1", IsRelevant = false)]
         public float? Verschiebung_Fern_HK1 { get; set; }
+
+        [DisplayableValue("Freigabekontakt HK1", IsRelevant = false)]
         public float? Freigabekontakt_HK1 { get; set; }
+
+        #endregion
+        #region HK2
+
+        [DisplayableValue("Vorlauf HK2 Ist", Unit = "°C")]
         public float? Vorlauf_HK2_Ist { get; set; }
+
+        [DisplayableValue("Vorlauf HK2 Soll", Unit = "°C")]
         public float? Vorlauf_HK2_Soll { get; set; }
-        public int? Betriebsphase_HK2 { get; set; }
+
+        [DisplayableValue("Betriebsphase HK2")]
+        public BetriebsPhaseHK? Betriebsphase_HK2 { get; set; }
+
+        [DisplayableValue("Betriebsart Fern HK2", IsRelevant = false)]
         public int? Betriebsart_Fern_HK2 { get; set; }
+
+        [DisplayableValue("Verschiebung Fern HK2", IsRelevant = false)]
         public float? Verschiebung_Fern_HK2 { get; set; }
+
+        [DisplayableValue("Freigabekontakt HK2", IsRelevant = false)]
         public float? Freigabekontakt_HK2 { get; set; }
+
+        #endregion
+        #region HK3
+
+        [DisplayableValue("Vorlauf HK3 Ist", Unit = "°C", IsRelevant = false)]
         public float? Vorlauf_HK3_Ist { get; set; }
+
+        [DisplayableValue("Vorlauf HK3 Soll", Unit = "°C", IsRelevant = false)]
         public float? Vorlauf_HK3_Soll { get; set; }
-        public int? Betriebsphase_HK3 { get; set; }
+
+        [DisplayableValue("Betriebsphase HK3", IsRelevant = false)]
+        public BetriebsPhaseHK? Betriebsphase_HK3 { get; set; }
+
+        [DisplayableValue("Betriebsart Fern HK3", IsRelevant = false)]
         public int? Betriebsart_Fern_HK3 { get; set; }
+
+        [DisplayableValue("Verschiebung Fern HK3", IsRelevant = false)]
         public float? Verschiebung_Fern_HK3 { get; set; }
+
+        [DisplayableValue("Freigabekontakt HK3", IsRelevant = false)]
         public float? Freigabekontakt_HK3 { get; set; }
+
+        #endregion
+        #region HK4
+
+        [DisplayableValue("Vorlauf HK4 Ist", Unit = "°C", IsRelevant = false)]
         public float? Vorlauf_HK4_Ist { get; set; }
+
+        [DisplayableValue("Vorlauf HK4 Soll", Unit = "°C", IsRelevant = false)]
         public float? Vorlauf_HK4_Soll { get; set; }
-        public int? Betriebsphase_HK4 { get; set; }
+
+        [DisplayableValue("Betriebsphase HK4", IsRelevant = false)]
+        public BetriebsPhaseHK? Betriebsphase_HK4 { get; set; }
+
+        [DisplayableValue("Betriebsart Fern HK4", IsRelevant = false)]
         public int? Betriebsart_Fern_HK4 { get; set; }
+
+        [DisplayableValue("Verschiebung Fern HK4", IsRelevant = false)]
         public float? Verschiebung_Fern_HK4 { get; set; }
+
+        [DisplayableValue("Freigabekontakt HK4", IsRelevant = false)]
         public float? Freigabekontakt_HK4 { get; set; }
+
+        #endregion
+
+        #region Boilers
+
+        [DisplayableValue("Boiler", Unit = "°C")]
         public float? Boiler_1 { get; set; }
+
+        [DisplayableValue("Boiler 2", Unit = "°C", IsRelevant = false)]
         public float? Boiler_2 { get; set; }
+
+        #endregion
+
+        #region Unknown Values
+
         public int? DI_0 { get; set; }
         public int? DI_1 { get; set; }
         public int? DI_2 { get; set; }
@@ -70,6 +177,8 @@ namespace DataHandler
 
         #endregion
 
+        #endregion
+
         #region Props (custom)
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -77,72 +186,63 @@ namespace DataHandler
         public int Data_ID { get; private set; }
 
         [NotMapped]
-        public List<(string Header, string Data)> DisplayableList { get; private set; }
+        public List<DisplayableValuePair> DisplayableListAll { get; private set; }
+
+        [NotMapped]
+        public List<DisplayableValuePair> DisplayableListRelevant { get; private set; }
 
         #endregion
 
         public void SetDisplayableValues()
         {
-            DisplayableList = new List<(string Header, string Data)>()
+            DisplayableListAll = new List<DisplayableValuePair>();
+            DisplayableListRelevant = new List<DisplayableValuePair>();
+            // get all public instance properties
+            IEnumerable<PropertyInfo> allProps = typeof(Data).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            // select only those which have the DisplayableValueAttribute
+            IEnumerable<PropertyInfo> displayableProps = allProps.Where(p => p.GetCustomAttributes<DisplayableValueAttribute>(false).Count() == 1);
+
+            foreach (PropertyInfo property in displayableProps)
             {
-                ("Zeit", DatumZeit.Value.ToString("dd.MM.yyyy HH:mm:ss")),
-                ("Kessel", Kessel.GetString("°C")),
-                ("Rücklauf", Ruecklauf.GetString("°C")),
-                ("Abgas", Abgas.GetString("°C")),
-                ("Brennkammer", Brennkammer.GetString("°C")),
-                ("CO2 Soll", CO2_Soll.GetString("%")),
-                ("CO2 Ist", CO2_Ist.GetString("%")),
-                ("Saugzug Ist", Saugzug_Ist.GetString("rpm")),
-                ("Puffer oben", Puffer_Oben.GetString("°C")),
-                ("Puffer unten", Puffer_Unten.GetString("°C")),
-                ("Platine", Platine.GetString("°C")),
-                ("Betriebsphase Kessel", Betriebsphase_Kessel.GetString()),
-                ("Aussen", Aussen.GetString("°C")),
-                ("Vorlauf HK1 Ist", Vorlauf_HK1_Ist.GetString("°C")),
-                ("Vorlauf HK1 Soll", Vorlauf_HK1_Soll.GetString("°C")),
-                ("Betriebsphase HK1", Betriebsphase_HK1.GetString()),
-                ("Betriebsart Fern HK1", Betriebsart_Fern_HK1.GetString()),
-                ("Verschiebung Fern HK1", Verschiebung_Fern_HK1.GetString()),
-                ("Freigabekontakt HK1", Freigabekontakt_HK1.GetString()),
-                ("Vorlauf HK2 Ist", Vorlauf_HK2_Ist.GetString("°C")),
-                ("Vorlauf HK2 Soll", Vorlauf_HK2_Soll.GetString("°C")),
-                ("Betriebsphase HK2", Betriebsphase_HK2.GetString()),
-                ("Betriebsart Fern HK2", Betriebsart_Fern_HK2.GetString()),
-                ("Verschiebung Fern HK2", Verschiebung_Fern_HK2.GetString()),
-                ("Freigabekontakt HK2", Freigabekontakt_HK2.GetString()),
-                ("Vorlauf HK3 Ist", Vorlauf_HK3_Ist.GetString("°C")),
-                ("Vorlauf HK3 Soll", Vorlauf_HK3_Soll.GetString("°C")),
-                ("Betriebsphase HK3", Betriebsphase_HK3.GetString()),
-                ("Betriebsart Fern HK3", Betriebsart_Fern_HK3.GetString()),
-                ("Verschiebung Fern HK3", Verschiebung_Fern_HK3.GetString()),
-                ("Freigabekontakt HK3", Freigabekontakt_HK3.GetString()),
-                ("Vorlauf HK4 Ist", Vorlauf_HK4_Ist.GetString("°C")),
-                ("Vorlauf HK4 Soll", Vorlauf_HK4_Soll.GetString("°C")),
-                ("Betriebsphase HK4", Betriebsphase_HK4.GetString()),
-                ("Betriebsart Fern HK4", Betriebsart_Fern_HK4.GetString()),
-                ("Verschiebung Fern HK4", Verschiebung_Fern_HK4.GetString()),
-                ("Freigabekontakt HK4", Freigabekontakt_HK4.GetString()),
-                ("Boiler 1", Boiler_1.GetString("°C")),
-                ("Boiler 2", Boiler_2.GetString("°C")),
-                ("DI 0", DI_0.GetString()),
-                ("DI 1", DI_1.GetString()),
-                ("DI 2", DI_2.GetString()),
-                ("DI 3", DI_3.GetString()),
-                ("A_W 0", A_W_0.GetString()),
-                ("A_W 1", A_W_1.GetString()),
-                ("A_W 2", A_W_2.GetString()),
-                ("A_W 3", A_W_3.GetString()),
-                ("A_EA 0", A_EA_0.GetString()),
-                ("A_EA 1", A_EA_1.GetString()),
-                ("A_EA 2", A_EA_2.GetString()),
-                ("A_EA 3", A_EA_3.GetString()),
-                ("A_EA 4", A_EA_4.GetString()),
-                ("A_Phase 0", A_PHASE_0.GetString()),
-                ("A_Phase 1", A_PHASE_1.GetString()),
-                ("A_Phase 2", A_PHASE_2.GetString()),
-                ("A_Phase 3", A_PHASE_3.GetString()),
-                ("A_Phase 4", A_PHASE_4.GetString())
-            };
+                DisplayableValueAttribute attribute = property.GetCustomAttribute<DisplayableValueAttribute>();
+
+                Type actualType;
+                // Get the actual type of the property
+                if (property.PropertyType.IsGenericTypeOf(typeof(Nullable<>)))
+                {
+                    // if it was a nullable, get the underlying type
+                    actualType = Nullable.GetUnderlyingType(property.PropertyType);
+                }
+                else
+                {
+                    // otherwise just get the type
+                    actualType = property.PropertyType;
+                }
+
+                // GetValue boxes the propertyvalue -> if it was a nullable it was boxed to null if it didn't have a value, otherwise to the underlying stuct
+                Object value = property.GetValue(this, null);
+
+                // Get the string representation whilst taking in account the unit
+                string stringRep = GetStringRep(actualType, value, attribute.Unit);
+
+                // create the new value pair
+                var dvp = new DisplayableValuePair(attribute.DisplayText, stringRep);
+
+                // add to the lists
+                DisplayableListAll.Add(dvp);
+                if (attribute.IsRelevant) DisplayableListRelevant.Add(dvp);
+            }
+        }
+
+        private string GetStringRep(Type valueType, Object boxedValue, string unit)
+        {
+            if (boxedValue == null) return "#####";
+
+            if (valueType == typeof(DateTime)) return ((DateTime)boxedValue).GetStringFromDateTime();
+            if (valueType == typeof(BetriebsPhaseKessel)) return ((BetriebsPhaseKessel)boxedValue).GetUserFirendlyString();
+            if (valueType == typeof(BetriebsPhaseHK)) return ((BetriebsPhaseHK)boxedValue).GetUserFirendlyString();
+
+            return String.IsNullOrWhiteSpace(unit) ? boxedValue.ToString() : $"{boxedValue.ToString()} {unit}";
         }
 
         public void CalcCustomProps()
@@ -181,29 +281,29 @@ namespace DataHandler
                     Puffer_Oben = float.TryParse(list[9], out float vPuffer_Oben) ? (float?)vPuffer_Oben : null,
                     Puffer_Unten = float.TryParse(list[10], out float vPuffer_Unten) ? (float?)vPuffer_Unten : null,
                     Platine = float.TryParse(list[11], out float vPlatine) ? (float?)vPlatine : null,
-                    Betriebsphase_Kessel = int.TryParse(list[12], out int vBetriebsphase_Kessel) ? (int?)vBetriebsphase_Kessel : null,
+                    Betriebsphase_Kessel = int.TryParse(list[12], out int vBetriebsphase_Kessel) ? (BetriebsPhaseKessel?)vBetriebsphase_Kessel : null,
                     Aussen = float.TryParse(list[13], out float vAussen) ? (float?)vAussen : null,
                     Vorlauf_HK1_Ist = float.TryParse(list[14], out float vVorlauf_HK1_Ist) ? (float?)vVorlauf_HK1_Ist : null,
                     Vorlauf_HK1_Soll = float.TryParse(list[15], out float vVorlauf_HK1_Soll) ? (float?)vVorlauf_HK1_Soll : null,
-                    Betriebsphase_HK1 = int.TryParse(list[16], out int vBetriebsphase_HK1) ? (int?)vBetriebsphase_HK1 : null,
+                    Betriebsphase_HK1 = int.TryParse(list[16], out int vBetriebsphase_HK1) ? (BetriebsPhaseHK?)vBetriebsphase_HK1 : null,
                     Betriebsart_Fern_HK1 = int.TryParse(list[17], out int vBetriebsart_Fern_HK1) ? (int?)vBetriebsart_Fern_HK1 : null,
                     Verschiebung_Fern_HK1 = float.TryParse(list[18], out float vVerschiebung_Fern_HK1) ? (float?)vVerschiebung_Fern_HK1 : null,
                     Freigabekontakt_HK1 = float.TryParse(list[19], out float vFreigabekontakt_HK1) ? (float?)vFreigabekontakt_HK1 : null,
                     Vorlauf_HK2_Ist = float.TryParse(list[20], out float vVorlauf_HK2_Ist) ? (float?)vVorlauf_HK2_Ist : null,
                     Vorlauf_HK2_Soll = float.TryParse(list[21], out float vVorlauf_HK2_Soll) ? (float?)vVorlauf_HK2_Soll : null,
-                    Betriebsphase_HK2 = int.TryParse(list[22], out int vBetriebsphase_HK2) ? (int?)vBetriebsphase_HK2 : null,
+                    Betriebsphase_HK2 = int.TryParse(list[22], out int vBetriebsphase_HK2) ? (BetriebsPhaseHK?)vBetriebsphase_HK2 : null,
                     Betriebsart_Fern_HK2 = int.TryParse(list[23], out int vBetriebsart_Fern_HK2) ? (int?)vBetriebsart_Fern_HK2 : null,
                     Verschiebung_Fern_HK2 = float.TryParse(list[24], out float vVerschiebung_Fern_HK2) ? (float?)vVerschiebung_Fern_HK2 : null,
                     Freigabekontakt_HK2 = float.TryParse(list[25], out float vFreigabekontakt_HK2) ? (float?)vFreigabekontakt_HK2 : null,
                     Vorlauf_HK3_Ist = float.TryParse(list[26], out float vVorlauf_HK3_Ist) ? (float?)vVorlauf_HK3_Ist : null,
                     Vorlauf_HK3_Soll = float.TryParse(list[27], out float vVorlauf_HK3_Soll) ? (float?)vVorlauf_HK3_Soll : null,
-                    Betriebsphase_HK3 = int.TryParse(list[28], out int vBetriebsphase_HK3) ? (int?)vBetriebsphase_HK3 : null,
+                    Betriebsphase_HK3 = int.TryParse(list[28], out int vBetriebsphase_HK3) ? (BetriebsPhaseHK?)vBetriebsphase_HK3 : null,
                     Betriebsart_Fern_HK3 = int.TryParse(list[29], out int vBetriebsart_Fern_HK3) ? (int?)vBetriebsart_Fern_HK3 : null,
                     Verschiebung_Fern_HK3 = float.TryParse(list[30], out float vVerschiebung_Fern_HK3) ? (float?)vVerschiebung_Fern_HK3 : null,
                     Freigabekontakt_HK3 = float.TryParse(list[31], out float vFreigabekontakt_HK3) ? (float?)vFreigabekontakt_HK3 : null,
                     Vorlauf_HK4_Ist = float.TryParse(list[32], out float vVorlauf_HK4_Ist) ? (float?)vVorlauf_HK4_Ist : null,
                     Vorlauf_HK4_Soll = float.TryParse(list[33], out float vVorlauf_HK4_Soll) ? (float?)vVorlauf_HK4_Soll : null,
-                    Betriebsphase_HK4 = int.TryParse(list[34], out int vBetriebsphase_HK4) ? (int?)vBetriebsphase_HK4 : null,
+                    Betriebsphase_HK4 = int.TryParse(list[34], out int vBetriebsphase_HK4) ? (BetriebsPhaseHK?)vBetriebsphase_HK4 : null,
                     Betriebsart_Fern_HK4 = int.TryParse(list[35], out int vBetriebsart_Fern_HK4) ? (int?)vBetriebsart_Fern_HK4 : null,
                     Verschiebung_Fern_HK4 = float.TryParse(list[36], out float vVerschiebung_Fern_HK4) ? (float?)vVerschiebung_Fern_HK4 : null,
                     Freigabekontakt_HK4 = float.TryParse(list[37], out float vFreigabekontakt_HK4) ? (float?)vFreigabekontakt_HK4 : null,
@@ -309,6 +409,9 @@ namespace DataHandler
         {
             if (rnd == null) rnd = new Random();
 
+            Array phasenKessel = Enum.GetValues(typeof(BetriebsPhaseKessel));
+            Array phasenHK = Enum.GetValues(typeof(BetriebsPhaseHK));
+
             Data data = new Data
             {
                 DatumZeit = DateTime.UtcNow,
@@ -322,29 +425,29 @@ namespace DataHandler
                 Puffer_Oben = float.Parse(rnd.NextDouble().ToString()),
                 Puffer_Unten = float.Parse(rnd.NextDouble().ToString()),
                 Platine = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_Kessel = rnd.Next(500),
+                Betriebsphase_Kessel = (BetriebsPhaseKessel)phasenKessel.GetValue(rnd.Next(phasenKessel.Length)),
                 Aussen = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK1_Ist = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK1_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK1 = rnd.Next(500),
+                Betriebsphase_HK1 = (BetriebsPhaseHK)phasenHK.GetValue(rnd.Next(phasenHK.Length)),
                 Betriebsart_Fern_HK1 = rnd.Next(500),
                 Verschiebung_Fern_HK1 = float.Parse(rnd.NextDouble().ToString()),
                 Freigabekontakt_HK1 = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK2_Ist = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK2_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK2 = rnd.Next(500),
+                Betriebsphase_HK2 = (BetriebsPhaseHK)phasenHK.GetValue(rnd.Next(phasenHK.Length)),
                 Betriebsart_Fern_HK2 = rnd.Next(500),
                 Verschiebung_Fern_HK2 = float.Parse(rnd.NextDouble().ToString()),
                 Freigabekontakt_HK2 = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK3_Ist = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK3_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK3 = rnd.Next(500),
+                Betriebsphase_HK3 = (BetriebsPhaseHK)phasenHK.GetValue(rnd.Next(phasenHK.Length)),
                 Betriebsart_Fern_HK3 = rnd.Next(500),
                 Verschiebung_Fern_HK3 = float.Parse(rnd.NextDouble().ToString()),
                 Freigabekontakt_HK3 = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK4_Ist = float.Parse(rnd.NextDouble().ToString()),
                 Vorlauf_HK4_Soll = float.Parse(rnd.NextDouble().ToString()),
-                Betriebsphase_HK4 = rnd.Next(500),
+                Betriebsphase_HK4 = (BetriebsPhaseHK)phasenHK.GetValue(rnd.Next(phasenHK.Length)),
                 Betriebsart_Fern_HK4 = rnd.Next(500),
                 Verschiebung_Fern_HK4 = float.Parse(rnd.NextDouble().ToString()),
                 Freigabekontakt_HK4 = float.Parse(rnd.NextDouble().ToString()),

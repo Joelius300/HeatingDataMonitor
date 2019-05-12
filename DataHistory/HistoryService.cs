@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataHistory
 {
-    public class HistoryService : Microsoft.Extensions.Hosting.BackgroundService, IDisposable
+    public class HistoryService : Microsoft.Extensions.Hosting.BackgroundService
     {
         private readonly DataStorage dataStorage;
         private readonly Config config;
@@ -44,6 +44,12 @@ namespace DataHistory
                 lastDataAdded = toAdd;
                 await HeatingDataContext.Instance.SaveChangesAsync(stoppingToken);
             }
+        }
+
+        public override void Dispose()
+        {
+            HeatingDataContext.Instance.Dispose();
+            base.Dispose();
         }
     }
 }

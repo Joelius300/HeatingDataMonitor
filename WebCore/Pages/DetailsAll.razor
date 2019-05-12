@@ -1,4 +1,4 @@
-﻿@page "/details"
+﻿@page "/detailsAll"
 @using DataHandler
 @inject DataStorage dataStorage
 @implements IDisposable
@@ -13,10 +13,10 @@ else
 {
     <table class="table">
         <tbody>
-            @foreach((string Header, string Value) pair in data.DisplayableList){
+            @foreach(DisplayableValuePair pair in data.DisplayableListAll){
             <tr>
                 <th>@pair.Header</th>
-                <td>@pair.Value</td>
+                <td>@pair.DisplayValue</td>
             </tr>
             }
         </tbody>
