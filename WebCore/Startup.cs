@@ -37,6 +37,7 @@ namespace WebCore
             bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) && Program.Config.HistorySaveDelayInMinutes.HasValue;
             if (historyIsDefined) {
                 services.AddHostedService<HistoryService>();
+                services.AddSingleton<IHistoryRepository, HistoryRepository>();
             }
         }
 

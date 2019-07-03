@@ -1,11 +1,12 @@
 ﻿using System;
 using DataHandler;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataHistory
 {
-    interface IHistoryRepository
+    public interface IHistoryRepository
     {
-        IEnumerable<Data> GetDataBetween(DateTime from, DateTime to);
+        IQueryable<Data> GetDataBetween(DateTime from, DateTime to);
     }
 }
