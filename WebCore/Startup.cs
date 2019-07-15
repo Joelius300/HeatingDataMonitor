@@ -41,6 +41,7 @@ namespace WebCore
                     optionsBuilder.UseSqlite(Program.Config.HistorySQLiteConnectionString));
 
                 services.AddHostedService<HistoryService>();
+                services.AddScoped<IHistoryRepository, HistoryRepository>();
             }
         }
 

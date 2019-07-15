@@ -1,4 +1,5 @@
 ﻿using DataHandler;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,15 +12,15 @@ namespace DataHistory
     {
         protected DataStorage DataStorage { get; }
         protected Config Config { get; }
-        protected HeatingDataContext Context { get; }
+        protected IServiceScopeFactory ScopeFactory { get; }
 
         private Data lastDataAdded;
 
-        public HistoryService(Config config, DataStorage dataStorage, HeatingDataContext context)
+        public HistoryService(Config config, DataStorage dataStorage, IServiceScopeFactory scopeFactory)
         {
             Config = config;
             DataStorage = dataStorage;
-            Context = context;
+            ScopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,12 +38,22 @@ namespace DataHistory
 
                 Data toAdd = DataStorage.CurrentData;
 
-                if (toAdd == null) return;  // shouldn't happen
-                if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) return;
+                if (toAdd == null) continue;  // shouldn't happen because CurrentData should never be null
+                if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) continue;   // twice the same data -> skip
 
-                Context.Data.Add(toAdd);
-                lastDataAdded = toAdd;
-                await Context.SaveChangesAsync(stoppingToken);
+                try
+                {
+                    using (var scope = ScopeFactory.CreateScope())
+                    {
+                        IHistoryRepository repos = scope.ServiceProvider.GetRequiredService<IHistoryRepository>();
+                        repos.Add(toAdd);
+                        lastDataAdded = toAdd;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Couldn't save to DB: {e.Message}");
+                }
             }
         }
     }

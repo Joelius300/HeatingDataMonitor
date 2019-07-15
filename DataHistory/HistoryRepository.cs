@@ -11,7 +11,15 @@ namespace DataHistory
 
         public HistoryRepository(HeatingDataContext context) => Context = context;
 
-        public IEnumerable<Data> GetDataBetween(DateTime from, DateTime to) => 
+
+        public void Add(Data data)
+        {
+            Context.Data.Add(data);
+            Context.SaveChanges();
+        }
+
+
+        public IQueryable<Data> GetDataBetween(DateTime from, DateTime to) => 
             Context.Data.Where(d => (d.DatumZeit >= from && d.DatumZeit <= to));
     }
 }
