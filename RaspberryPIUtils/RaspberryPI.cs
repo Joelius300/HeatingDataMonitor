@@ -64,9 +64,11 @@ namespace RaspberryPIUtils
 
         private string GetContentFromFile(string filePath)
         {
-            using FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using StreamReader reader = new StreamReader(file);
-            return reader.ReadToEnd();
+            using (FileStream file = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (StreamReader reader = new StreamReader(file))
+            {
+                return reader.ReadToEnd();
+            }
         }
     }
 }

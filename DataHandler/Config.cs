@@ -31,15 +31,17 @@ namespace DataHandler
         private const string PATH = "DataConfig.xml";
         public void Serialize(string path = PATH) {
             XmlSerializer serializer = new XmlSerializer(typeof(Config));
-            using FileStream file = new FileStream(path, FileMode.Create, FileAccess.Write);
-            serializer.Serialize(file, this);
+            using (FileStream file = new FileStream(path, FileMode.Create, FileAccess.Write))
+            {
+                serializer.Serialize(file, this);
+            }
         }
 
         public static Config Deserialize(string path = PATH) {
             XmlSerializer serializer = new XmlSerializer(typeof(Config));
+            FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
             try
             {
-                using FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
                 return (Config)serializer.Deserialize(file);
             }
             catch (FileNotFoundException)
@@ -48,6 +50,10 @@ namespace DataHandler
             }
             catch (InvalidCastException) {
                 throw;
+            }
+            finally
+            {
+                file.Dispose();
             }
         }
 
@@ -60,7 +66,7 @@ namespace DataHandler
                 HostIP = "xxx.xxx.xxx.xxx",
                 Port = 5000,
                 HistorySaveDelayInMinutes = 10,
-                HistorySQLiteConnectionString = @$"Data Source={Path.Combine(Environment.CurrentDirectory, "History.db")};"
+                HistorySQLiteConnectionString = $"Data Source={Path.Combine(Environment.CurrentDirectory, "History.db")};"
             };
         }
 
