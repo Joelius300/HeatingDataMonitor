@@ -12,13 +12,21 @@
 @using ChartJs.Blazor.ChartJS.LineChart
 @using ChartJs.Blazor.ChartJS.LineChart.Axes
 @using ChartJs.Blazor.ChartJS.LineChart.Axes.Ticks
+@using Microsoft.EntityFrameworkCore;
 @inject IJSRuntime jsRuntime
 @inject IHistoryRepository repos
 
 <h2>Line Time Chart</h2>
 @if (historyAvailable)
 {
-    <ChartJsLineChart @ref="lineChartJs" Config="@lineChartConfig" Width="600" Height="300" />
+    @if (lineChartConfig != null)
+    {
+        <ChartJsLineChart @ref="lineChartJs" Config="@lineChartConfig" Width="600" Height="300" />
+    }
+    else
+    {
+        <p>Loading..</p>
+    }
 }
 else
 {
@@ -48,15 +56,15 @@ else
         if (!localeChanged) Console.WriteLine($"Locale was not changed to {de_ch}. Either it already is {de_ch} or this locale doesn't exist.");
     }
 
-    protected override void OnInit()
+    protected override async Task OnInitAsync()
     {
         historyAvailable = repos != null;
-        if (historyAvailable) SetupChart();
+        if (historyAvailable) await SetupChart();
     }
 
-    private void SetupChart()
+    private async Task SetupChart()
     {
-        IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-30), DateTime.Now.AddDays(-20));
+        IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-30), DateTime.Now.AddDays(-25));
 
         IQueryable<Data> onePerHour = dataLastWeek
             .Where(d =>
@@ -67,9 +75,19 @@ else
                     d2.DatumZeit.Value < d.DatumZeit.Value));
 
 
-        // load in memory since these are the entries we'll be using 
+        // load in memory since these are the entries we'll be using
         // so there's no need to rely on the expression tree stuff anymore (wouldn't work anyway since ef doesn't know TimeTupel)
-        IEnumerable<Data> actualData = onePerHour.ToList();
+        var actualData = await onePerHour
+            // only takes those columns that are required
+            .Select(d => new
+            {
+                d.DatumZeit,
+                d.Kessel,
+                d.Boiler_1,
+                d.Puffer_Oben,
+                d.Puffer_Unten
+            }).ToListAsync();
+
 
         lineChartConfig = new LineChartConfig
         {
