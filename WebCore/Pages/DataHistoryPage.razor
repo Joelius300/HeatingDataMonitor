@@ -56,27 +56,20 @@ else
 
     private void SetupChart()
     {
-        IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-7), DateTime.Now);
+        IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-30), DateTime.Now.AddDays(-20));
 
-        // this gives me a single value for the first entry per day
-        dataLastWeek = dataLastWeek
-            .GroupBy(d => d.DatumZeit.Value.Date)       // group by days
-            .Select(g => g                              // for all groupings per day
-                .GroupBy(d => d.DatumZeit.Value.Hour)   // group by hour
-                .First()                                // take only the first for each hour
-            )
-            .Select(g => g.First());                    // only take the first group of the grouping per day
+        IQueryable<Data> onePerHour = dataLastWeek
+            .Where(d =>
+                !dataLastWeek
+                .Any(d2 =>
+                    d2.DatumZeit.Value.Date == d.DatumZeit.Value.Date &&
+                    d2.DatumZeit.Value.Hour == d.DatumZeit.Value.Hour &&
+                    d2.DatumZeit.Value < d.DatumZeit.Value));
 
-        // this gives me multiple values for the first entry per day
-        dataLastWeek = dataLastWeek
-            .GroupBy(d => d.DatumZeit.Value.Date)       // group by days
-            .Select(g => g                              // for all groupings per day
-                .GroupBy(d => d.DatumZeit.Value.Hour)   // group by hour
-                .First()                                // take only the first for each hour
-            )
-            .SelectMany(g => g);                        // select all the values left over
 
-        //dataLastWeek = dataLastWeek.GroupBy(d => d.DatumZeit.Value.Ticks / 10000000 * 3600).SelectMany(g => g);
+        // load in memory since these are the entries we'll be using 
+        // so there's no need to rely on the expression tree stuff anymore (wouldn't work anyway since ef doesn't know TimeTupel)
+        IEnumerable<Data> actualData = onePerHour.ToList();
 
         lineChartConfig = new LineChartConfig
         {
@@ -143,12 +136,12 @@ else
             Label = "Kessel",
             Fill = false,
             BorderWidth = 2,
-            PointRadius = 3,
+            PointRadius = 1,
             PointBorderWidth = 1,
             SteppedLine = SteppedLine.False
         };
 
-        kesselDataSet.AddRange(dataLastWeek.Select(d => new TimeTupel<float>(d.DatumZeit, d.Kessel ?? -1)));
+        kesselDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Kessel ?? -1)));
         lineChartConfig.Data.Datasets.Add(kesselDataSet);
 
         var boilerDataSet = new LineChartDataset<TimeTupel<float>>
@@ -158,12 +151,12 @@ else
             Label = "Boiler",
             Fill = false,
             BorderWidth = 2,
-            PointRadius = 3,
+            PointRadius = 1,
             PointBorderWidth = 1,
             SteppedLine = SteppedLine.False
         };
 
-        boilerDataSet.AddRange(dataLastWeek.Select(d => new TimeTupel<float>(d.DatumZeit, d.Boiler_1 ?? -1)));
+        boilerDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Boiler_1 ?? -1)));
         lineChartConfig.Data.Datasets.Add(boilerDataSet);
 
         var pufferObenDataSet = new LineChartDataset<TimeTupel<float>>
@@ -173,12 +166,12 @@ else
             Label = "Puffer Oben",
             Fill = false,
             BorderWidth = 2,
-            PointRadius = 3,
+            PointRadius = 1,
             PointBorderWidth = 1,
             SteppedLine = SteppedLine.False
         };
 
-        pufferObenDataSet.AddRange(dataLastWeek.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Oben ?? -1)));
+        pufferObenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Oben ?? -1)));
         lineChartConfig.Data.Datasets.Add(pufferObenDataSet);
 
         var pufferUntenDataSet = new LineChartDataset<TimeTupel<float>>
@@ -188,12 +181,12 @@ else
             Label = "Puffer 2",
             Fill = false,
             BorderWidth = 2,
-            PointRadius = 3,
+            PointRadius = 1,
             PointBorderWidth = 1,
             SteppedLine = SteppedLine.False
         };
 
-        pufferUntenDataSet.AddRange(dataLastWeek.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Unten ?? -1)));
+        pufferUntenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Unten ?? -1)));
         lineChartConfig.Data.Datasets.Add(pufferUntenDataSet);
     }
 

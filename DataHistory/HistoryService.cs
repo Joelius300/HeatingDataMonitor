@@ -19,8 +19,15 @@ namespace DataHistory
             this.config = config;
             this.dataStorage = dataStorage;
 
-            HeatingDataContext.Instance = new HeatingDataContext(config.HistorySQLiteConnectionString);
-            HeatingDataContext.Instance.Database.EnsureCreated();
+            try
+            {
+                HeatingDataContext.Instance = new HeatingDataContext(config.HistorySQLiteConnectionString);
+                HeatingDataContext.Instance.Database.EnsureCreated();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error bei der Datenbank: {e.Message}");
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,12 +45,20 @@ namespace DataHistory
 
                 Data toAdd = dataStorage.CurrentData;
 
-                if (toAdd == null) return;  // shouldn't happen
-                if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) return;
+                if (toAdd == null) continue;  // shouldn't happen because CurrentData should never be null
+                if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) continue;   // twice the same data -> skip
 
-                HeatingDataContext.Instance.Data.Add(toAdd);
-                lastDataAdded = toAdd;
-                await HeatingDataContext.Instance.SaveChangesAsync(stoppingToken);
+                try
+                {
+                    HeatingDataContext.Instance.Data.Add(toAdd);
+                    lastDataAdded = toAdd;
+                    await HeatingDataContext.Instance.SaveChangesAsync(stoppingToken);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error bei der Datenbank (hinzufügen): {e.Message}");
+                    return; // something broke, abort
+                }
             }
         }
 
