@@ -12,6 +12,7 @@ using DataHandler.Services;
 using RaspberryPIUtils;
 using DataHistory;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebCore
 {
@@ -36,6 +37,9 @@ namespace WebCore
 
             bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) && Program.Config.HistorySaveDelayInMinutes.HasValue;
             if (historyIsDefined) {
+                services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
+                    optionsBuilder.UseSqlite(Program.Config.HistorySQLiteConnectionString));
+
                 services.AddHostedService<HistoryService>();
             }
         }

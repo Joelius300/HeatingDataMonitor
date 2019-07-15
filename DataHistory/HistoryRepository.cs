@@ -7,10 +7,11 @@ namespace DataHistory
 {
     public class HistoryRepository : IHistoryRepository
     {
-        public IEnumerable<Data> GetDataBetween(DateTime from, DateTime to)
-        {
-            if (HeatingDataContext.Instance == null) throw new InvalidOperationException("The Database-context has not yet been initialized.");
-            return HeatingDataContext.Instance.Data.Where(d => (d.DatumZeit >= from && d.DatumZeit <= to));
-        }
+        protected HeatingDataContext Context { get; }
+
+        public HistoryRepository(HeatingDataContext context) => Context = context;
+
+        public IEnumerable<Data> GetDataBetween(DateTime from, DateTime to) => 
+            Context.Data.Where(d => (d.DatumZeit >= from && d.DatumZeit <= to));
     }
 }

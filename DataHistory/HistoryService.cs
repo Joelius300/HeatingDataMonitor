@@ -9,18 +9,17 @@ namespace DataHistory
 {
     public class HistoryService : Microsoft.Extensions.Hosting.BackgroundService
     {
-        private readonly DataStorage dataStorage;
-        private readonly Config config;
+        protected DataStorage DataStorage { get; }
+        protected Config Config { get; }
+        protected HeatingDataContext Context { get; }
 
         private Data lastDataAdded;
 
-        public HistoryService(Config config, DataStorage dataStorage)
+        public HistoryService(Config config, DataStorage dataStorage, HeatingDataContext context)
         {
-            this.config = config;
-            this.dataStorage = dataStorage;
-
-            HeatingDataContext.Instance = new HeatingDataContext(config.HistorySQLiteConnectionString);
-            HeatingDataContext.Instance.Database.EnsureCreated();
+            Config = config;
+            DataStorage = dataStorage;
+            Context = context;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,28 +28,22 @@ namespace DataHistory
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(config.HistorySaveDelayInMinutes ?? 1), stoppingToken);
+                    await Task.Delay(TimeSpan.FromMinutes(Config.HistorySaveDelayInMinutes ?? 1), stoppingToken);
                 }
                 catch (TaskCanceledException)
                 {
                     return;
                 }
 
-                Data toAdd = dataStorage.CurrentData;
+                Data toAdd = DataStorage.CurrentData;
 
                 if (toAdd == null) return;  // shouldn't happen
                 if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) return;
 
-                HeatingDataContext.Instance.Data.Add(toAdd);
+                Context.Data.Add(toAdd);
                 lastDataAdded = toAdd;
-                await HeatingDataContext.Instance.SaveChangesAsync(stoppingToken);
+                await Context.SaveChangesAsync(stoppingToken);
             }
-        }
-
-        public override void Dispose()
-        {
-            HeatingDataContext.Instance.Dispose();
-            base.Dispose();
         }
     }
 }

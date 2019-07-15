@@ -11,13 +11,14 @@ using Microsoft.Extensions.Logging;
 using DataHandler;
 using DataHandler.Exceptions;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using DataHistory;
 
 namespace WebCore
 {
     public class Program
     {
         public static Config Config { get; private set; }
-        public static CancellationTokenSource CancellationTokenSource { get; private set; }
 
         public static void Main(string[] args)
         {
@@ -28,9 +29,17 @@ namespace WebCore
                 return;
             }
 
-            CancellationTokenSource = new CancellationTokenSource();
+            var host = CreateHostBuilder(args).Build();
 
-            CreateHostBuilder(args).Build().Run();
+            using (var scope = host.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var db = services.GetRequiredService<HeatingDataContext>();
+
+                db.Database.EnsureCreated();
+            }
+
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
