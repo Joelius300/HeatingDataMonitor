@@ -23,6 +23,6 @@ namespace DataHistory
                 !value
                 .Any(d2 =>
                     d2.DatumZeit.Date == d.DatumZeit.Date &&
-                    d2.DatumZeit.Hour < d.DatumZeit.Hour));
+                    d2.DatumZeit < d.DatumZeit));
     }
 }

@@ -1,4 +1,6 @@
 @page "/dataHistory"
+@page "/dataHistory/{DaysBack:int}"
+@page "/dataHistory/{DaysBack:int}/{Offset:int}"
 @using DataHistory
 @using DataHandler
 @using System.Drawing;
@@ -17,29 +19,31 @@
 @inject IHistoryRepository repos
 
 <h2>Line Time Chart</h2>
-@if (historyAvailable)
+@if (errorMsg == null)
 {
-    @if (lineChartConfig != null)
-    {
-        <ChartJsLineChart @ref="lineChartJs" Config="@lineChartConfig" Width="600" Height="300" />
-    }
-    else
-    {
-        <p>Loading..</p>
-    }
+    <ChartJsLineChart @ref="lineChartJs" Config="@lineChartConfig" Width="600" Height="300" />
 }
 else
 {
-    <p>Es wurde keine History konfiguriert.</p>
+    <p>@errorMsg</p>
 }
 
 @functions
 {
+    [Parameter]
+    public int DaysBack { get; set; } = 3;
+    [Parameter]
+    public int Offset { get; set; } = 0;
+
     LineChartConfig lineChartConfig;
     ChartJsLineChart lineChartJs;
     const string de_ch = "de-ch";
     private bool localeChangeWasAttempted = false;
-    private bool historyAvailable = false;
+
+    private string errorMsg = "Loading..";
+
+    private const int PER_HOUR_CAP = 5;
+    private const int PER_DAY_CAP = 30;
 
     private async Task TryChangeLocale()
     {
@@ -58,17 +62,44 @@ else
 
     protected override async Task OnInitAsync()
     {
-        historyAvailable = repos != null;
+        bool historyAvailable = repos != null;
         if (historyAvailable) await SetupChart();
+        else errorMsg = "Es wurde keine History konfiguriert.";
     }
 
     private async Task SetupChart()
     {
-        IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-30), DateTime.Now.AddDays(-25));
+        var now = DateTime.Now;
 
-        var actualData = await dataLastWeek
-            .GetOnePerHour()    // get only one entry per hour
-            // only takes those columns that are required
+        if(Offset > 0)
+        {
+            now = now.AddDays(-1 * Offset);
+        }
+
+        IQueryable<Data> data = repos.GetDataBetween(now.AddDays(-1 * DaysBack), now);
+
+        IQueryable<Data> filtered;
+        if (DaysBack < 1)
+        {
+            errorMsg = "Es muss eine positive Anzahl Tage angegeben werden, die angezeigt werden sollen.";
+            return;
+        }
+
+        if (DaysBack <= PER_HOUR_CAP)
+        {
+            filtered = data.GetOnePerHour();
+        }
+        else if (DaysBack <= PER_DAY_CAP)
+        {
+            filtered = data.GetOnePerDay();
+        }
+        else
+        {
+            errorMsg = $"{DaysBack} ist zu gross, es können maximal {PER_DAY_CAP} Tage angezeigt werden.";
+            return;
+        }
+
+        var actualData = await filtered       // only takes those columns that are required
             .Select(d => new
             {
                 d.DatumZeit,
@@ -108,7 +139,7 @@ else
                 Scales = new Scales
                 {
                     xAxes = new List<CartesianAxis>
-{
+            {
                         new TimeAxis
                         {
                             Distribution = TimeDistribution.Linear,
@@ -200,6 +231,8 @@ else
 
         pufferUntenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Unten ?? -1)));
         lineChartConfig.Data.Datasets.Add(pufferUntenDataSet);
+
+        errorMsg = null;
     }
 
     protected override async Task OnAfterRenderAsync()
