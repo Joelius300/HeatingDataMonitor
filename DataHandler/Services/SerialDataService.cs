@@ -112,7 +112,7 @@ namespace DataHandler.Services
             {
                 data = new Data
                 {
-                    DatumZeit = DateTime.TryParse($"{list[0]} {list[1]}", out DateTime vDatum) ? (DateTime?)vDatum : null,
+                    DatumZeit = DateTime.TryParse($"{list[0]} {list[1]}", out DateTime vDatum) ? vDatum : throw new InvalidCastException("DateTime received from SerialPort is not valid"),
                     Kessel = float.TryParse(list[2], out float vKessel) ? (float?)vKessel : null,
                     Ruecklauf = float.TryParse(list[3], out float vRuecklauf) ? (float?)vRuecklauf : null,
                     Abgas = float.TryParse(list[4], out float vAbgas) ? (float?)vAbgas : null,

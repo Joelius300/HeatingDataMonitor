@@ -18,7 +18,7 @@ namespace DataHandler
         #region General
 
         [DisplayableValue("Zeit")]
-        public DateTime? DatumZeit { get; set; }
+        public DateTime DatumZeit { get; set; }
 
         [DisplayableValue("Kessel", Unit = "°C")]
         public float? Kessel { get; set; }
