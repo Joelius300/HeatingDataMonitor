@@ -35,8 +35,10 @@ namespace WebCore
             services.AddHostedService<SerialDataService>();
 #endif
 
-            bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) && Program.Config.HistorySaveDelayInMinutes.HasValue;
-            if (historyIsDefined) {
+            bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) 
+                && Program.Config.HistorySaveDelayInMinutes.HasValue;
+            if (historyIsDefined)
+            {
                 services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
                     optionsBuilder.UseSqlite(Program.Config.HistorySQLiteConnectionString));
 

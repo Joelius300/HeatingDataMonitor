@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataHandler.Services
@@ -14,9 +15,16 @@ namespace DataHandler.Services
             timeout = config.ExpectedReadInterval;
         }
 
-        protected override async Task<Data> GetNewData()
+        protected override async Task<Data> GetNewData(CancellationToken cancellationToken)
         {
-            await Task.Delay(TimeSpan.FromSeconds(timeout));
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(timeout), cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                return null;
+            }
 
             return Data.GetRandomData();
         }

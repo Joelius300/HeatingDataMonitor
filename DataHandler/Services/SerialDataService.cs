@@ -181,7 +181,7 @@ namespace DataHandler.Services
             return data;
         }
 
-        protected override async Task<Data> GetNewData()
+        protected override async Task<Data> GetNewData(CancellationToken cancellationToken)
         {
             // make async call
             return await Task.Run(() => GetData());
@@ -196,7 +196,7 @@ namespace DataHandler.Services
         protected override async Task CleanupOnApplicationShutdown()
         {
             port.Close();           // this would raise an OperationCanceledException if the port is still reading
-            await Task.Delay(500);  // give the loop one last chance to end (gracefully)
+            await Task.Delay(250);  // give the loop one last chance to end (gracefully)
         }
 
         public override void Dispose()

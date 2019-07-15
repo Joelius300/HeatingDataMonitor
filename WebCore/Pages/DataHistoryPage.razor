@@ -66,18 +66,8 @@ else
     {
         IQueryable<Data> dataLastWeek = repos.GetDataBetween(DateTime.Now.AddDays(-30), DateTime.Now.AddDays(-25));
 
-        IQueryable<Data> onePerHour = dataLastWeek
-            .Where(d =>
-                !dataLastWeek
-                .Any(d2 =>
-                    d2.DatumZeit.Date == d.DatumZeit.Date &&
-                    d2.DatumZeit.Hour == d.DatumZeit.Hour &&
-                    d2.DatumZeit < d.DatumZeit));
-
-
-        // load in memory since these are the entries we'll be using
-        // so there's no need to rely on the expression tree stuff anymore (wouldn't work anyway since ef doesn't know TimeTupel)
-        var actualData = await onePerHour
+        var actualData = await dataLastWeek
+            .GetOnePerHour()    // get only one entry per hour
             // only takes those columns that are required
             .Select(d => new
             {
@@ -86,7 +76,9 @@ else
                 d.Boiler_1,
                 d.Puffer_Oben,
                 d.Puffer_Unten
-            }).ToListAsync();
+            })
+            // load into memory since these are the entries we'll be using
+            .ToListAsync();
 
 
         lineChartConfig = new LineChartConfig
@@ -186,7 +178,8 @@ else
             BorderWidth = 2,
             PointRadius = 1,
             PointBorderWidth = 1,
-            SteppedLine = SteppedLine.False
+            SteppedLine = SteppedLine.False,
+            Hidden = true
         };
 
         pufferObenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Oben ?? -1)));
@@ -196,12 +189,13 @@ else
         {
             BackgroundColor = ColorUtil.FromDrawingColor(Color.LightBlue),
             BorderColor = ColorUtil.FromDrawingColor(Color.LightBlue),
-            Label = "Puffer 2",
+            Label = "Puffer Unten",
             Fill = false,
             BorderWidth = 2,
             PointRadius = 1,
             PointBorderWidth = 1,
-            SteppedLine = SteppedLine.False
+            SteppedLine = SteppedLine.False,
+            Hidden = true
         };
 
         pufferUntenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Unten ?? -1)));

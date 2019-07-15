@@ -39,7 +39,7 @@ namespace DataHistory
                 Data toAdd = DataStorage.CurrentData;
 
                 if (toAdd == null) continue;  // shouldn't happen because CurrentData should never be null
-                if (toAdd.DatumZeit <= (lastDataAdded?.DatumZeit ?? DateTime.MinValue)) continue;   // twice the same data -> skip
+                if (toAdd.DatumZeit <= lastDataAdded?.DatumZeit) continue;   // twice the same data -> skip
 
                 try
                 {

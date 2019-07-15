@@ -19,7 +19,7 @@ namespace DataHandler.Services
                 Data newData = null;
                 try
                 {
-                    newData = await GetNewData();
+                    newData = await GetNewData(stoppingToken);
                 }
                 catch (Exceptions.NoDataReceivedException e)
                 {
@@ -71,7 +71,7 @@ namespace DataHandler.Services
         /// Retrieves <see cref="Data"/> from wherever. This method is expected to block until the next <see cref="Data"/> is ready - there is no artificial delay.
         /// </summary>
         /// <returns>The new <see cref="Data"/></returns>
-        protected abstract Task<Data> GetNewData();
+        protected abstract Task<Data> GetNewData(CancellationToken cancellationToken);
 
         /// <summary>
         /// Override when there's configuration work to do before the service loop can start
