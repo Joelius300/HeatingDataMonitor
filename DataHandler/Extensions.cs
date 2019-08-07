@@ -75,5 +75,16 @@ namespace DataHandler
         }
 
         #endregion
+
+        public static int RoundUpHours(this int value, int interval)
+        {
+            int i = ((int)Math.Ceiling((double)value / interval)) * interval;
+            if(i > 0)
+            {
+                return Math.Min(23, i); // restrict to max of 23 for hours
+            }
+
+            return 0;   // restrict to min of 0 for hours
+        }
     }
 }

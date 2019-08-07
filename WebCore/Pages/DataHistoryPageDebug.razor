@@ -1,6 +1,6 @@
-@page "/dataHistory"
-@page "/dataHistory/{DaysBack:int}"
-@page "/dataHistory/{DaysBack:int}/{Offset:int}"
+@page "/dataHistoryDebug"
+@page "/dataHistoryDebug/{DaysBack:int}"
+@page "/dataHistoryDebug/{DaysBack:int}/{Offset:int}"
 @using DataHistory
 @using DataHandler
 @using System.Drawing;
@@ -150,7 +150,7 @@ else
                 Scales = new Scales
                 {
                     xAxes = new List<CartesianAxis>
-            {
+                    {
                         new TimeAxis
                         {
                             Distribution = TimeDistribution.Linear,
@@ -171,7 +171,7 @@ else
                                 LabelString = "Zeit"
                             }
                         }
-                        }
+                    }
                 },
                 Hover = new LineChartOptionsHover
                 {
