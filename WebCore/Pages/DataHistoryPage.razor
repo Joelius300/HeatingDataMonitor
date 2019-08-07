@@ -87,6 +87,8 @@ else
             })
             .AsEnumerable();    // from here on, use client-side eval
 
+        TimeOptions timeOptions = null;
+
         if(DaysBack >= 100)
         {
             actualData = actualData
@@ -115,13 +117,35 @@ else
                 .Select(g => g.First())
                 .ToList();
         }
-        else
+        else if (DaysBack > 2)
         {
             actualData = actualData
                 .GroupBy(d => new DateTime(d.DatumZeit.Year, d.DatumZeit.Month, d.DatumZeit.Day, d.DatumZeit.Hour, 0, 0))
                 .Select(g => g.First())
                 .ToList();
         }
+        else
+        {
+            actualData = actualData.ToList();
+
+            timeOptions = new TimeOptions
+            {
+                Unit = TimeMeasurement.Minute,
+                Round = TimeMeasurement.Minute,
+                TooltipFormat = "DD.MM.YYYY HH:mm:ss",
+                DisplayFormats = TimeDisplayFormats.DE_CH,
+                IsoWeek = true
+            };
+        }
+
+        timeOptions = timeOptions ?? new TimeOptions
+        {
+            Unit = TimeMeasurement.Hour,
+            Round = TimeMeasurement.Hour,
+            TooltipFormat = "DD.MM.YYYY HH:mm",
+            DisplayFormats = TimeDisplayFormats.DE_CH,
+            IsoWeek = true
+        };
 
         lineChartConfig = new LineChartConfig
         {
@@ -158,14 +182,7 @@ else
                             {
                                 Source = TickSource.Data
                             },
-                            Time = new TimeOptions
-                            {
-                                Unit = TimeMeasurement.Hour,
-                                Round = TimeMeasurement.Hour,
-                                TooltipFormat = "DD.MM.YYYY HH:mm",
-                                DisplayFormats = TimeDisplayFormats.DE_CH,
-                                IsoWeek = true
-                            },
+                            Time = timeOptions,
                             ScaleLabel = new ScaleLabel
                             {
                                 LabelString = "Zeit"
