@@ -7,13 +7,14 @@
 @using ChartJs.Blazor.Charts
 @using ChartJs.Blazor.ChartJS
 @using ChartJs.Blazor.ChartJS.Common
-@using ChartJs.Blazor.Util.Color
+@using ChartJs.Blazor.Util
 @using ChartJs.Blazor.ChartJS.Common.Properties
 @using ChartJs.Blazor.ChartJS.Common.Enums
 @using ChartJs.Blazor.ChartJS.Common.Legends
 @using ChartJs.Blazor.ChartJS.LineChart
-@using ChartJs.Blazor.ChartJS.LineChart.Axes
-@using ChartJs.Blazor.ChartJS.LineChart.Axes.Ticks
+@using ChartJs.Blazor.ChartJS.Common.Time
+@using ChartJs.Blazor.ChartJS.Common.Axes
+@using ChartJs.Blazor.ChartJS.Common.Axes.Ticks
 @using Microsoft.EntityFrameworkCore;
 @inject IJSRuntime jsRuntime
 @inject IHistoryRepository repos
@@ -35,7 +36,7 @@ else
     [Parameter]
     public int Offset { get; set; } = 0;
 
-    LineChartConfig lineChartConfig;
+    LineConfig lineChartConfig;
     ChartJsLineChart lineChartJs;
     const string de_ch = "de-ch";
     private bool localeChangeWasAttempted = false;
@@ -57,7 +58,7 @@ else
         if (!localeChanged) Console.WriteLine($"Locale was not changed to {de_ch}. Either it already is {de_ch} or this locale doesn't exist.");
     }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         bool historyAvailable = repos != null;
         if (historyAvailable) SetupChart();
@@ -89,21 +90,21 @@ else
 
         TimeOptions timeOptions = null;
 
-        if(DaysBack >= 100)
+        if (DaysBack >= 100)
         {
             actualData = actualData
                 .GroupBy(d => new DateTime(d.DatumZeit.Year, d.DatumZeit.Month, d.DatumZeit.Day, 0, 0, 0))
                 .Select(g => g.First())
                 .ToList();
         }
-        else if(DaysBack >= 75)
+        else if (DaysBack >= 75)
         {
             actualData = actualData
                 .GroupBy(d => new DateTime(d.DatumZeit.Year, d.DatumZeit.Month, d.DatumZeit.Day, d.DatumZeit.Hour.RoundUpHours(10), 0, 0))
                 .Select(g => g.First())
                 .ToList();
         }
-        else if(DaysBack >= 50)
+        else if (DaysBack >= 50)
         {
             actualData = actualData
                 .GroupBy(d => new DateTime(d.DatumZeit.Year, d.DatumZeit.Month, d.DatumZeit.Day, d.DatumZeit.Hour.RoundUpHours(5), 0, 0))
@@ -147,10 +148,9 @@ else
             IsoWeek = true
         };
 
-        lineChartConfig = new LineChartConfig
+        lineChartConfig = new LineConfig
         {
-            CanvasId = "dataHistoryCanvas0",
-            Options = new LineChartOptions
+            Options = new LineOptions
             {
                 Responsive = true,
                 Title = new OptionsTitle
@@ -160,7 +160,7 @@ else
                 },
                 Legend = new Legend
                 {
-                    Position = Positions.Right,
+                    Position = Position.Right,
                     Labels = new LegendLabelConfiguration
                     {
                         UsePointStyle = true
@@ -174,7 +174,7 @@ else
                 Scales = new Scales
                 {
                     xAxes = new List<CartesianAxis>
-            {
+                    {
                         new TimeAxis
                         {
                             Distribution = TimeDistribution.Linear,
@@ -188,9 +188,9 @@ else
                                 LabelString = "Zeit"
                             }
                         }
-                        }
+                    }
                 },
-                Hover = new LineChartOptionsHover
+                Hover = new LineOptionsHover
                 {
                     Intersect = true,
                     Mode = InteractionMode.Y
@@ -198,7 +198,7 @@ else
             }
         };
 
-        var kesselDataSet = new LineChartDataset<TimeTupel<float>>
+        var kesselDataSet = new LineDataset<TimeTuple<float>>
         {
             BackgroundColor = ColorUtil.FromDrawingColor(Color.Orange),
             BorderColor = ColorUtil.FromDrawingColor(Color.Orange),
@@ -210,10 +210,10 @@ else
             SteppedLine = SteppedLine.False
         };
 
-        kesselDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Kessel ?? -1)));
+        kesselDataSet.AddRange(actualData.Select(d => new TimeTuple<float>((Moment)d.DatumZeit, d.Kessel ?? -1)));
         lineChartConfig.Data.Datasets.Add(kesselDataSet);
 
-        var boilerDataSet = new LineChartDataset<TimeTupel<float>>
+        var boilerDataSet = new LineDataset<TimeTuple<float>>
         {
             BackgroundColor = ColorUtil.FromDrawingColor(Color.DarkRed),
             BorderColor = ColorUtil.FromDrawingColor(Color.DarkRed),
@@ -225,10 +225,10 @@ else
             SteppedLine = SteppedLine.False
         };
 
-        boilerDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Boiler_1 ?? -1)));
+        boilerDataSet.AddRange(actualData.Select(d => new TimeTuple<float>((Moment)d.DatumZeit, d.Boiler_1 ?? -1)));
         lineChartConfig.Data.Datasets.Add(boilerDataSet);
 
-        var pufferObenDataSet = new LineChartDataset<TimeTupel<float>>
+        var pufferObenDataSet = new LineDataset<TimeTuple<float>>
         {
             BackgroundColor = ColorUtil.FromDrawingColor(Color.Blue),
             BorderColor = ColorUtil.FromDrawingColor(Color.Blue),
@@ -241,10 +241,10 @@ else
             Hidden = true
         };
 
-        pufferObenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Oben ?? -1)));
+        pufferObenDataSet.AddRange(actualData.Select(d => new TimeTuple<float>((Moment)d.DatumZeit, d.Puffer_Oben ?? -1)));
         lineChartConfig.Data.Datasets.Add(pufferObenDataSet);
 
-        var pufferUntenDataSet = new LineChartDataset<TimeTupel<float>>
+        var pufferUntenDataSet = new LineDataset<TimeTuple<float>>
         {
             BackgroundColor = ColorUtil.FromDrawingColor(Color.LightBlue),
             BorderColor = ColorUtil.FromDrawingColor(Color.LightBlue),
@@ -257,14 +257,14 @@ else
             Hidden = true
         };
 
-        pufferUntenDataSet.AddRange(actualData.Select(d => new TimeTupel<float>(d.DatumZeit, d.Puffer_Unten ?? -1)));
+        pufferUntenDataSet.AddRange(actualData.Select(d => new TimeTuple<float>((Moment)d.DatumZeit, d.Puffer_Unten ?? -1)));
         lineChartConfig.Data.Datasets.Add(pufferUntenDataSet);
 
         errorMsg = null;
     }
 
-    protected override async Task OnAfterRenderAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await TryChangeLocale();
+        if (firstRender) await TryChangeLocale();
     }
 }

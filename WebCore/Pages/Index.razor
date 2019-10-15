@@ -37,18 +37,19 @@ else
     private Action newDataReceived;
     private Data data;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
-        newDataReceived = () =>
+        // sub optimal because async void
+        newDataReceived = async () =>
         {
             data = dataStorage.CurrentData;
-            base.Invoke(base.StateHasChanged);
+            await base.InvokeAsync(base.StateHasChanged);
         };
 
         dataStorage.NewDataReceived += newDataReceived;
 
         newDataReceived();
-        base.OnInit();
+        base.OnInitialized();
     }
 
     public void Dispose() {
