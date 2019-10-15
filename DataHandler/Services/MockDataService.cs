@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -10,9 +11,9 @@ namespace DataHandler.Services
     {
         private readonly int timeout;
 
-        public MockDataService(DataStorage dataStorage, Config config) : base(dataStorage)
+        public MockDataService(DataStorage dataStorage, IOptions<HeatingMonitorOptions> config) : base(dataStorage)
         {
-            timeout = config.ExpectedReadInterval;
+            timeout = config.Value.ExpectedReadIntervalInSeconds;
         }
 
         protected override async Task<Data> GetNewData(CancellationToken cancellationToken)
@@ -25,7 +26,7 @@ namespace DataHandler.Services
             {
                 return null;
             }
-
+            // don't generate random, get one-by-one from database
             return Data.GetRandomData();
         }
     }

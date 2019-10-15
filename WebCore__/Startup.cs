@@ -20,59 +20,50 @@ namespace WebCore
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        private IConfiguration _configuration;
 
-        public IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            _configuration = configuration;
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
-
             services.AddSingleton<RaspberryPI>();
             services.AddSingleton<DataStorage>();
 
-            services.Configure<HeatingMonitorOptions>(Configuration.GetSection("HeatingMonitor"));
+            services.Configure<HeatingMonitorOptions>(_configuration.GetSection("HeatingMonitor"));
             services
                 .AddOptions<HeatingMonitorOptions>()
                 .ValidateDataAnnotations()
                 .Validate(op => op.DebugMode || SerialPort.GetPortNames().Contains(op.SerialPortName));
+            services.Configure<HistoryServiceOptions>(_configuration.GetSection("HistoryService"));
+            services.AddOptions<HistoryServiceOptions>().ValidateDataAnnotations();
 
-            var historyConfig = Configuration.GetSection("HistoryService");
-            if (historyConfig.Exists())
+#if DEBUG
+            services.AddHostedService<MockDataService>();
+#endif
+#if RELEASE
+            services.AddHostedService<SerialDataService>();
+#endif
+
+            if (historyIsDefined)
             {
-                services.Configure<HistoryServiceOptions>(historyConfig);
-                services.AddOptions<HistoryServiceOptions>().ValidateDataAnnotations();
-
                 services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
-                    optionsBuilder.UseSqlite(historyConfig.GetValue<string>("SQLiteConnectionString")));
+                    optionsBuilder.UseSqlite(Program.Config.HistorySQLiteConnectionString));
 
                 services.AddHostedService<HistoryService>();
                 services.AddScoped<IHistoryRepository, HistoryRepository>();
             }
-
-            if (Configuration.GetValue<bool>("HeatingMonitor:DebugMode", false))
-            {
-                services.AddHostedService<MockDataService>();
-            }
-            else
-            {
-                services.AddHostedService<SerialDataService>();
-            }
         }
 
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
             }
 
             app.UseStaticFiles();

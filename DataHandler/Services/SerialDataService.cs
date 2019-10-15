@@ -17,12 +17,12 @@ namespace DataHandler.Services
     {
         private readonly SerialPort port;
 
-        public SerialDataService(DataStorage dataStorage, Config config) : base(dataStorage)
+        public SerialDataService(DataStorage dataStorage, HeatingMonitorOptions config) : base(dataStorage)
         {
             port = CreateSerialPort(config);
         }
 
-        private SerialPort CreateSerialPort(Config config) {
+        private SerialPort CreateSerialPort(HeatingMonitorOptions config) {
             return new SerialPort()
             {
                 PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspi)
