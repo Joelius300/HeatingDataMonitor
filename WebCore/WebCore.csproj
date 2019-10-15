@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ChartJs.Blazor.Fork" Version="0.10.2-preview" />
+    <PackageReference Include="ChartJs.Blazor.Fork" Version="0.10.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
