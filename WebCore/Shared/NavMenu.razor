@@ -52,19 +52,20 @@
 
     private Action newDataReceived;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
-        newDataReceived = () =>
+        // sub optimal because async void
+        newDataReceived = async () =>
         {
             temp = raspi.GetCurrentTemp();
             freq = raspi.GetCurrentFrequency();
-            base.Invoke(base.StateHasChanged);
+            await base.InvokeAsync(base.StateHasChanged);
         };
 
         dataStorage.NewDataReceived += newDataReceived;
 
         newDataReceived();
-        base.OnInit();
+        base.OnInitialized();
     }
 
     public void Dispose() {

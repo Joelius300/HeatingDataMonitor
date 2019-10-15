@@ -57,7 +57,7 @@ else
         if (!localeChanged) Console.WriteLine($"Locale was not changed to {de_ch}. Either it already is {de_ch} or this locale doesn't exist.");
     }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         bool historyAvailable = repos != null;
         if (historyAvailable) SetupChart();
@@ -263,8 +263,8 @@ else
         errorMsg = null;
     }
 
-    protected override async Task OnAfterRenderAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await TryChangeLocale();
+		if (firstRender) await TryChangeLocale();
     }
 }
