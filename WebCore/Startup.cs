@@ -15,6 +15,7 @@ using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.IO.Ports;
+using System.IO;
 
 namespace WebCore
 {
@@ -35,24 +36,33 @@ namespace WebCore
             services.AddSingleton<RaspberryPI>();
             services.AddSingleton<DataStorage>();
 
-            services.Configure<HeatingMonitorOptions>(Configuration.GetSection("HeatingMonitor"));
             services
                 .AddOptions<HeatingMonitorOptions>()
+                .Bind(Configuration.GetSection("HeatingMonitor"))
                 .ValidateDataAnnotations()
-                .Validate(op => op.DebugMode || SerialPort.GetPortNames().Contains(op.SerialPortName));
+                .Validate(op =>
+                {
+                    if (op.DebugMode)
+                    {
+                        // In debug-mode you can use a File-Path as SP-name which will be processed as messages (line = message) from the SPS (eng. PLC)
+                        return File.Exists(op.SerialPortName);
+                    }
+                    else
+                    {
+                        return SerialPort.GetPortNames().Contains(op.SerialPortName);
+                    }
+                });
 
             var historyConfig = Configuration.GetSection("HistoryService");
-            if (historyConfig.Exists())
-            {
-                services.Configure<HistoryServiceOptions>(historyConfig);
-                services.AddOptions<HistoryServiceOptions>().ValidateDataAnnotations();
+            services
+                .AddOptions<HistoryServiceOptions>()
+                .Bind(historyConfig)
+                .ValidateDataAnnotations();
 
-                services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
-                    optionsBuilder.UseSqlite(historyConfig.GetValue<string>("SQLiteConnectionString")));
+            services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
+                optionsBuilder.UseSqlite(historyConfig.GetValue<string>("SQLiteConnectionString")));
 
-                services.AddHostedService<HistoryService>();
-                services.AddScoped<IHistoryRepository, HistoryRepository>();
-            }
+            services.AddScoped<IHistoryRepository, HistoryRepository>();
 
             if (Configuration.GetValue<bool>("HeatingMonitor:DebugMode", false))
             {
@@ -61,6 +71,7 @@ namespace WebCore
             else
             {
                 services.AddHostedService<SerialDataService>();
+                services.AddHostedService<HistoryService>(); // data should only be archived if it comes from the serial port
             }
         }
 

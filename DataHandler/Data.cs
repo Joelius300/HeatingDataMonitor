@@ -268,7 +268,7 @@ namespace DataHandler
             }
         }
 
-        private string GetStringRep(Type valueType, Object boxedValue, string unit)
+        private string GetStringRep(Type valueType, object boxedValue, string unit)
         {
             if (boxedValue == null) return "#####";
 

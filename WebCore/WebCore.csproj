@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -13,5 +13,4 @@
     <ProjectReference Include="..\DataHistory\DataHistory.csproj" />
     <ProjectReference Include="..\RaspberryPIUtils\RaspberryPIUtils.csproj" />
   </ItemGroup>
-
 </Project>

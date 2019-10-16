@@ -10,6 +10,7 @@ using System.Linq;
 using DataHandler.Exceptions;
 using System.CodeDom.Compiler;
 using DataHandler.Enums;
+using Microsoft.Extensions.Options;
 
 namespace DataHandler.Services
 {
@@ -17,15 +18,15 @@ namespace DataHandler.Services
     {
         private readonly SerialPort port;
 
-        public SerialDataService(DataStorage dataStorage, HeatingMonitorOptions config) : base(dataStorage)
+        public SerialDataService(DataStorage dataStorage, IOptions<HeatingMonitorOptions> options) : base(dataStorage)
         {
-            port = CreateSerialPort(config);
+            port = CreateSerialPort(options.Value.SerialPortName, options.Value.ExpectedReadIntervalInSeconds);
         }
 
-        private SerialPort CreateSerialPort(HeatingMonitorOptions config) {
+        private SerialPort CreateSerialPort(string portName, int expectedReadInterval) {
             return new SerialPort()
             {
-                PortName = config.SerialPortName,       // COM1 (Win), /dev/ttyS0 (raspi)
+                PortName = portName,                    // COM1 (Win), /dev/ttyS0 (raspi)
                 BaudRate = 9600,                        // def from specs (heizung-sps)
                 DataBits = 8,                           // def from specs (heizung-sps)
                 Parity = Parity.None,                   // def from specs (heizung-sps)
@@ -33,7 +34,7 @@ namespace DataHandler.Services
                 StopBits = StopBits.One,                // def from specs (heizung-sps)
                 Encoding = Encoding.ASCII,              // def from specs (heizung-sps)
                 DiscardNull = true,                     // we don't need that
-                ReadTimeout = config.ExpectedReadInterval * 2000, // give enough time
+                ReadTimeout = expectedReadInterval * 2000, // give enough time
                 NewLine = "\r\n"                        // define newline used by sps
             };
         }
@@ -93,7 +94,7 @@ namespace DataHandler.Services
         public static Data Convert(string serialData)
         {
             // not real data
-            if (String.IsNullOrWhiteSpace(serialData))
+            if (string.IsNullOrWhiteSpace(serialData))
             {
                 return null;
             }
