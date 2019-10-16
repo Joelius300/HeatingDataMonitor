@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -6,11 +7,17 @@ using System.Threading.Tasks;
 
 namespace DataHandler.Services
 {
+    // TODO Implement DataServices with IEnumerable<Data> / IEnumerator<Data>?
     public abstract class DataService : Microsoft.Extensions.Hosting.BackgroundService
     {
-        private readonly DataStorage dataStorage;
+        private readonly DataStorage _dataStorage;
+        private readonly ILogger<DataService> _logger;
 
-        public DataService(DataStorage dataStorage) => this.dataStorage = dataStorage;
+        public DataService(DataStorage dataStorage, ILogger<DataService> logger)
+        {
+            _dataStorage = dataStorage;
+            _logger = logger;
+        }
 
         private async Task LoopAsync(CancellationToken stoppingToken)
         {
@@ -23,28 +30,28 @@ namespace DataHandler.Services
                 }
                 catch (Exceptions.NoDataReceivedException e)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.InnerException.Message);
+                    _logger.LogWarning(e.Message);
+                    _logger.LogWarning(e.InnerException.Message);
                 }
                 catch (Exceptions.FaultyDataReceivedException e)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.FaultyData);
+                    _logger.LogWarning(e.Message);
+                    _logger.LogWarning(e.FaultyData);
                 }
                 // maybe stops weird OperationCanceledException on shutdown (untested)
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Operation canceled in LoopAsync of DataService");
+                    _logger.LogWarning("Operation canceled in LoopAsync of DataService");
                 }
 
                 // ignore this cycle if there was an error
                 if (newData == null) continue;
 
                 // update the current data
-                dataStorage.CurrentData = newData;
+                _dataStorage.CurrentData = newData;
 
                 // signal that there is some new data
-                dataStorage.OnNewDataReceived();
+                _dataStorage.OnNewDataReceived();
             }
         }
 
@@ -58,7 +65,7 @@ namespace DataHandler.Services
         {
             // blocks until loop ends or until the shutdown timer (default=5s) elapses
             await base.StopAsync(cancellationToken);    
-            // cleanup after loop ends. You can't be sure if the thread has ended tho because maybe the application triggered the abort signal (timer elapsed)
+            // cleanup after loop ends. You can't be sure if the thread has ended though because maybe the application triggered the abort signal (timer elapsed)
             await CleanupOnApplicationShutdown();                               
         }
 

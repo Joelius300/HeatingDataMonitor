@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,25 +11,45 @@ namespace DataHandler.Services
 {
     public sealed class MockDataService : DataService
     {
-        private readonly int timeout;
+        private readonly int _timeout;
+        private readonly string _filePath;
+        private readonly ILogger<MockDataService> _logger;
+        private readonly string[] _fakeSPSOutput;
+        private int _currentIndex = 0;
 
-        public MockDataService(DataStorage dataStorage, IOptions<HeatingMonitorOptions> config) : base(dataStorage)
+        public MockDataService(DataStorage dataStorage, IOptions<HeatingMonitorOptions> config, ILogger<MockDataService> logger) : base(dataStorage, logger)
         {
-            timeout = config.Value.ExpectedReadIntervalInSeconds;
+            _logger = logger;
+            _timeout = config.Value.ExpectedReadIntervalInSeconds;
+            _filePath = config.Value.SerialPortName;
+
+            if (!File.Exists(_filePath))
+                throw new FileNotFoundException($"The file with sample data couldn't be found at '{_filePath}'.", _filePath);
+
+            _fakeSPSOutput = File.ReadAllLines(_filePath);
+            if (_fakeSPSOutput.Length < 5)
+                throw new ArgumentException("The specified file needs to have at least 5 rows of sample data.");
         }
 
         protected override async Task<Data> GetNewData(CancellationToken cancellationToken)
         {
+            if (_currentIndex >= _fakeSPSOutput.Length)
+                _currentIndex = 0;
+
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(timeout), cancellationToken);
+                _logger.LogInformation($"Delaying for {_timeout} seconds for effect.");
+                await Task.Delay(TimeSpan.FromSeconds(_timeout), cancellationToken);
+
+                string fakeDataCSV = _fakeSPSOutput[_currentIndex++]; // take and increment
+                _logger.LogInformation("Returning fake data from csv line: ");
+                _logger.LogInformation(fakeDataCSV);
+                return Data.FromSerialData(fakeDataCSV);
             }
             catch (TaskCanceledException)
             {
                 return null;
             }
-            // don't generate random, get one-by-one from database
-            return Data.GetRandomData();
         }
     }
 }
