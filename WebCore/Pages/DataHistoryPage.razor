@@ -15,11 +15,10 @@
 @using ChartJs.Blazor.ChartJS.Common.Time
 @using ChartJs.Blazor.ChartJS.Common.Axes
 @using ChartJs.Blazor.ChartJS.Common.Axes.Ticks
-@using Microsoft.EntityFrameworkCore;
 @inject IJSRuntime jsRuntime
 @inject IHistoryRepository repos
 
-<h2>Line Time Chart</h2>
+<h2>Rückblick</h2>
 @if (errorMsg == null)
 {
     <ChartJsLineChart @ref="lineChartJs" Config="@lineChartConfig" Width="600" Height="300" />

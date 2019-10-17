@@ -13,46 +13,77 @@ using RaspberryPIUtils;
 using DataHistory;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.IO.Ports;
+using System.IO;
 
 namespace WebCore
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
             services.AddSingleton<RaspberryPI>();
-            services.AddSingleton<Config>(Program.Config);
             services.AddSingleton<DataStorage>();
 
-#if DEBUG
-            services.AddHostedService<MockDataService>();
-#endif
-#if RELEASE
-            services.AddHostedService<SerialDataService>();
-#endif
+            services
+                .AddOptions<HeatingMonitorOptions>()
+                .Bind(Configuration.GetSection("HeatingMonitor"))
+                .ValidateDataAnnotations()
+                .Validate(op =>
+                {
+                    if (op.DebugMode)
+                    {
+                        // In debug-mode you can use a File-Path as SP-name which will be processed as messages (line = message) from the SPS (eng. PLC)
+                        return File.Exists(op.SerialPortName);
+                    }
+                    else
+                    {
+                        return SerialPort.GetPortNames().Contains(op.SerialPortName);
+                    }
+                });
 
-            bool historyIsDefined = !String.IsNullOrWhiteSpace(Program.Config.HistorySQLiteConnectionString) 
-                && Program.Config.HistorySaveDelayInMinutes.HasValue;
-            if (historyIsDefined)
+            var historyConfig = Configuration.GetSection("HistoryService");
+            services
+                .AddOptions<HistoryServiceOptions>()
+                .Bind(historyConfig)
+                .ValidateDataAnnotations();
+
+            services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
+                optionsBuilder.UseSqlite(historyConfig.GetValue<string>("SQLiteConnectionString")));
+
+            services.AddScoped<IHistoryRepository, HistoryRepository>();
+
+            if (Configuration.GetValue<bool>("HeatingMonitor:DebugMode", false))
             {
-                services.AddDbContextPool<HeatingDataContext>(optionsBuilder =>
-                    optionsBuilder.UseSqlite(Program.Config.HistorySQLiteConnectionString));
-
-                services.AddHostedService<HistoryService>();
-                services.AddScoped<IHistoryRepository, HistoryRepository>();
+                services.AddHostedService<MockDataService>();
+            }
+            else
+            {
+                services.AddHostedService<SerialDataService>();
+                services.AddHostedService<HistoryService>(); // data should only be archived if it comes from the serial port
             }
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
             }
 
             app.UseStaticFiles();
