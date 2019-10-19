@@ -8,7 +8,9 @@ namespace DataHistory
 {
     public class HeatingDataContext : DbContext
     {
-        public HeatingDataContext(DbContextOptions options) : base(options) { }
+        public HeatingDataContext(DbContextOptions options) : base(options)
+        {
+        }
 
         public DbSet<Data> Data { get; set; }
     }

@@ -7,9 +7,8 @@ namespace DataHandler
 {
     public static class Extensions
     {
-        public static string GetStringFromDateTime(this DateTime value) {
-            return value.ToString("dd.MM.yyyy HH:mm:ss");
-        }
+        public static string GetStringFromDateTime(this DateTime value) =>
+            value.ToString("dd.MM.yyyy HH:mm:ss");
 
         #region GetStringFromNullable
 
@@ -35,14 +34,12 @@ namespace DataHandler
 
         #region IsGenericTypeOf
 
-        public static bool IsGenericTypeOf(this Type t, Type genericDefinition)
-        {
-            return IsGenericTypeOf(t, genericDefinition, out _);
-        }
+        public static bool IsGenericTypeOf(this Type t, Type genericDefinition) =>
+            IsGenericTypeOf(t, genericDefinition, out _);
 
         public static bool IsGenericTypeOf(this Type t, Type genericDefinition, out Type[] genericParameters)
         {
-            genericParameters = new Type[] { };
+            genericParameters = new Type[0];
             if (!genericDefinition.IsGenericType)
             {
                 return false;

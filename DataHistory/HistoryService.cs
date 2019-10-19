@@ -44,7 +44,7 @@ namespace DataHistory
 
                 try
                 {
-                    using var scope = ScopeFactory.CreateScope();
+                    using IServiceScope scope = ScopeFactory.CreateScope();
                     IHistoryRepository repos = scope.ServiceProvider.GetRequiredService<IHistoryRepository>();
                     repos.Add(toAdd);
                     lastDataAdded = toAdd;

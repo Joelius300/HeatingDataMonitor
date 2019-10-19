@@ -231,12 +231,11 @@ namespace DataHandler
             DisplayableListRelevant = new List<DisplayableValuePair>();
             // get all public instance properties
             IEnumerable<PropertyInfo> allProps = typeof(Data).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            // select only those which have the DisplayableValueAttribute
-            IEnumerable<PropertyInfo> displayableProps = allProps.Where(p => p.GetCustomAttributes<DisplayableValueAttribute>(false).Count() == 1);
 
-            foreach (PropertyInfo property in displayableProps)
+            foreach (PropertyInfo property in allProps)
             {
                 DisplayableValueAttribute attribute = property.GetCustomAttribute<DisplayableValueAttribute>();
+                if (attribute == null) continue; // skip
 
                 Type actualType;
                 // Get the type of the property
@@ -274,7 +273,7 @@ namespace DataHandler
             if (valueType == typeof(BetriebsPhaseKessel)) return ((BetriebsPhaseKessel)boxedValue).GetUserFirendlyString();
             if (valueType == typeof(BetriebsPhaseHK)) return ((BetriebsPhaseHK)boxedValue).GetUserFirendlyString();
 
-            return String.IsNullOrWhiteSpace(unit) ? boxedValue.ToString() : $"{boxedValue.ToString()} {unit}";
+            return string.IsNullOrWhiteSpace(unit) ? boxedValue.ToString() : $"{boxedValue.ToString()} {unit}";
         }
 
         public static Data FromSerialData(string serialData)

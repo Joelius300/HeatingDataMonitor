@@ -9,7 +9,7 @@ namespace DataHandler
         public Data CurrentData { get; internal set; }
         public event Action NewDataReceived;
 
-        public void OnNewDataReceived()
+        internal void OnNewDataReceived()
         {
             NewDataReceived?.Invoke();
         }
