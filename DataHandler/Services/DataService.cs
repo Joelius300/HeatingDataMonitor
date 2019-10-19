@@ -23,7 +23,7 @@ namespace DataHandler.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                Data newData = null;
+                Data? newData = null;
                 try
                 {
                     newData = await GetNewData(stoppingToken);

@@ -5,35 +5,8 @@ using System.Text;
 
 namespace DataHandler
 {
-    public static class Extensions
+    public static class TypeExtensions
     {
-        public static string GetStringFromDateTime(this DateTime value) =>
-            value.ToString("dd.MM.yyyy HH:mm:ss");
-
-        #region GetStringFromNullable
-
-        public static string GetString<T>(this T? value) where T : struct
-        {
-            if (value.HasValue) return value.Value.ToString();
-            return "#####";
-        }
-
-        public static string GetString<T>(this T? value, string unit) where T : struct
-        {
-            if (value.HasValue) return $"{value.Value.ToString()} {unit}";
-            return "#####";
-        }
-
-        public static string GetStringShort<T>(this T? value, string unit) where T : struct
-        {
-            if (value.HasValue) return $"{value.Value.ToString()} {unit}";
-            return "###";
-        }
-
-        #endregion
-
-        #region IsGenericTypeOf
-
         public static bool IsGenericTypeOf(this Type t, Type genericDefinition) =>
             IsGenericTypeOf(t, genericDefinition, out _);
 
@@ -69,19 +42,6 @@ namespace DataHandler
             }
 
             return isMatch;
-        }
-
-        #endregion
-
-        public static int RoundUpHours(this int value, int interval)
-        {
-            int i = ((int)Math.Ceiling((double)value / interval)) * interval;
-            if(i > 0)
-            {
-                return Math.Min(23, i); // restrict to max of 23 for hours
-            }
-
-            return 0;   // restrict to min of 0 for hours
         }
     }
 }

@@ -23,11 +23,11 @@ else
         </thead>
         <tbody>
             <tr>
-                <td>@data.Kessel.GetString("°C")</td>
-                <td>@data.Boiler_1.GetString("°C")</td>
-                <td>@data.Puffer_Oben.GetString("°C")</td>
-                <td>@data.Puffer_Unten.GetString("°C")</td>
-                <td>@data.Aussen.GetString("°C")</td>
+                <td>@data.Kessel.WithUnit("°C")</td>
+                <td>@data.Boiler_1.WithUnit("°C")</td>
+                <td>@data.Puffer_Oben.WithUnit("°C")</td>
+                <td>@data.Puffer_Unten.WithUnit("°C")</td>
+                <td>@data.Aussen.WithUnit("°C")</td>
             </tr>
         </tbody>
     </table>

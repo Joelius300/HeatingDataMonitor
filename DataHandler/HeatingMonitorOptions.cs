@@ -16,7 +16,7 @@ namespace DataHandler
     {
         [DefaultValue(false)]
         public bool DebugMode { get; set; } = false;
-        public string SerialPortName { get; set; }
+        public string SerialPortName { get; set; } = string.Empty;
         [Range(1, 1000)]
         [Required]
         public int ExpectedReadIntervalInSeconds { get; set; }

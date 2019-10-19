@@ -6,8 +6,8 @@ namespace DataHandler
 {
     public sealed class DataStorage
     {
-        public Data CurrentData { get; internal set; }
-        public event Action NewDataReceived;
+        public Data? CurrentData { get; internal set; }
+        public event Action? NewDataReceived;
 
         internal void OnNewDataReceived()
         {

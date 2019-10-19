@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Linq;
 using DataHandler.Enums;
+using System.Globalization;
 
 namespace DataHandler
 {
@@ -251,7 +252,7 @@ namespace DataHandler
                 }
 
                 // PropertyInfo.GetValue boxes the propertyvalue -> if it was a nullable without a value it was boxed to null, otherwise to the underlying stuct
-                object value = property.GetValue(this, null);
+                object? value = property.GetValue(this, null);
 
                 // Get the string representation whilst taking in account the unit
                 string stringRep = GetStringRep(actualType, value, attribute.Unit);
@@ -265,103 +266,101 @@ namespace DataHandler
             }
         }
 
-        private string GetStringRep(Type valueType, object boxedValue, string unit)
+        private string GetStringRep(Type valueType, object? boxedValue, string? unit)
         {
-            if (boxedValue == null) return "#####";
+            if (boxedValue == null)
+                return FormatExtensions.NullPlaceholder;
 
-            if (valueType == typeof(DateTime)) return ((DateTime)boxedValue).GetStringFromDateTime();
-            if (valueType == typeof(BetriebsPhaseKessel)) return ((BetriebsPhaseKessel)boxedValue).GetUserFirendlyString();
-            if (valueType == typeof(BetriebsPhaseHK)) return ((BetriebsPhaseHK)boxedValue).GetUserFirendlyString();
+            if (valueType == typeof(BetriebsPhaseKessel))
+                return ((BetriebsPhaseKessel)boxedValue).GetUserFirendlyString();
+            if (valueType == typeof(BetriebsPhaseHK))
+                return ((BetriebsPhaseHK)boxedValue).GetUserFirendlyString();
 
-            return string.IsNullOrWhiteSpace(unit) ? boxedValue.ToString() : $"{boxedValue.ToString()} {unit}";
+            if (valueType == typeof(DateTime))
+                return ((DateTime)boxedValue).ToString("G", CultureInfo.CurrentCulture);
+
+            return unit == null ? boxedValue.ToString() : $"{boxedValue.ToString()} {unit}";
         }
 
         public static Data FromSerialData(string serialData)
         {
             // not real data
             if (string.IsNullOrWhiteSpace(serialData))
-            {
-                return null;
-            }
+                throw new ArgumentException("The serial data cannot be null or empty.", nameof(serialData));
 
             // split csv into fields
             string[] list = serialData.Split(';');
 
             // there should be 58 fields + one empty at the end because of the trailing ;
             if (list.Length != 59)
-            {
-                return null;
-            }
+                throw new FormatException("The serial data doesn't contain 58 semicolons like expected for the 58 fields.");
 
             Data data;
             try
             {
                 data = new Data
                 {
-                    DatumZeit = DateTime.TryParse($"{list[0]} {list[1]}", out DateTime vDatum) ? vDatum : throw new InvalidCastException("DateTime received from SerialPort is not valid"),
-                    Kessel = float.TryParse(list[2], out float vKessel) ? (float?)vKessel : null,
-                    Ruecklauf = float.TryParse(list[3], out float vRuecklauf) ? (float?)vRuecklauf : null,
-                    Abgas = float.TryParse(list[4], out float vAbgas) ? (float?)vAbgas : null,
-                    Brennkammer = float.TryParse(list[5], out float vBrennkammer) ? (float?)vBrennkammer : null,
-                    CO2_Soll = float.TryParse(list[6], out float vCO2_Soll) ? (float?)vCO2_Soll : null,
-                    CO2_Ist = float.TryParse(list[7], out float vCO2_Ist) ? (float?)vCO2_Ist : null,
-                    Saugzug_Ist = float.TryParse(list[8], out float vSaugzug_Ist) ? (float?)vSaugzug_Ist : null,
-                    Puffer_Oben = float.TryParse(list[9], out float vPuffer_Oben) ? (float?)vPuffer_Oben : null,
-                    Puffer_Unten = float.TryParse(list[10], out float vPuffer_Unten) ? (float?)vPuffer_Unten : null,
-                    Platine = float.TryParse(list[11], out float vPlatine) ? (float?)vPlatine : null,
-                    Betriebsphase_Kessel = int.TryParse(list[12], out int vBetriebsphase_Kessel) ? (BetriebsPhaseKessel?)vBetriebsphase_Kessel : null,
-                    Aussen = float.TryParse(list[13], out float vAussen) ? (float?)vAussen : null,
-                    Vorlauf_HK1_Ist = float.TryParse(list[14], out float vVorlauf_HK1_Ist) ? (float?)vVorlauf_HK1_Ist : null,
-                    Vorlauf_HK1_Soll = float.TryParse(list[15], out float vVorlauf_HK1_Soll) ? (float?)vVorlauf_HK1_Soll : null,
-                    Betriebsphase_HK1 = int.TryParse(list[16], out int vBetriebsphase_HK1) ? (BetriebsPhaseHK?)vBetriebsphase_HK1 : null,
-                    Betriebsart_Fern_HK1 = int.TryParse(list[17], out int vBetriebsart_Fern_HK1) ? (int?)vBetriebsart_Fern_HK1 : null,
-                    Verschiebung_Fern_HK1 = float.TryParse(list[18], out float vVerschiebung_Fern_HK1) ? (float?)vVerschiebung_Fern_HK1 : null,
-                    Freigabekontakt_HK1 = float.TryParse(list[19], out float vFreigabekontakt_HK1) ? (float?)vFreigabekontakt_HK1 : null,
-                    Vorlauf_HK2_Ist = float.TryParse(list[20], out float vVorlauf_HK2_Ist) ? (float?)vVorlauf_HK2_Ist : null,
-                    Vorlauf_HK2_Soll = float.TryParse(list[21], out float vVorlauf_HK2_Soll) ? (float?)vVorlauf_HK2_Soll : null,
-                    Betriebsphase_HK2 = int.TryParse(list[22], out int vBetriebsphase_HK2) ? (BetriebsPhaseHK?)vBetriebsphase_HK2 : null,
-                    Betriebsart_Fern_HK2 = int.TryParse(list[23], out int vBetriebsart_Fern_HK2) ? (int?)vBetriebsart_Fern_HK2 : null,
-                    Verschiebung_Fern_HK2 = float.TryParse(list[24], out float vVerschiebung_Fern_HK2) ? (float?)vVerschiebung_Fern_HK2 : null,
-                    Freigabekontakt_HK2 = float.TryParse(list[25], out float vFreigabekontakt_HK2) ? (float?)vFreigabekontakt_HK2 : null,
-                    Vorlauf_HK3_Ist = float.TryParse(list[26], out float vVorlauf_HK3_Ist) ? (float?)vVorlauf_HK3_Ist : null,
-                    Vorlauf_HK3_Soll = float.TryParse(list[27], out float vVorlauf_HK3_Soll) ? (float?)vVorlauf_HK3_Soll : null,
-                    Betriebsphase_HK3 = int.TryParse(list[28], out int vBetriebsphase_HK3) ? (BetriebsPhaseHK?)vBetriebsphase_HK3 : null,
-                    Betriebsart_Fern_HK3 = int.TryParse(list[29], out int vBetriebsart_Fern_HK3) ? (int?)vBetriebsart_Fern_HK3 : null,
-                    Verschiebung_Fern_HK3 = float.TryParse(list[30], out float vVerschiebung_Fern_HK3) ? (float?)vVerschiebung_Fern_HK3 : null,
-                    Freigabekontakt_HK3 = float.TryParse(list[31], out float vFreigabekontakt_HK3) ? (float?)vFreigabekontakt_HK3 : null,
-                    Vorlauf_HK4_Ist = float.TryParse(list[32], out float vVorlauf_HK4_Ist) ? (float?)vVorlauf_HK4_Ist : null,
-                    Vorlauf_HK4_Soll = float.TryParse(list[33], out float vVorlauf_HK4_Soll) ? (float?)vVorlauf_HK4_Soll : null,
-                    Betriebsphase_HK4 = int.TryParse(list[34], out int vBetriebsphase_HK4) ? (BetriebsPhaseHK?)vBetriebsphase_HK4 : null,
-                    Betriebsart_Fern_HK4 = int.TryParse(list[35], out int vBetriebsart_Fern_HK4) ? (int?)vBetriebsart_Fern_HK4 : null,
-                    Verschiebung_Fern_HK4 = float.TryParse(list[36], out float vVerschiebung_Fern_HK4) ? (float?)vVerschiebung_Fern_HK4 : null,
-                    Freigabekontakt_HK4 = float.TryParse(list[37], out float vFreigabekontakt_HK4) ? (float?)vFreigabekontakt_HK4 : null,
-                    Boiler_1 = float.TryParse(list[38], out float vBoiler_1) ? (float?)vBoiler_1 : null,
-                    Boiler_2 = float.TryParse(list[39], out float vBoiler_2) ? (float?)vBoiler_2 : null,
-                    DI_0 = int.TryParse(list[40], out int vDI_0) ? (int?)vDI_0 : null,
-                    DI_1 = int.TryParse(list[41], out int vDI_1) ? (int?)vDI_1 : null,
-                    DI_2 = int.TryParse(list[42], out int vDI_2) ? (int?)vDI_2 : null,
-                    DI_3 = int.TryParse(list[43], out int vDI_3) ? (int?)vDI_3 : null,
-                    A_W_0 = int.TryParse(list[44], out int vA_W_0) ? (int?)vA_W_0 : null,
-                    A_W_1 = int.TryParse(list[45], out int vA_W_1) ? (int?)vA_W_1 : null,
-                    A_W_2 = int.TryParse(list[46], out int vA_W_2) ? (int?)vA_W_2 : null,
-                    A_W_3 = int.TryParse(list[47], out int vA_W_3) ? (int?)vA_W_3 : null,
-                    A_EA_0 = int.TryParse(list[48], out int vA_EA_0) ? (int?)vA_EA_0 : null,
-                    A_EA_1 = int.TryParse(list[49], out int vA_EA_1) ? (int?)vA_EA_1 : null,
-                    A_EA_2 = int.TryParse(list[50], out int vA_EA_2) ? (int?)vA_EA_2 : null,
-                    A_EA_3 = int.TryParse(list[51], out int vA_EA_3) ? (int?)vA_EA_3 : null,
-                    A_EA_4 = int.TryParse(list[52], out int vA_EA_4) ? (int?)vA_EA_4 : null,
-                    A_PHASE_0 = int.TryParse(list[53], out int vA_PHASE_0) ? (int?)vA_PHASE_0 : null,
-                    A_PHASE_1 = int.TryParse(list[54], out int vA_PHASE_1) ? (int?)vA_PHASE_1 : null,
-                    A_PHASE_2 = int.TryParse(list[55], out int vA_PHASE_2) ? (int?)vA_PHASE_2 : null,
-                    A_PHASE_3 = int.TryParse(list[56], out int vA_PHASE_3) ? (int?)vA_PHASE_3 : null,
-                    A_PHASE_4 = int.TryParse(list[57], out int vA_PHASE_4) ? (int?)vA_PHASE_4 : null
+                    Kessel = list[2].ParseFloatOrNull(),
+                    Ruecklauf = list[3].ParseFloatOrNull(),
+                    Abgas = list[4].ParseFloatOrNull(),
+                    Brennkammer = list[5].ParseFloatOrNull(),
+                    CO2_Soll = list[6].ParseFloatOrNull(),
+                    CO2_Ist = list[7].ParseFloatOrNull(),
+                    Saugzug_Ist = list[8].ParseFloatOrNull(),
+                    Puffer_Oben = list[9].ParseFloatOrNull(),
+                    Puffer_Unten = list[10].ParseFloatOrNull(),
+                    Platine = list[11].ParseFloatOrNull(),
+                    Betriebsphase_Kessel = (BetriebsPhaseKessel?)list[12].ParseIntOrNull(),
+                    Aussen = list[13].ParseFloatOrNull(),
+                    Vorlauf_HK1_Ist = list[14].ParseFloatOrNull(),
+                    Vorlauf_HK1_Soll = list[15].ParseFloatOrNull(),
+                    Betriebsphase_HK1 = (BetriebsPhaseHK?)list[16].ParseIntOrNull(),
+                    Betriebsart_Fern_HK1 = list[17].ParseIntOrNull(),
+                    Verschiebung_Fern_HK1 = list[18].ParseFloatOrNull(),
+                    Freigabekontakt_HK1 = list[19].ParseFloatOrNull(),
+                    Vorlauf_HK2_Ist = list[20].ParseFloatOrNull(),
+                    Vorlauf_HK2_Soll = list[21].ParseFloatOrNull(),
+                    Betriebsphase_HK2 = (BetriebsPhaseHK?)list[22].ParseIntOrNull(),
+                    Betriebsart_Fern_HK2 = list[23].ParseIntOrNull(),
+                    Verschiebung_Fern_HK2 = list[24].ParseFloatOrNull(),
+                    Freigabekontakt_HK2 = list[25].ParseFloatOrNull(),
+                    Vorlauf_HK3_Ist = list[26].ParseFloatOrNull(),
+                    Vorlauf_HK3_Soll = list[27].ParseFloatOrNull(),
+                    Betriebsphase_HK3 = (BetriebsPhaseHK?)list[28].ParseIntOrNull(),
+                    Betriebsart_Fern_HK3 = list[29].ParseIntOrNull(),
+                    Verschiebung_Fern_HK3 = list[30].ParseFloatOrNull(),
+                    Freigabekontakt_HK3 = list[31].ParseFloatOrNull(),
+                    Vorlauf_HK4_Ist = list[32].ParseFloatOrNull(),
+                    Vorlauf_HK4_Soll = list[33].ParseFloatOrNull(),
+                    Betriebsphase_HK4 = (BetriebsPhaseHK?)list[34].ParseIntOrNull(),
+                    Betriebsart_Fern_HK4 = list[35].ParseIntOrNull(),
+                    Verschiebung_Fern_HK4 = list[36].ParseFloatOrNull(),
+                    Freigabekontakt_HK4 = list[37].ParseFloatOrNull(),
+                    Boiler_1 = list[38].ParseFloatOrNull(),
+                    Boiler_2 = list[39].ParseFloatOrNull(),
+                    DI_0 = list[40].ParseIntOrNull(),
+                    DI_1 = list[41].ParseIntOrNull(),
+                    DI_2 = list[42].ParseIntOrNull(),
+                    DI_3 = list[43].ParseIntOrNull(),
+                    A_W_0 = list[44].ParseIntOrNull(),
+                    A_W_1 = list[45].ParseIntOrNull(),
+                    A_W_2 = list[46].ParseIntOrNull(),
+                    A_W_3 = list[47].ParseIntOrNull(),
+                    A_EA_0 = list[48].ParseIntOrNull(),
+                    A_EA_1 = list[49].ParseIntOrNull(),
+                    A_EA_2 = list[50].ParseIntOrNull(),
+                    A_EA_3 = list[51].ParseIntOrNull(),
+                    A_EA_4 = list[52].ParseIntOrNull(),
+                    A_PHASE_0 = list[53].ParseIntOrNull(),
+                    A_PHASE_1 = list[54].ParseIntOrNull(),
+                    A_PHASE_2 = list[55].ParseIntOrNull(),
+                    A_PHASE_3 = list[56].ParseIntOrNull(),
+                    A_PHASE_4 = list[57].ParseIntOrNull(),
                 };
-
-                data.SetDisplayableValues();
             }
             catch
             {
-                return null;
+                throw new FormatException("The serial couldn't be parsed correctly.");
             }
 
             return data;

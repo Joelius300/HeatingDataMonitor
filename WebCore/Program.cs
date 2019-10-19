@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +26,9 @@ namespace WebCore
                 var db = services.GetService<HeatingDataContext>();
                 db?.Database.EnsureCreated(); // if we have a DataContext, ensure the db is created
             }
+
+            // selfish
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-ch");
 
             host.Run();
         }

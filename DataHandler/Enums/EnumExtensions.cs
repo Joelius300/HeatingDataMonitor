@@ -6,29 +6,22 @@ namespace DataHandler.Enums
 {
     public static class EnumExtensions
     {
-        public static string GetUserFirendlyString(this BetriebsPhaseKessel value)
-        {
-            switch (value)
+        public static string GetUserFirendlyString(this BetriebsPhaseKessel value) =>
+            value switch
             {
-                case BetriebsPhaseKessel.Anheizen_erkennen:
-                    return "Anheizen erkennen";
-                case BetriebsPhaseKessel.Uebertemperatur:
-                    return "Übertemperatur";
-                case BetriebsPhaseKessel.Tuer_Geoeffnet:
-                    return "Tür geöffnet";
-            }
+                BetriebsPhaseKessel.Anheizen_erkennen => "Anheizen erkennen",
+                BetriebsPhaseKessel.Uebertemperatur => "Übertemperatur",
+                BetriebsPhaseKessel.Tuer_Geoeffnet => "Tür geöffnet",
 
-            return value.ToString();
-        }
+                _ => value.ToString(),
+            };
 
-        public static string GetUserFirendlyString(this BetriebsPhaseHK value) {
-            switch (value)
+        public static string GetUserFirendlyString(this BetriebsPhaseHK value) =>
+            value switch
             {
-                case BetriebsPhaseHK.Unter_Freigabetemperatur:
-                    return "Unter Freigabetemperatur";
-            }
+                BetriebsPhaseHK.Unter_Freigabetemperatur => "Unter Freigabetemperatur",
 
-            return value.ToString();
-        }
+                _ => value.ToString(),
+            };
     }
 }
