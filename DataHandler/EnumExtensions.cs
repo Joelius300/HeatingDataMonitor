@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataHandler.Enums
+namespace DataHandler
 {
     public static class EnumExtensions
     {

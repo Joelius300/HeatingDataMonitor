@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataHandler.Exceptions
+namespace DataHandler
 {
     class NoDataReceivedException : Exception
     {

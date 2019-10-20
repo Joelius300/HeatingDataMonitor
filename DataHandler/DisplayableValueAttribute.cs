@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataHandler.Attributes
+namespace DataHandler
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     internal sealed class DisplayableValueAttribute : Attribute

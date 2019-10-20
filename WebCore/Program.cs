@@ -29,6 +29,7 @@ namespace WebCore
 
             // selfish
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-ch");
+            CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture;
 
             host.Run();
         }

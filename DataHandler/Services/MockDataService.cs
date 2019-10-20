@@ -36,19 +36,26 @@ namespace DataHandler.Services
             if (_currentIndex >= _fakeSPSOutput.Length)
                 _currentIndex = 0;
 
+            string fakeDataCSV = string.Empty;
             try
             {
                 _logger.LogInformation($"Delaying for {_timeout} seconds for effect.");
                 await Task.Delay(TimeSpan.FromSeconds(_timeout), cancellationToken);
 
-                string fakeDataCSV = _fakeSPSOutput[_currentIndex++]; // take and increment
+                fakeDataCSV = _fakeSPSOutput[_currentIndex++]; // take and increment
                 _logger.LogInformation("Returning fake data from csv line: ");
                 _logger.LogInformation(fakeDataCSV);
                 return Data.FromSerialData(fakeDataCSV);
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException e)
             {
-                return null;
+                throw new NoDataReceivedException(e);
+            }
+            catch (FormatException e)
+            {
+                _logger.LogWarning($"Data wasn't formatted correctly: {e.Message}");
+
+                throw new FaultyDataReceivedException(fakeDataCSV);
             }
         }
     }

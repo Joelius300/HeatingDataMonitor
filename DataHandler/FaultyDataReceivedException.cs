@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataHandler.Exceptions
+namespace DataHandler
 {
     class FaultyDataReceivedException : Exception
     {
-        public string FaultyData { get; private set; }
+        public string FaultyData { get; }
 
         public FaultyDataReceivedException(string faultyData) : base("Es wurden falsche Daten empfangen.")
         {

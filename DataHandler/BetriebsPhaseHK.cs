@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace DataHandler.Enums
+namespace DataHandler
 {
     // int values are not according to order in specs (p. 49)
     public enum BetriebsPhaseHK

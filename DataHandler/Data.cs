@@ -1,11 +1,9 @@
-﻿using DataHandler.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Linq;
-using DataHandler.Enums;
 using System.Globalization;
 
 namespace DataHandler
@@ -218,25 +216,52 @@ namespace DataHandler
         [Column("ID")]
         public int Data_ID { get; private set; }
 
-        [NotMapped]
-        public List<DisplayableValuePair> DisplayableListAll { get; private set; }
+        private List<DisplayableValuePair>? _displayableListAll;
+        private List<DisplayableValuePair>? _displayableListRelevant;
 
         [NotMapped]
-        public List<DisplayableValuePair> DisplayableListRelevant { get; private set; }
+        public List<DisplayableValuePair> DisplayableListAll
+        {
+            get
+            {
+                lock (this) // ensure SetDisplayableValues isn't called twice
+                {
+                    if (_displayableListAll == null)
+                        SetDisplayableValues();
+                }
+
+                return _displayableListAll!;
+            }
+        }
+
+        [NotMapped]
+        public List<DisplayableValuePair> DisplayableListRelevant 
+        {
+            get
+            {
+                lock (this) // ensure SetDisplayableValues isn't called twice
+                {
+                    if (_displayableListRelevant == null)
+                        SetDisplayableValues();
+                }
+
+                return _displayableListRelevant!;
+            }
+        }
 
         #endregion
 
         public void SetDisplayableValues()
         {
-            DisplayableListAll = new List<DisplayableValuePair>();
-            DisplayableListRelevant = new List<DisplayableValuePair>();
+            _displayableListAll = new List<DisplayableValuePair>();
+            _displayableListRelevant = new List<DisplayableValuePair>();
             // get all public instance properties
             IEnumerable<PropertyInfo> allProps = typeof(Data).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             foreach (PropertyInfo property in allProps)
             {
                 DisplayableValueAttribute attribute = property.GetCustomAttribute<DisplayableValueAttribute>();
-                if (attribute == null) continue; // skip
+                if (attribute == null) continue; // skip if there's no attribute
 
                 Type actualType;
                 // Get the type of the property
@@ -286,7 +311,7 @@ namespace DataHandler
         {
             // not real data
             if (string.IsNullOrWhiteSpace(serialData))
-                throw new ArgumentException("The serial data cannot be null or empty.", nameof(serialData));
+                throw new FormatException("The serial data cannot be null or empty.");
 
             // split csv into fields
             string[] list = serialData.Split(';');
@@ -300,6 +325,7 @@ namespace DataHandler
             {
                 data = new Data
                 {
+                    DatumZeit = DateTime.TryParse($"{list[0]} {list[1]}", out DateTime vDatum) ? vDatum : throw new InvalidCastException("DateTime received from SerialPort is not valid"),
                     Kessel = list[2].ParseFloatOrNull(),
                     Ruecklauf = list[3].ParseFloatOrNull(),
                     Abgas = list[4].ParseFloatOrNull(),
@@ -360,7 +386,7 @@ namespace DataHandler
             }
             catch
             {
-                throw new FormatException("The serial couldn't be parsed correctly.");
+                throw new FormatException("The serial data couldn't be parsed correctly.");
             }
 
             return data;
