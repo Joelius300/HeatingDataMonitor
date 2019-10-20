@@ -53,7 +53,7 @@ namespace WebCore
                     }
                 });
 
-            var historyConfig = Configuration.GetSection("HistoryService");
+            IConfigurationSection historyConfig = Configuration.GetSection("HistoryService");
             services
                 .AddOptions<HistoryServiceOptions>()
                 .Bind(historyConfig)

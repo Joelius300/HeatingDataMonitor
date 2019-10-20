@@ -50,7 +50,9 @@
     private decimal? temp;
     private int? freq;
 
-    private Action newDataReceived;
+    private Action? newDataReceived;
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     protected override void OnInitialized()
     {
@@ -59,7 +61,10 @@
         {
             temp = raspi.GetCurrentTemp();
             freq = raspi.GetCurrentFrequency();
-            await base.InvokeAsync(base.StateHasChanged);
+            try
+            {
+                await base.InvokeAsync(base.StateHasChanged);
+            } catch { } // although ugly, this is necessary because of the race conditions introduced by the async void
         };
 
         dataStorage.NewDataReceived += newDataReceived;
@@ -68,17 +73,13 @@
         base.OnInitialized();
     }
 
-    public void Dispose() {
-        dataStorage.NewDataReceived -= newDataReceived;
-    }
-
-
-    bool collapseNavMenu = true;
-
-    string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
     void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    public void Dispose()
+    {
+        dataStorage.NewDataReceived -= newDataReceived;
     }
 }

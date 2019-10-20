@@ -8,7 +8,7 @@ namespace DataHistory
     public class HistoryServiceOptions
     {
         [Required]
-        public string SQLiteConnectionString { get; set; }
+        public string SQLiteConnectionString { get; set; } = string.Empty;
         
         [Required]
         [Range(1, 1000)]

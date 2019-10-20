@@ -12,6 +12,6 @@ namespace DataHistory
         {
         }
 
-        public DbSet<Data> Data { get; set; }
+        public DbSet<Data> Data => Set<Data>();
     }
 }

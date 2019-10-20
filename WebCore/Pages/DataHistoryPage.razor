@@ -32,6 +32,8 @@ else
 
 @functions
 {
+#nullable disable
+
     [Parameter]
     public int DaysBack { get; set; } = 7;
     [Parameter]
@@ -47,7 +49,7 @@ else
 
     private bool localeChangeWasAttempted = false;
 
-    private string? errorMsg = "Loading..";
+    private string errorMsg = "Loading..";
 
     private async Task TryChangeLocale()
     {
@@ -76,7 +78,7 @@ else
     {
         _lineChartConfig = GetConfig();
 
-        Func<Data, DateTime>? keySelectorGroupBy = null;
+        Func<Data, DateTime> keySelectorGroupBy = null;
         if (DaysBack <= 2)
         {
             keySelectorGroupBy = null;
@@ -200,7 +202,7 @@ else
             Scales = new Scales
             {
                 xAxes = new List<CartesianAxis>
-                {
+            {
                     new TimeAxis
                     {
                         Distribution = TimeDistribution.Linear,
