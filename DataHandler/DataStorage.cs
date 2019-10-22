@@ -6,10 +6,10 @@ namespace DataHandler
 {
     public sealed class DataStorage
     {
-        public Data CurrentData { get; internal set; }
-        public event Action NewDataReceived;
+        public Data? CurrentData { get; internal set; }
+        public event Action? NewDataReceived;
 
-        public void OnNewDataReceived()
+        internal void OnNewDataReceived()
         {
             NewDataReceived?.Invoke();
         }

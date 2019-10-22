@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,12 +20,16 @@ namespace WebCore
         {
             IHost host = CreateHostBuilder(args).Build();
 
-            using (var scope = host.Services.CreateScope())
+            using (IServiceScope scope = host.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                var db = services.GetService<HeatingDataContext>();
+                IServiceProvider services = scope.ServiceProvider;
+                HeatingDataContext db = services.GetService<HeatingDataContext>();
                 db?.Database.EnsureCreated(); // if we have a DataContext, ensure the db is created
             }
+
+            // selfish
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("de-ch");
+            CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture;
 
             host.Run();
         }

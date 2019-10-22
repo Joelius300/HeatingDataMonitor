@@ -15,7 +15,7 @@ namespace DataHistory
         protected HistoryServiceOptions Config { get; }
         protected IServiceScopeFactory ScopeFactory { get; }
 
-        private Data lastDataAdded;
+        private Data? lastDataAdded;
 
         public HistoryService(IOptions<HistoryServiceOptions> options, DataStorage dataStorage, IServiceScopeFactory scopeFactory)
         {
@@ -37,14 +37,14 @@ namespace DataHistory
                     return;
                 }
 
-                Data toAdd = DataStorage.CurrentData;
+                Data? toAdd = DataStorage.CurrentData;
 
-                if (toAdd == null) continue;  // shouldn't happen because CurrentData should never be null
-                if (toAdd.DatumZeit <= lastDataAdded?.DatumZeit) continue;   // twice the same data -> skip
+                if (toAdd == null) continue;  // this can happen at the start of the application as long as no valid data is received
+                if (lastDataAdded != null && toAdd.DatumZeit <= lastDataAdded.DatumZeit) continue;   // twice the same data -> skip
 
                 try
                 {
-                    using var scope = ScopeFactory.CreateScope();
+                    using IServiceScope scope = ScopeFactory.CreateScope();
                     IHistoryRepository repos = scope.ServiceProvider.GetRequiredService<IHistoryRepository>();
                     repos.Add(toAdd);
                     lastDataAdded = toAdd;

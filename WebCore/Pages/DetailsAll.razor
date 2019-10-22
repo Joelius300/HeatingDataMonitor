@@ -25,8 +25,8 @@ else
 }
 
 @functions{
-    private Action newDataReceived;
-    private Data data;
+    private Action? newDataReceived;
+    private Data? data;
 
     protected override void OnInitialized()
     {
@@ -34,7 +34,10 @@ else
         newDataReceived = async () =>
         {
             data = dataStorage.CurrentData;
-            await base.InvokeAsync(base.StateHasChanged);
+            try
+            {
+                await base.InvokeAsync(base.StateHasChanged);
+            } catch { } // although ugly, this is necessary because of the race conditions introduced by the async void
         };
 
         dataStorage.NewDataReceived += newDataReceived;

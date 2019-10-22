@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataHandler.Attributes
+namespace DataHandler
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     internal sealed class DisplayableValueAttribute : Attribute
     {
-        public string DisplayText { get; private set; }
+        public string DisplayText { get; }
 
-        public string Unit { get; set; } = null;
+        public string? Unit { get; set; } = null;
 
         public bool IsRelevant { get; set; } = true;
 

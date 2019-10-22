@@ -7,9 +7,7 @@ using System.Timers;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
-using DataHandler.Exceptions;
 using System.CodeDom.Compiler;
-using DataHandler.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
@@ -17,17 +15,17 @@ namespace DataHandler.Services
 {
     public class SerialDataService : DataService
     {
-        private readonly SerialPort port;
+        private readonly SerialPort _port;
         private readonly ILogger<SerialDataService> _logger;
 
         public SerialDataService(DataStorage dataStorage, IOptions<HeatingMonitorOptions> options, ILogger<SerialDataService> logger) : base(dataStorage, logger)
         {
-            port = CreateSerialPort(options.Value.SerialPortName, options.Value.ExpectedReadIntervalInSeconds);
+            _port = CreateSerialPort(options.Value.SerialPortName, options.Value.ExpectedReadIntervalInSeconds);
             _logger = logger;
         }
 
-        private SerialPort CreateSerialPort(string portName, int expectedReadInterval) {
-            return new SerialPort()
+        private SerialPort CreateSerialPort(string portName, int expectedReadInterval) =>
+            new SerialPort()
             {
                 PortName = portName,                    // COM1 (Win), /dev/ttyS0 (raspi)
                 BaudRate = 9600,                        // def from specs (heizung-sps)
@@ -40,7 +38,6 @@ namespace DataHandler.Services
                 ReadTimeout = expectedReadInterval * 2000, // give enough time
                 NewLine = "\r\n"                        // define newline used by sps
             };
-        }
 
         private Data GetData()
         {
@@ -48,7 +45,7 @@ namespace DataHandler.Services
             try
             {
                 _logger.LogInformation("Now awaiting data: ");
-                serialData = port.ReadLine();
+                serialData = _port.ReadLine();
             }
             catch (TimeoutException e)
             {
@@ -78,11 +75,14 @@ namespace DataHandler.Services
                 throw new NoDataReceivedException(e);
             }
 
-            Data newData = Data.FromSerialData(serialData);
-            if (newData == null)
+            Data newData;
+            try
             {
-                _logger.LogWarning("Received invalid Data: ");
-                _logger.LogWarning(serialData);
+                newData = Data.FromSerialData(serialData);
+            }
+            catch (FormatException e)
+            {
+                _logger.LogWarning($"Data wasn't formatted correctly: {e.Message}");
 
                 throw new FaultyDataReceivedException(serialData);
             }
@@ -93,27 +93,27 @@ namespace DataHandler.Services
             return newData;
         }
 
-        protected override async Task<Data> GetNewData(CancellationToken cancellationToken)
+        protected override Task<Data> GetNewData(CancellationToken cancellationToken)
         {
             // make async call
-            return await Task.Run(() => GetData());
+            return Task.Run(() => GetData());
         }
 
         protected override Task BeforeLoopStart()
         {
-            port.Open();
+            _port.Open();
             return Task.CompletedTask;
         }
 
-        protected override async Task CleanupOnApplicationShutdown()
+        protected override Task CleanupOnApplicationShutdown()
         {
-            port.Close();           // this would raise an OperationCanceledException if the port is still reading
-            await Task.Delay(250);  // give the loop one last chance to end (gracefully)
+            _port.Close();           // this would raise an OperationCanceledException if the port is still reading
+            return Task.Delay(250);  // give the loop one last chance to end (gracefully)
         }
 
         public override void Dispose()
         {
-            port.Dispose();
+            _port.Dispose();
             base.Dispose();
         }
     }

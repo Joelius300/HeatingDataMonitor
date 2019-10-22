@@ -23,17 +23,17 @@ namespace DataHandler.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                Data newData = null;
+                Data? newData = null;
                 try
                 {
                     newData = await GetNewData(stoppingToken);
                 }
-                catch (Exceptions.NoDataReceivedException e)
+                catch (NoDataReceivedException e)
                 {
                     _logger.LogWarning(e.Message);
-                    _logger.LogWarning(e.InnerException.Message);
+                    _logger.LogWarning(e.InnerException?.Message);
                 }
-                catch (Exceptions.FaultyDataReceivedException e)
+                catch (FaultyDataReceivedException e)
                 {
                     _logger.LogWarning(e.Message);
                     _logger.LogWarning(e.FaultyData);
