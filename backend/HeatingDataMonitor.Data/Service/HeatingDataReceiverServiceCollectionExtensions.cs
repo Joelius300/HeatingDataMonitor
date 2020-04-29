@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions(); // add options if not done yet
 
             // If IConfigureOptions<SerialPortOptions> was already registered, this doesn't do anything.
-            services.TryAddTransient<IConfigureOptions<SerialPortOptions>, SerialPortOptionsSetup>();
+            services.TryAddTransient<IConfigureOptions<SerialHeatingDataOptions>, SerialHeatingDataOptionsSetup>();
 
             services.AddSingleton<IHeatingDataReceiver, SerialPortHeatingDataReceiver>();
             services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
