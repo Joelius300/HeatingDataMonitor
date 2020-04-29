@@ -6,9 +6,9 @@ using System.Text;
 
 namespace HeatingDataMonitor.Service
 {
-    internal class SerialPortOptionsSetup : IConfigureOptions<SerialPortOptions>
+    internal class SerialHeatingDataOptionsSetup : IConfigureOptions<SerialHeatingDataOptions>
     {
-        public void Configure(SerialPortOptions options)
+        public void Configure(SerialHeatingDataOptions options)
         {
             string[] availablePorts = SerialPort.GetPortNames();
             if (availablePorts.Length == 0)
