@@ -133,6 +133,13 @@ namespace CsvParsingFromStreamDemo
              * Everything worked as expected. Out of curiosity, I also tried just LF
              * and that works perfectly fine as well. This seems to be a bug in CsvHelper.
              * 
+             * After investigating CsvHelper a bit, I think the error is in CsvParser.cs Line 297/298.
+             * The Method ReadLineEnding returns the offset that needs to be applied but the return value
+             * isn't used at all. The next call fieldReader.SetFieldStart() takes an int as offset which
+             * defaults to 0. Seeing that ReadLineEnding will always return 0 EXCEPT for when the char is \r
+             * and the following isn't \n (exactly what my case), then it would return -1. That -1 however is
+             * just thrown away instead of passed to fieldReader.SetFieldStart().
+             * 
              * TODO
              * Create a repro sample without all the fuzz and without serial port if possible
              * then open up a new issue for CsvHelper.
