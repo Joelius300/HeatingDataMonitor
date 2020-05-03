@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using CsvHelper.Configuration.Attributes;
 using HeatingDataMonitor.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,79 @@ namespace CsvParsingFromStreamDemo
     {
         async static Task Main(string[] args)
         {
+            SerialPort port = new SerialPort()
+            {
+                PortName = "COM2",
+                BaudRate = 9600,
+                DataBits = 8,
+                Parity = Parity.None,
+                Handshake = Handshake.None,
+                StopBits = StopBits.One,
+                Encoding = Encoding.ASCII,
+                DiscardNull = true,
+                NewLine = "\r\n",
+                ReadTimeout = 100000
+            };
+
+            var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                Delimiter = ";",
+                NewLine = NewLine.CRLF,
+                IgnoreBlankLines = true,
+                IgnoreQuotes = true,
+                Encoding = Encoding.ASCII,
+                HasHeaderRecord = false
+            };
+            csvConfig.RegisterClassMap<DataCsvMap>();
+
+            //using (SerialPortCsvReader<Data> reader = new SerialPortCsvReader<Data>(new SerialPortWrapper(port), csvConfig, Encoding.ASCII, 64))
+            ////using (SerialPortCsvReader<Asdf> reader = new SerialPortCsvReader<Asdf>(port, csvConfig, Encoding.ASCII, 16))
+            //{
+            //    reader.DataReceived += (o, e) => Console.WriteLine($"Received valid data: {e}");
+            //    reader.Start();
+
+            //    Console.WriteLine("Enter to stop");
+            //    Console.ReadLine();
+
+            //    reader.Stop();
+            //}
+
+            var fakePort = new FakeSerialPort();
+            using (SerialPortCsvReader<Data> reader = new SerialPortCsvReader<Data>(fakePort, csvConfig, Encoding.ASCII, 30))
+            {
+                reader.DataReceived += (o, e) => Console.WriteLine($"Received valid data: {e}");
+                reader.Start();
+
+                string line;
+                while ((line = Console.ReadLine()) != "stop")
+                {
+                    line = line.Replace("\\r", "\r").Replace("\\n", "\n");
+                    fakePort.AddData(Encoding.ASCII.GetBytes(line));
+                }
+
+                reader.Stop();
+            }
+
+            //using (ParseFromMemoryStream pfms = new ParseFromMemoryStream())
+            //{
+            //    pfms.Start(); // blocks until stop is written which will then Stop
+
+            //    pfms.Stop(); // redundant
+            //} // redundant again
+
+            //using (ReadFromPortIdea1 rfp = new ReadFromPortIdea1("COM2"))
+            //{
+            //    rfp.Start();
+
+            //    Console.WriteLine("Enter to stop");
+            //    Console.ReadLine();
+
+            //    rfp.Stop();
+            //}
+
+            Console.WriteLine("Enter to exit");
+            Console.ReadLine();
+
             //SerialPort port = new SerialPort()
             //{
             //    PortName = "COM2",
@@ -63,20 +137,20 @@ namespace CsvParsingFromStreamDemo
              * Create a repro sample without all the fuzz and without serial port if possible
              * then open up a new issue for CsvHelper.
              */
-            var options = new OptionsWrapper<SerialHeatingDataOptions>(
-                new SerialHeatingDataOptions
-                {
-                    PortName = "COM2",
-                    NewLine = NewLine.CRLF
-                }
-            );
+            //var options = new OptionsWrapper<SerialHeatingDataOptions>(
+            //    new SerialHeatingDataOptions
+            //    {
+            //        PortName = "COM2",
+            //        NewLine = NewLine.CRLF
+            //    }
+            //);
 
-            using SerialPortHeatingDataReceiver receiver = new SerialPortHeatingDataReceiver(options, new FakeLogger());
-            receiver.DataReceived += (o, e) => Console.WriteLine($"NEW DATA: {e}");
-            await receiver.StartAsync(default);
+            //using SerialPortHeatingDataReceiver receiver = new SerialPortHeatingDataReceiver(options, new FakeLogger());
+            //receiver.DataReceived += (o, e) => Console.WriteLine($"NEW DATA: {e}");
+            //await receiver.StartAsync(default);
 
-            Console.WriteLine("Enter to exit");
-            Console.ReadLine();
+            //Console.WriteLine("Enter to exit");
+            //Console.ReadLine();
 
             //var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
             //{
@@ -105,6 +179,18 @@ namespace CsvParsingFromStreamDemo
             //    }
             //}
         }
+    }
+
+    public class Asdf
+    {
+        [Index(0)]
+        public string A { get; set; }
+        [Index(1)]
+        public string B { get; set; }
+        [Index(2)]
+        public string C { get; set; }
+        [Index(3)]
+        public string D { get; set; }
     }
 
     public class OptionsWrapper<T> : IOptions<T>
