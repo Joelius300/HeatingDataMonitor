@@ -13,6 +13,10 @@ namespace CsvParsingFromStreamDemo
 
         public int BytesToRead => _port.BytesToRead;
 
+        public Encoding Encoding => _port.Encoding;
+
+        public string NewLine => _port.NewLine;
+
         public event SerialDataReceivedEventHandler DataReceived
         {
             add => _port.DataReceived += value;
@@ -26,5 +30,6 @@ namespace CsvParsingFromStreamDemo
         public void Open() => _port.Open();
 
         public int Read(byte[] buffer, int offset, int count) => _port.Read(buffer, offset, count);
+        public string ReadExisting() => _port.ReadExisting();
     }
 }

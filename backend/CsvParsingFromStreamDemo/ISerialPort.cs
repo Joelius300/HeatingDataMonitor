@@ -12,5 +12,8 @@ namespace CsvParsingFromStreamDemo
         void Close();
         int BytesToRead { get; }
         int Read(byte[] buffer, int offset, int count);
+        Encoding Encoding { get; }
+        public string NewLine { get; }
+        public string ReadExisting();
     }
 }
