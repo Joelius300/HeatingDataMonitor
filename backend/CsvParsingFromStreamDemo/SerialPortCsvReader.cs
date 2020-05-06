@@ -10,23 +10,22 @@ namespace CsvParsingFromStreamDemo
 {
     public class SerialPortCsvReader<T> : IDisposable
     {
-        private const int DefaultBufferTheshold = 4096;
-
-        private readonly int _bufferThreshold;
         private readonly ISerialPort _port;
         private readonly CsvReader _csvReader;
         private readonly MemoryStream _buffer;
         private readonly StreamReader _bufferReader;
+        private readonly StreamWriter _bufferWriter;
+        private string _unfinishedLine;
         private bool _disposed = false;
 
         public event EventHandler<T> DataReceived;
 
-        public SerialPortCsvReader(ISerialPort port, CsvConfiguration csvConfig, Encoding encoding, int bufferThreshold = DefaultBufferTheshold)
+        public SerialPortCsvReader(ISerialPort port, CsvConfiguration csvConfig)
         {
             _port = port ?? throw new ArgumentNullException(nameof(port));
-            _bufferThreshold = bufferThreshold;
-            _buffer = new MemoryStream(_bufferThreshold / 4); // there should only be 2 resizes at most
-            _bufferReader = new StreamReader(_buffer, encoding ?? throw new ArgumentNullException(nameof(encoding)));
+            _buffer = new MemoryStream();
+            _bufferReader = new StreamReader(_buffer, _port.Encoding);
+            _bufferWriter = new StreamWriter(_buffer, _port.Encoding);
             _csvReader = new CsvReader(_bufferReader, csvConfig ?? throw new ArgumentNullException(nameof(csvConfig)));
         }
 
@@ -44,74 +43,44 @@ namespace CsvParsingFromStreamDemo
 
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            long newDataStartPos = ReadSerialData();
-            ProcessBufferedData(newDataStartPos);
-        }
+            // let's forget the fancy stuff for now. Who cares if we encode and decode this data
+            // 5 more times than necessary if the data only appears every few seconds.
+            // Performance is definitely not a driving enough factor to go crazy with this.
+            // It would be very nice to have a custom CsvParser that continues where it left
+            // off and acts conservative meaning it only finishes a field when it encounters
+            // a field separator and it only finishes a line when it encounters a new line.
+            // EOF simply means 'the rest will come soon'. It's definitely possible to implement
+            // and would give a huge boost to performance along with simply being a cool thing
+            // to implement. For now, let's just work with a much simpler solution at the
+            // (completely irrelevant) cost of performance and the (a bit more relevant) cost
+            // of failure at implementing such a custom CsvParser (for now).
 
-        private long ReadSerialData()
-        {
-            int availableBytes = _port.BytesToRead;
-            if (availableBytes == 0)
-                return _buffer.Length;
-
-            if (availableBytes > _bufferThreshold)
-                throw new InvalidOperationException($"The package received by the serial port is larger than the " +
-                                                    $"specified buffer threshold ({_bufferThreshold} bytes) and can't be processed.");
-
-            if (_buffer.Length + availableBytes > _bufferThreshold)
+            string currentData = _port.ReadExisting();
+            string fullData = _unfinishedLine + currentData;
+            string[] lines = fullData.Split(_port.NewLine);
+            if (lines.Length == 1)
             {
-                long expectedSize = _buffer.Length + availableBytes;
-
-                // This won't deallocate the memory but it will prevent further allocations.
+                _unfinishedLine = currentData;
+            }
+            else
+            {
                 _buffer.Position = 0;
                 _buffer.SetLength(0);
+                for (int i = 0; i < lines.Length - 1; i++)
+                {
+                    _bufferWriter.WriteLine(lines[i]);
+                }
 
-                Console.WriteLine($"Buffer size would exeed threshold ({expectedSize} > {_bufferThreshold}). Buffer was reset.");
+                _unfinishedLine = lines[^1];
             }
 
-            byte[] data = new byte[availableBytes];
-            _port.Read(data, 0, data.Length);
-
-            long currentLength = _buffer.Length;
-            _buffer.Position = currentLength;
-            _buffer.Write(data, 0, data.Length);
-
-            return currentLength;
+            ProcessBufferedData();
         }
 
-        private void ProcessBufferedData(long fromPosition)
+        private void ProcessBufferedData()
         {
-            _buffer.Position = fromPosition; // don't feed it any data it's already seen
+            _buffer.Position = 0;
 
-            // The CsvReader will copy all of our data into it's internal buffer on the first call to Read().
-            // Then it will go through that internal buffer on sequential calls to Read().
-            // This means that the _buffer.Position will always be = _buffer.Length after the first call to Read()
-            // no matter the position of the CsvReader within the internal buffer (that would be _csvReader.Context.BufferPosition).
-            // The problem is that the internal buffer get's cleared even when we might not be done with it.
-            // Since the first Read() will move _buffer.Position to the end, we can't just update the last read position
-            // because that might skip data.
-
-            // It might be the best solution to investigate CsvHelper and create a special CsvParser which continues with the
-            // last line in case it wasn't finished (EOF was reched).
-            // This would probably mean overriding CsvParser.ReadLine but that's not enough.
-            // Since the reading is done record by record and every record is read field by field, we need to customize almost
-            // everything down the chain. The serial port spits out chunks and they might be in the middle of a field so when
-            // the parser reads that, it will either fail or just take that incomplete part as field which is of course not what
-            // we want. However, the reading is done in chunks as well (from the stream) so it should in theory be able to handle
-            // that already. Again, more investigation is needed.
-
-            // When it's time to give up, there's still the possibility to read the data from the port as string (will use the
-            // encoding). Then we have a buffer for incomplete records and a buffer that the CsvReader works on (just like now).
-            // Everytime we get data we combine it with the incomplete-records-buffer. Then loop through each line
-            // (probably with a StringReader) and add each line (incl. line break) to the actual buffer as bytes. Any data that's
-            // not complete (doesn't end with a line-break), will be put in the incomplete-records-buffer for the next run.
-            // This will be a lot worse for performance but in our case that doesn't matter.
-
-            // Based on the idea above, it might be possible to do it with two buffers while avoiding getting strings from the port.
-            // We could read from the port into an internal buffer. Then go through that buffer and only add data that's terminated
-            // by a newline (incl. said newline). We'll still need to decode the bytes once before passing it to the CsvReader
-            // (otherwise we won't know where the line-breaks are) so performance will be negatively impacted. If this is better
-            // than the above solution I don't know. These are just some ideas but doing it directly with CsvReader would be best.
             while (_csvReader.Read())
             {
                 bool parsed = false;
