@@ -54,13 +54,14 @@ namespace CsvParsingFromStreamDemo
             // to implement. For now, let's just work with a much simpler solution at the
             // (completely irrelevant) cost of performance and the (a bit more relevant) cost
             // of failure at implementing such a custom CsvParser (for now).
+            // YAGNI is more important than I like to admit
 
             string currentData = _port.ReadExisting();
             string fullData = _unfinishedLine + currentData;
             string[] lines = fullData.Split(_port.NewLine);
             if (lines.Length == 1)
             {
-                _unfinishedLine = currentData;
+                _unfinishedLine = fullData;
             }
             else
             {
@@ -70,11 +71,12 @@ namespace CsvParsingFromStreamDemo
                 {
                     _bufferWriter.WriteLine(lines[i]);
                 }
+                _bufferWriter.Flush();
 
                 _unfinishedLine = lines[^1];
-            }
 
-            ProcessBufferedData();
+                ProcessBufferedData();
+            }
         }
 
         private void ProcessBufferedData()
