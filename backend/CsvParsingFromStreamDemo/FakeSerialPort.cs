@@ -10,9 +10,21 @@ namespace CsvParsingFromStreamDemo
     {
         private readonly MemoryStream _data;
         private long _readPos;
-        internal FakeSerialPort(MemoryStream stream) => _data = stream;
+        private StreamReader _reader;
+
+        public int BytesToRead => (int)(_data.Length - _readPos);
+        public Encoding Encoding { get; set; } = Encoding.ASCII;
+        public string NewLine { get; set; } = "\n";
+
+        public event SerialDataReceivedEventHandler DataReceived;
+
         public FakeSerialPort() : this(new MemoryStream())
         {
+        }
+        internal FakeSerialPort(MemoryStream stream)
+        {
+            _data = stream;
+            _reader = new StreamReader(_data);
         }
 
         public void AddData(byte[] newSerialData)
@@ -22,9 +34,10 @@ namespace CsvParsingFromStreamDemo
             DataReceived?.Invoke(this, null);
         }
 
-        public int BytesToRead => (int)(_data.Length - _readPos);
-
-        public event SerialDataReceivedEventHandler DataReceived;
+        public void AddData(string newSerialData)
+        {
+            AddData(Encoding.GetBytes(newSerialData));
+        }
 
         public void Close()
         {
@@ -49,6 +62,15 @@ namespace CsvParsingFromStreamDemo
             _readPos = _data.Position;
 
             return read;
+        }
+
+        public string ReadExisting()
+        {
+            _data.Position = _readPos;
+            string data = _reader.ReadToEnd();
+            _readPos = _data.Position;
+
+            return data;
         }
     }
 }

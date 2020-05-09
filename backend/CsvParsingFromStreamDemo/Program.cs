@@ -56,18 +56,25 @@ namespace CsvParsingFromStreamDemo
             //    reader.Stop();
             //}
 
-            var fakePort = new FakeSerialPort();
-            using (SerialPortCsvReader<Data> reader = new SerialPortCsvReader<Data>(fakePort, csvConfig, Encoding.ASCII, 30))
+            //var fakePort = new FakeSerialPort()
+            //{
+            //    Encoding = Encoding.ASCII,
+            //    NewLine = "\r\n"
+            //};
+            using (SerialPortCsvReader<Data> reader = new SerialPortCsvReader<Data>(new SerialPortWrapper(port), csvConfig))
             {
                 reader.DataReceived += (o, e) => Console.WriteLine($"Received valid data: {e}");
                 reader.Start();
 
-                string line;
-                while ((line = Console.ReadLine()) != "stop")
-                {
-                    line = line.Replace("\\r", "\r").Replace("\\n", "\n");
-                    fakePort.AddData(Encoding.ASCII.GetBytes(line));
-                }
+                //string line;
+                //while ((line = Console.ReadLine()) != "stop")
+                //{
+                //    line = line.Replace("\\r", "\r").Replace("\\n", "\n");
+                //    fakePort.AddData(line);
+                //}
+
+                Console.WriteLine("Enter to stop");
+                Console.ReadLine();
 
                 reader.Stop();
             }
