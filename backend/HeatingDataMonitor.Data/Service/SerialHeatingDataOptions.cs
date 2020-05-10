@@ -16,7 +16,6 @@ namespace HeatingDataMonitor.Service
         private const Handshake DefaultHandshake = Handshake.None;
         private const int DefaultBaudRate = 9600;
         private const NewLine DefaultNewLine = NewLine.LF;
-        private const int DefaultReadTimeout = 15000;
         private const string DefaultEncoding = "us-ascii";
         private const string DefaultDelimiter = ";";
 
@@ -29,7 +28,6 @@ namespace HeatingDataMonitor.Service
         public StopBits StopBits { get; set; } = DefaultStopBits;
         public Handshake Handshake { get; set; } = DefaultHandshake;
         public NewLine NewLine { get; set; } = DefaultNewLine;
-        public int ReadTimeoutMs { get; set; } = DefaultReadTimeout;
         public string Encoding { get; set; } = DefaultEncoding;
     }
 }

@@ -17,17 +17,18 @@ using System.Threading.Tasks;
 
 namespace HeatingDataMonitor.Service
 {
-    // todo internal
-    public class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDisposable
+    internal class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDisposable
     {
         private readonly SerialHeatingDataOptions _options;
         private readonly CsvConfiguration _csvConfig;
         private readonly ILogger<SerialPortHeatingDataReceiver> _logger;
         private readonly SerialPort _serialPort;
-        private readonly Thread _readingThread;
-        private readonly CancellationTokenSource _cts;
-        private readonly CancellationToken _cancelToken;
-        private CsvReader _csvReader;
+        private readonly CsvReader _csvReader;
+        private readonly MemoryStream _buffer;
+        private readonly StreamReader _bufferReader;
+        private readonly StreamWriter _bufferWriter;
+        private readonly string[] _newLineSplitArray;
+        private string _unfinishedLine;
         private bool _disposed = false;
 
         public HeatingData Current { get; private set; }
@@ -38,106 +39,113 @@ namespace HeatingDataMonitor.Service
             _options = options.Value;
             _logger = logger;
 
-            _cts = new CancellationTokenSource();
-            _cancelToken = _cts.Token;
             _csvConfig = CreateCsvOptions();
             _serialPort = CreateSerialPort();
-            _readingThread = new Thread(() => Read());
+            _newLineSplitArray = new[] { _serialPort.NewLine };
+            _buffer = new MemoryStream();
+            _bufferReader = new StreamReader(_buffer, _serialPort.Encoding);
+            _bufferWriter = new StreamWriter(_buffer, _serialPort.Encoding);
+            _csvReader = new CsvReader(_bufferReader, _csvConfig);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _serialPort.Open();
-            _csvReader = new CsvReader(new StreamReader(_serialPort.BaseStream), _csvConfig);
-            _readingThread.Start();
+            Start();
 
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _cts.Cancel();
+            Stop();
 
             return Task.CompletedTask;
         }
 
-        private void Read()
+        private void Start()
         {
-            while (!_cancelToken.IsCancellationRequested)
+            _serialPort.Open();
+            _serialPort.DataReceived += DataReceivedHandler;
+        }
+
+        private void Stop()
+        {
+            _serialPort.DataReceived -= DataReceivedHandler;
+            _serialPort.Close();
+        }
+
+        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
+        {
+            // Let's forget the fancy stuff for now. Who cares if we encode and decode this data
+            // 5 more times than necessary if the data only appears every few seconds.
+            // Performance is definitely not a driving enough factor to go crazy with this.
+            // It would be very nice to have a custom CsvParser that continues where it left
+            // off and acts conservative meaning it only finishes a field when it encounters
+            // a field separator and it only finishes a line when it encounters a new line.
+            // EOF would simply mean 'the rest will come soon'. It's definitely possible to implement
+            // and would give a huge boost to performance along with simply being a cool thing
+            // to implement.
+            // YAGNI and KISS are more important than I like to admit so let's keep it simple for now.
+
+            string currentData = _serialPort.ReadExisting();
+            string fullData = _unfinishedLine + currentData;
+            string[] lines = fullData.Split(_newLineSplitArray, StringSplitOptions.None);
+            if (lines.Length == 1)
             {
-                HeatingData data = null;
+                // There's no line-break, just add to the unfinished line
+                _unfinishedLine = fullData;
+            }
+            else
+            {
+                _buffer.Position = 0;
+                _buffer.SetLength(0);
+
+                for (int i = 0; i < lines.Length - 1; i++)
+                {
+                    _bufferWriter.WriteLine(lines[i]);
+                }
+
+                _bufferWriter.Flush();
+
+                _unfinishedLine = lines[lines.Length - 1];
+
+                // with this procedure we only want to process the data if there's a whole line
+                ProcessBufferedData();
+            }
+        }
+
+        private void ProcessBufferedData()
+        {
+            _buffer.Position = 0;
+
+            while (_csvReader.Read())
+            {
+                HeatingData record = null;
                 try
                 {
-                    /* # Problem at the moment
-                     * When the read on the serial port times out, an exception is thrown
-                     * and apparently the reader can't recover from that. It seems that writing
-                     * "abc" then timing out and writing "def\r\n" will result in something along the
-                     * lines of "\0\0\0def". Therefore we would need to set the timeout high enough for
-                     * a whole line to be transferred but that means that we can't really shutdown the
-                     * application gracefully as it's still reading when we want to close the port.
-                     * Also, when a timout or error happens, we would need to discard all the
-                     * buffered data to achieve a clean reset otherwise we have null bytes or left over
-                     * line breaks in the actual data which will mess up the parsing.
-                     * 
-                     * # Possible approaches
-                     * - Read out the data piece by piece into a buffer from a separate reading thread.
-                     *   Then a different thread would go through that buffer, search for the line break
-                     *   and parse up to there. The buffer would then be adjusted so only the data after
-                     *   the line break is still in the buffer and the rest (already parsed) is discarded.
-                     *   There should be some way of telling the parsing thread to look through the data
-                     *   whenever the reading thread reads something. If we don't do this event-based, we
-                     *   would need a polling mechanism which just tries to parse the existing data in a
-                     *   set interval and skips when there is no data to parse but working with an event-
-                     *   based pattern would be nicer.
-                     *   For the parsing thread we would probably need a custom implementation of TextReader
-                     *   if StreamReader doesn't work. This might be required because the CsvReader only
-                     *   accepts a TextReader so there's no way to read from just a string or byte- or
-                     *   char-array. Also, the CsvReader is designed for reading multiple lines but we only
-                     *   ever want to read one line at a time since the serial port delivers data really
-                     *   slowly.
-                     * - Use ReadLine on the serial port and then parse somehow with a custom stream reader
-                     *   thingy because we can't parse a string directly and creating a string reader for
-                     *   every entry is really bad. If it's possible to reset the data in the string-reader
-                     *   we should be able to use that. This again has the issue of graceful shutdown. If
-                     *   no data is lost when there are multiple timeouts, we can just set a smaller timeout.
-                     *   Otherwise we'll need to sequentially read all the data and manually search for the
-                     *   line break very similar to option one. Optimally ReadLine should behave as follows.
-                     *   ReadLine: "ab", timeout, "cd", timeout, "ef", timeout, "gh\r\n" needs to yield
-                     *   "abcdefgh". This can only happen when everything gets reset correctly after a timeout
-                     *   (that's ReadLine's job). Data-loss in between might result in faulty data or plain
-                     *   parsing errors.
-                     *   
-                     *   As you can see by this and also all the comments in the SerialPort class, this is
-                     *   quite a big thing and there are a lot of things to keep in mind when implementing this.
-                     */
-
-                    _csvReader.Read();
-                    data = _csvReader.GetRecord<HeatingData>();
+                    record = _csvReader.GetRecord<HeatingData>();
                 }
-                catch (Exception e) when (e is TimeoutException || 
-                                          (e is ParserException ex && ex.InnerException is TimeoutException))
+                catch (CsvHelperException e)
                 {
-                    _logger.LogDebug("Reading and parsing from serial port timed out.");
-                }
-                catch (ReaderException e)
-                {
-                    _logger.LogError(e, $"Error reading the data from the serial port:{Environment.NewLine}" +
-                                        $"{e.InnerException?.Message}{Environment.NewLine}{e.ReadingContext.RawRecord}");
-                }
-                catch (ParserException e)
-                {
-                    _logger.LogError(e, $"Error parsing the data from the serial port:{Environment.NewLine}" +
-                                        $"{e.InnerException?.Message}{Environment.NewLine}{e.ReadingContext.RawRecord}");
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"Couldn't parse record to {nameof(HeatingData)}.");
+                    if (e.InnerException != null)
+                    {
+                        sb.AppendLine($"Reason: {e.InnerException.Message}");
+                    }
+                    sb.AppendLine($"Record: {e.ReadingContext.RawRecord}");
+                    _logger.LogError(sb.ToString());
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Unexpected exception while reading data. Aborting.");
+                    Stop();
                     break;
                 }
 
-                if (data != null)
+                if (record != null)
                 {
-                    OnDataReceived(data);
+                    OnDataReceived(record);
                 }
             }
         }
@@ -166,7 +174,6 @@ namespace HeatingDataMonitor.Service
             CsvConfiguration config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 Delimiter = _options.Delimiter,
-                NewLine = _options.NewLine,
                 IgnoreBlankLines = true,
                 IgnoreQuotes = _options.ReadQuotesAsText,
                 Encoding = encoding,
@@ -197,8 +204,7 @@ namespace HeatingDataMonitor.Service
                 StopBits = _options.StopBits,
                 Encoding = _csvConfig.Encoding,
                 DiscardNull = true,
-                NewLine = _csvConfig.NewLineString,
-                ReadTimeout = _options.ReadTimeoutMs // TODO think through | we need to somehow allow graceful shutdown
+                NewLine = _csvConfig.NewLineString
             };
         }
 
@@ -208,9 +214,11 @@ namespace HeatingDataMonitor.Service
             {
                 if (disposing)
                 {
-                    _cts.Dispose();
                     _csvReader?.Dispose();
                     _serialPort.Dispose();
+                    _bufferReader.Dispose();
+                    _bufferWriter.Dispose();
+                    _buffer.Dispose();
                 }
 
                 _disposed = true;

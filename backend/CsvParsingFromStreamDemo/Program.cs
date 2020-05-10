@@ -215,23 +215,23 @@ namespace CsvParsingFromStreamDemo
         public T Value { get; }
     }
 
-    public class FakeLogger : ILogger<SerialPortHeatingDataReceiver>
-    {
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            throw new NotImplementedException();
-        }
+    //public class FakeLogger : ILogger<SerialPortHeatingDataReceiver>
+    //{
+    //    public IDisposable BeginScope<TState>(TState state)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
+    //    public bool IsEnabled(LogLevel logLevel)
+    //    {
+    //        return true;
+    //    }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            Console.WriteLine(formatter(state, exception));
-            Console.WriteLine(exception);
-            Console.WriteLine();
-        }
-    }
+    //    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    //    {
+    //        Console.WriteLine(formatter(state, exception));
+    //        Console.WriteLine(exception);
+    //        Console.WriteLine();
+    //    }
+    //}
 }
