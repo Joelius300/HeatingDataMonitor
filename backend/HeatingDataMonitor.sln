@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.API", "H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.Data", "HeatingDataMonitor.Data\HeatingDataMonitor.Data.csproj", "{9793B6AE-882F-46DC-8F5A-3138D4E8E534}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsvParsingFromStreamDemo", "CsvParsingFromStreamDemo\CsvParsingFromStreamDemo.csproj", "{5FCD2CBD-3DDC-45F4-8BA8-C9393A6A5332}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5FCD2CBD-3DDC-45F4-8BA8-C9393A6A5332}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5FCD2CBD-3DDC-45F4-8BA8-C9393A6A5332}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5FCD2CBD-3DDC-45F4-8BA8-C9393A6A5332}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5FCD2CBD-3DDC-45F4-8BA8-C9393A6A5332}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
