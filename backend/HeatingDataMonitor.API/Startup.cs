@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using HeatingDataMonitor.API.Hubs;
+using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.History;
+using HeatingDataMonitor.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +20,15 @@ namespace HeatingDataMonitor.API
 {
     public class Startup
     {
+        private const string DebugPolicyName = "DebugPolicy";
+        private readonly Action<JsonSerializerOptions> _configureJsonOptions = options =>
+        {
+            // We expect a lot of null values so let's not blow up the response unnecessarily.
+            // Also we want to keep the original names.
+            options.IgnoreNullValues = true;
+            options.PropertyNamingPolicy = null;
+        };
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -27,16 +39,27 @@ namespace HeatingDataMonitor.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers()
-                    // We expect a lot of null values so let's not blow up the response unnecessarily.
-                    // Also we want to keep the original names.
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.IgnoreNullValues = true;
-                        options.JsonSerializerOptions.PropertyNamingPolicy = null;
-                    });
+                    .AddJsonOptions(options => _configureJsonOptions(options.JsonSerializerOptions));
             
             services.AddDbContext<HeatingDataDbContext>(builder =>
                     builder.UseNpgsql(Configuration.GetConnectionString("HeatingDataDatabase")));
+
+            services.AddSignalR()
+                    .AddJsonProtocol(options => _configureJsonOptions(options.PayloadSerializerOptions));
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(DebugPolicyName, builder => builder
+                                                   .AllowAnyMethod()
+                                                   .AllowAnyHeader()
+                                                   .AllowCredentials()
+                                                   // only for the angular development server
+                                                   .WithOrigins("http://localhost:4200"));
+            });
+
+            services.AddSingleton<IHeatingDataReceiver, MockHeatingDataReceiver>();
+            services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
+            services.AddHostedService<HeatingDataRealTimeService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -46,12 +69,31 @@ namespace HeatingDataMonitor.API
                 app.UseDeveloperExceptionPage();
             }
 
+            // In production we serve the SPA files from wwwroot
+            if (env.IsProduction())
+            {
+                app.UseStaticFiles();
+            }
+
             app.UseRouting();
+
+            // During development we want to be able to use the angular dev server
+            if (env.IsDevelopment())
+            {
+                app.UseCors(DebugPolicyName);
+            }
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<HeatingDataHub>("/realTimeFeed");
             });
+
+            if (env.IsProduction())
+            {
+                // no configuration required because we serve it from wwwroot
+                app.UseSpa(o => { });
+            }
         }
     }
 }
