@@ -145,6 +145,7 @@ namespace HeatingDataMonitor.Service
 
                 if (record != null)
                 {
+                    record.ReceivedTime_UTC = DateTime.UtcNow;
                     OnDataReceived(record);
                 }
             }

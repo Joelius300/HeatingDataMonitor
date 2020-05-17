@@ -27,7 +27,7 @@ namespace HeatingDataMonitor.History
             // that return a lot of rows (like mosts of ours), an index might slow things down.
             modelBuilder
                 .Entity<HeatingData>()
-                .HasIndex(d => d.Zeit);
+                .HasIndex(d => d.ReceivedTime_UTC);
         }
     }
 }

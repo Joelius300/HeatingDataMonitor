@@ -28,7 +28,7 @@ namespace HeatingDataMonitor.API.Controllers
                 return BadRequest();
 
             return await _dbContext.HeatingData
-                                    .Where(d => d.Zeit >= from && d.Zeit <= to)
+                                    .Where(d => d.ReceivedTime_UTC >= from && d.ReceivedTime_UTC <= to)
                                     .ToListAsync();
         }
 
@@ -47,7 +47,7 @@ namespace HeatingDataMonitor.API.Controllers
             };
 
             var data = await _dbContext.HeatingData
-                                    .Where(d => d.Zeit >= from && d.Zeit <= to)
+                                    .Where(d => d.ReceivedTime_UTC >= from && d.ReceivedTime_UTC <= to)
                                     .Select(selector)
                                     .ToListAsync();
 

@@ -11,7 +11,7 @@ namespace HeatingDataMonitor.Model
     {
         public HeatingDataCsvMap()
         {
-            Map(d => d.Zeit).ConvertUsing(ParseHeatingDataTime);
+            Map(d => d.SPS_Zeit).ConvertUsing(ParseHeatingDataTime);
             Map(d => d.Kessel).Index(2);
             Map(d => d.Ruecklauf).Index(3);
             Map(d => d.Abgas).Index(4);

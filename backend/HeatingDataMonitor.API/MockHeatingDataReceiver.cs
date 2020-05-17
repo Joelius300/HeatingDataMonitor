@@ -28,7 +28,8 @@ namespace HeatingDataMonitor.API
         {
             return new HeatingData
             {
-                Zeit = DateTime.Now,
+                SPS_Zeit = DateTime.Now,
+                ReceivedTime_UTC = DateTime.UtcNow,
                 Kessel = (float)Math.Round(_rng.NextDouble() * 60 + 20, 2),
                 CO2_Ist = (float)Math.Round(_rng.NextDouble() * 30 + 10)
             };

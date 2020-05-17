@@ -46,7 +46,7 @@ namespace HeatingDataMonitor.API.Service
         private async void SendReceivedData(object sender, HeatingData newData)
         {
             await _hubContext.Clients.All.ReceiveHeatingData(newData);
-            _logger.LogDebug($"Sent data to all clients with timestamp: {newData.Zeit}");
+            _logger.LogDebug($"Sent data to all clients with timestamp: {newData.ReceivedTime_UTC}");
         }
     }
 }

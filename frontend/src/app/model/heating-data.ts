@@ -2,7 +2,8 @@ import { BetriebsPhaseHK } from './betriebsphase-hk.enum';
 import { BetriebsPhaseKessel } from './betriebsphase-kessel.enum';
 
 export interface HeatingData {
-    Zeit: Date;
+    SPS_Zeit: Date;
+    ReceivedTime_UTC: Date;
     Kessel?: number;
     Ruecklauf?: number;
     Abgas?: number;

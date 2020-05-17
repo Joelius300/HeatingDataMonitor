@@ -6,7 +6,8 @@ namespace HeatingDataMonitor.Model
     {
         public int Id { get; set; }
 
-        public DateTime Zeit { get; set; }
+        public DateTime SPS_Zeit { get; set; }
+        public DateTime ReceivedTime_UTC { get; set; }
         public float? Kessel { get; set; }
         public float? Ruecklauf { get; set; }
         public float? Abgas { get; set; }
