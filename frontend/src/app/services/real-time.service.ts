@@ -7,13 +7,9 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 })
 export class RealTimeService {
   private hubConnection: HubConnection;
-  private _currentData: HeatingData;
 
+  public currentData: HeatingData;
   @Output() currentDataChange = new EventEmitter<HeatingData>();
-
-  public get currentData(): HeatingData {
-    return this._currentData;
-  }
 
   startConnection(): Promise<void> {
     if (this.hubConnection) {
@@ -25,7 +21,7 @@ export class RealTimeService {
                             .build();
 
     this.hubConnection.on('ReceiveHeatingData', (args) => {
-      this._currentData = args as HeatingData;
+      this.currentData = args as HeatingData;
       this.currentDataChange.emit(this.currentData);
     });
 

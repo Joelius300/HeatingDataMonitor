@@ -1,6 +1,10 @@
 <h2>Dashboard</h2>
 
+<h4>SPS Time</h4>
+<p>{{realTimeService.currentData?.SPS_Zeit | date:'mediumTime' | nullHashes}}</p>
+<h4>Received Time</h4>
+<p>{{realTimeService.currentData?.ReceivedTime_UTC | date:'mediumTime' | nullHashes}}</p>
 <h4>Kessel</h4>
-<p>{{realTimeService.currentData?.Kessel | nullHashes}} °</p>
+<p>{{realTimeService.currentData?.Kessel | number:'0.2-2' | nullHashes}} °</p>
 <h4>CO2</h4>
-<p>{{realTimeService.currentData?.CO2_Ist | nullHashes}} %</p>
+<p>{{realTimeService.currentData?.CO2_Ist | number:'0.2-2' | nullHashes}} %</p>
