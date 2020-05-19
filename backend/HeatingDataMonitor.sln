@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.API", "H
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.Data", "HeatingDataMonitor.Data\HeatingDataMonitor.Data.csproj", "{9793B6AE-882F-46DC-8F5A-3138D4E8E534}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigrateExistingData", "MigrateExistingData\MigrateExistingData.csproj", "{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MigrateExistingData", "MigrateExistingData\MigrateExistingData.csproj", "{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{CA00B068-D438-4B69-B222-A4C6E7D980B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
