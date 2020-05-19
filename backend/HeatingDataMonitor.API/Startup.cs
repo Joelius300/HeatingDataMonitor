@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -57,8 +58,22 @@ namespace HeatingDataMonitor.API
                                                    .WithOrigins("http://localhost:4200"));
             });
 
-            services.AddSingleton<IHeatingDataReceiver, MockHeatingDataReceiver>();
-            services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
+            IConfiguration serialSection = Configuration.GetSection("Serial");
+            services.AddOptions<SerialHeatingDataOptions>()
+                    .Bind(serialSection);
+
+            // this and the FakeReceiver could probably be improved regarding encapsulation and responsibility
+            string portName = serialSection.GetValue(nameof(SerialHeatingDataOptions.PortName), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sampleData.csv"));
+            if (Path.GetExtension(portName).Equals(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddSingleton<IHeatingDataReceiver, MockHeatingDataReceiver>();
+                services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
+            }
+            else
+            {
+                services.AddSerialPortHeatingDataReceiver();
+            }
+
             services.AddHostedService<HeatingDataRealTimeService>();
         }
 
@@ -91,7 +106,7 @@ namespace HeatingDataMonitor.API
 
             if (env.IsProduction())
             {
-                // no configuration required because we serve it from wwwroot
+                // no configuration required because we serve it from wwwroot but null throws
                 app.UseSpa(o => { });
             }
         }
