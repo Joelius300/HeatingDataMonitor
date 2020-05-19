@@ -1,10 +1,81 @@
-<h2>Dashboard</h2>
-
-<h4>SPS Time</h4>
-<p>{{realTimeService.currentData?.SPS_Zeit | date:'mediumTime' | nullHashes}}</p>
-<h4>Received Time</h4>
-<p>{{realTimeService.currentData?.ReceivedTime_UTC | date:'mediumTime' | nullHashes}}</p>
-<h4>Kessel</h4>
-<p>{{realTimeService.currentData?.Kessel | number:'0.2-2' | nullHashes}} °</p>
-<h4>CO2</h4>
-<p>{{realTimeService.currentData?.CO2_Ist | number:'0.2-2' | nullHashes}} %</p>
+<div class="container" fxLayout.gt-xs="row wrap" fxLayoutAlign.gt-xs="start" fxLayout.xs="column" fxLayoutAlign.xs="start stretch">
+  <mat-card>
+    <mat-card-title>Kessel</mat-card-title>
+    <mat-card-content>
+      <mat-list>
+        <div mat-list-item>
+          <h3>Kessel</h3>
+          <p>{{realTimeService.currentData?.Kessel | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>Brennkammer</h3>
+          <p>{{realTimeService.currentData?.Brennkammer | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>Abgas</h3>
+          <p>{{realTimeService.currentData?.Abgas | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>CO2</h3>
+          <p>{{realTimeService.currentData?.CO2_Ist | number:'0.2-2' | nullHashes}} %</p>
+        </div>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Aussen</mat-card-title>
+    <mat-card-content>
+      <p>{{realTimeService.currentData?.Aussen | number:'0.2-2' | nullHashes}} °</p>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Speicher</mat-card-title>
+    <mat-card-content>
+      <mat-list>
+        <div mat-list-item>
+          <h3>Boiler</h3>
+          <p>{{realTimeService.currentData?.Boiler_1 | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>Puffer Oben</h3>
+          <p>{{realTimeService.currentData?.Puffer_Oben | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>Puffer Unten</h3>
+          <p>{{realTimeService.currentData?.Puffer_Unten | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Heizkreis 1</mat-card-title>
+    <mat-card-content>
+      <mat-list>
+        <div mat-list-item>
+          <h3>Vorlauf</h3>
+          <p><b>Soll: </b>{{realTimeService.currentData?.Vorlauf_HK1_Soll | number:'0.2-2' | nullHashes}} °</p>
+          <p><b>Ist: </b>{{realTimeService.currentData?.Vorlauf_HK1_Ist | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+        <div mat-list-item>
+          <h3>Betriebsphase</h3>
+          <p>{{realTimeService.currentData?.Betriebsphase_HK1 | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>SPS</mat-card-title>
+    <mat-card-content>
+      <mat-list>
+        <div mat-list-item>
+          <h3>Aktuelle Zeit</h3>
+          <p>{{realTimeService.currentData?.SPS_Zeit | date:'mediumTime' | nullHashes}}</p>
+        </div>
+        <div mat-list-item>
+          <h3>Platine</h3>
+          <p>{{realTimeService.currentData?.Platine | number:'0.2-2' | nullHashes}} °</p>
+        </div>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>

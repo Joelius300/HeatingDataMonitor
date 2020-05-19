@@ -1,0 +1,13 @@
+.container {
+  padding: 10px;
+}
+
+mat-card {
+  margin: 5px;
+}
+
+@media screen and (min-width: 599px) {
+  mat-card {
+    width: 180px;
+  }
+}
