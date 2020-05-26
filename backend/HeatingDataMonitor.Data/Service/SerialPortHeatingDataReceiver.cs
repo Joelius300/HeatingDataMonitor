@@ -4,6 +4,7 @@ using HeatingDataMonitor.History;
 using HeatingDataMonitor.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NodaTime;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -145,7 +146,7 @@ namespace HeatingDataMonitor.Service
 
                 if (record != null)
                 {
-                    record.ReceivedTime_UTC = DateTime.UtcNow;
+                    record.ReceivedTime = SystemClock.Instance.GetCurrentInstant();
                     OnDataReceived(record);
                 }
             }

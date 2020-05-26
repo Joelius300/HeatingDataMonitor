@@ -7,6 +7,7 @@ using HeatingDataMonitor.History;
 using HeatingDataMonitor.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace HeatingDataMonitor.API.Controllers
 {
@@ -14,6 +15,7 @@ namespace HeatingDataMonitor.API.Controllers
     [Route("api/[controller]")]
     public class HeatingDataHistoryController : ControllerBase
     {
+        private const int MaxFetchCount = 1000;
         private readonly HeatingDataDbContext _dbContext;
 
         public HeatingDataHistoryController(HeatingDataDbContext dbContext)
@@ -22,18 +24,18 @@ namespace HeatingDataMonitor.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HeatingData>>> Get([FromQuery] DateTime from, [FromQuery] DateTime to)
+        public async Task<ActionResult<IEnumerable<HeatingData>>> Get([FromQuery] Instant from, [FromQuery] Instant to)
         {
             if (from > to)
                 return BadRequest();
 
             return await _dbContext.HeatingData
-                                    .Where(d => d.ReceivedTime_UTC >= from && d.ReceivedTime_UTC <= to)
-                                    .ToListAsync();
+                                   .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
+                                   .ToListAsync();
         }
 
         [HttpGet("MainTemperatures")]
-        public async Task<IActionResult> GetMainTemperatures([FromQuery] DateTime from, [FromQuery] DateTime to)
+        public async Task<IActionResult> GetMainTemperatures([FromQuery] Instant from, [FromQuery] Instant to)
         {
             if (from > to)
                 return BadRequest();
@@ -47,26 +49,26 @@ namespace HeatingDataMonitor.API.Controllers
             };
 
             var data = await _dbContext.HeatingData
-                                    .Where(d => d.ReceivedTime_UTC >= from && d.ReceivedTime_UTC <= to)
-                                    .Select(selector)
-                                    .ToListAsync();
+                                       .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
+                                       .Select(selector)
+                                       .ToListAsync();
 
             return Ok(data);
         }
 
-        // Might be cool but I don't know how to implement it. Also, we don't need that currently.
-        //[HttpGet()]
-        //public async Task<IActionResult> GetMainTemperatures([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] IEnumerable<string> columns)
-        //{
-        //    if (from > to)
-        //        return BadRequest();
+        [HttpGet("LatestKesselValues")]
+        public async Task<IActionResult> GetLatestKesselValues([FromQuery] int count)
+        {
+            if (count > MaxFetchCount)
+                return BadRequest($"The maximum number of values you're allowed to fetch is {MaxFetchCount}.");
 
-        //    var data = await _dbContext.HeatingData
-        //                            .Where(d => d.Zeit >= from && d.Zeit <= to)
-        //                            .Select(?GetSelector?(columns))
-        //                            .ToListAsync();
+            var data = await _dbContext.HeatingData
+                                       .OrderBy(d => d.ReceivedTime)
+                                       .Select(d => d.Kessel)
+                                       .Take(count)
+                                       .ToListAsync();
 
-        //    return Ok(data);
-        //}
+            return Ok(data);
+        }
     }
 }

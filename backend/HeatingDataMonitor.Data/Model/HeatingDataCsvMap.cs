@@ -1,5 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using NodaTime;
+using NodaTime.Text;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +11,9 @@ namespace HeatingDataMonitor.Model
 {
     internal class HeatingDataCsvMap : ClassMap<HeatingData>
     {
+        private static readonly IPattern<LocalDateTime> s_dateTimePattern =
+            LocalDateTimePattern.Create("dd.MM.yyHH:mm:ss", CultureInfo.InvariantCulture);
+
         public HeatingDataCsvMap()
         {
             Map(d => d.SPS_Zeit).ConvertUsing(ParseHeatingDataTime);
@@ -70,14 +75,12 @@ namespace HeatingDataMonitor.Model
             Map(d => d.A_PHASE_4).Index(57);
         }
 
-        private static DateTime ParseHeatingDataTime(IReaderRow row)
+        private static LocalDateTime ParseHeatingDataTime(IReaderRow row)
         {
-            const string DateTimeFormat = "dd.MM.yy HH:mm:ss";
-
             string datePart = row.GetField<string>(0);
             string timePart = row.GetField<string>(1);
 
-            return DateTime.ParseExact($"{datePart} {timePart}", DateTimeFormat, CultureInfo.InvariantCulture);
+            return s_dateTimePattern.Parse(datePart + timePart).Value;
         }
     }
 }

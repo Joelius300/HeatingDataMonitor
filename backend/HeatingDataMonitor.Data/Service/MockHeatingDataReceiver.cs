@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NodaTime;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -84,7 +85,7 @@ namespace HeatingDataMonitor.Service
 
                 if (record != null)
                 {
-                    record.ReceivedTime_UTC = DateTime.UtcNow;
+                    record.ReceivedTime = SystemClock.Instance.GetCurrentInstant();
                     OnDataReceived(record);
                 }
 

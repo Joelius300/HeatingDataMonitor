@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace HeatingDataMonitor.API
 {
@@ -28,6 +29,8 @@ namespace HeatingDataMonitor.API
             // Also we want to keep the original names.
             options.IgnoreNullValues = true;
             options.PropertyNamingPolicy = null;
+            options.Converters.Add(NodaConverters.InstantConverter);
+            options.Converters.Add(NodaConverters.LocalDateTimeConverter);
         };
 
         public Startup(IConfiguration configuration)
@@ -43,7 +46,10 @@ namespace HeatingDataMonitor.API
                     .AddJsonOptions(options => _configureJsonOptions(options.JsonSerializerOptions));
             
             services.AddDbContext<HeatingDataDbContext>(builder =>
-                    builder.UseNpgsql(Configuration.GetConnectionString("HeatingDataDatabase")));
+                    builder.UseNpgsql(Configuration.GetConnectionString("HeatingDataDatabase"),
+                                      options => options.UseNodaTime())
+                           // We only add and fetch rows so we don't need to waste performance on tracking.
+                           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
             services.AddSignalR()
                     .AddJsonProtocol(options => _configureJsonOptions(options.PayloadSerializerOptions));
