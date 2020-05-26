@@ -1,21 +1,21 @@
 import { RealTimeService } from './../services/real-time.service';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
+import { BetriebsPhaseHK } from './../model/betriebsphase-hk.enum';
+import { HeatingData } from '../model/heating-data';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent {
+  public get Betriebsphase_HK1(): string {
+    if (!this.realTimeService?.currentData) {
+      return undefined;
+    }
+
+    return BetriebsPhaseHK[this.realTimeService.currentData.Betriebsphase_HK1];
+  }
 
   constructor(public realTimeService: RealTimeService) { }
-
-  ngOnInit(): void {
-    this.realTimeService.startConnection();
-  }
-
-  ngOnDestroy(): void {
-    this.realTimeService.stopConnection();
-  }
-
 }
