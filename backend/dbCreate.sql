@@ -65,8 +65,7 @@ CREATE TABLE "HeatingData" (
     CONSTRAINT "PK_HeatingData" PRIMARY KEY ("Id")
 );
 
--- Hopefully that's good
-CREATE INDEX "IX_HeatingData_ReceivedTime" ON "HeatingData" ("ReceivedTime_UTC");
+CREATE INDEX "IX_HeatingData_ReceivedTime" ON "HeatingData" ("ReceivedTime") INCLUDE ("Kessel", "Puffer_Oben", "Puffer_Unten", "Boiler_1");
 
 
 CREATE ROLE "heatingDataMonitorRole" WITH
