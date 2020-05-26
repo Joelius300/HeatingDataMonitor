@@ -11,7 +11,10 @@ export class RealTimeService {
   public currentData: HeatingData;
   @Output() currentDataChange = new EventEmitter<HeatingData>();
 
-  startConnection(): Promise<void> {
+  public lastArchivedData: HeatingData;
+  @Output() lastArchivedDataChange = new EventEmitter<HeatingData>();
+
+  public async startConnection(): Promise<void> {
     if (this.hubConnection) {
       return;
     }
@@ -20,19 +23,36 @@ export class RealTimeService {
                             .withUrl('http://localhost:5000/realTimeFeed')
                             .build();
 
-    this.hubConnection.on('ReceiveHeatingData', (args) => {
-      this.currentData = args as HeatingData;
-      this.currentDataChange.emit(this.currentData);
+    this.hubConnection.on('OnDataPointReceived', (args) => {
+      this.onDataReceived(args as HeatingData);
     });
 
-    return this.hubConnection.start();
+    this.hubConnection.on('OnDataPointArchived', (args) => {
+      this.onDataArchived(args as HeatingData);
+    });
+
+    await this.hubConnection.start();
+    this.onDataReceived(await this.hubConnection.invoke('GetCurrentHeatingData'));
+    // Currently not needed but works as expected
+    // this.onDataArchived(await this.hubConnection.invoke('GetLastArchivedHeatingData'));
   }
 
-  stopConnection(): Promise<void> {
+  private onDataReceived(heatingData: HeatingData): void {
+    this.currentData = heatingData;
+    this.currentDataChange.emit(this.currentData);
+  }
+
+  private onDataArchived(heatingData: HeatingData): void {
+    this.lastArchivedData = heatingData;
+    this.lastArchivedDataChange.emit(this.lastArchivedData);
+  }
+
+  public async stopConnection(): Promise<void> {
     if (!this.hubConnection) {
       return;
     }
 
-    return this.hubConnection.stop();
+    await this.hubConnection.stop();
+    this.hubConnection = null;
   }
 }

@@ -8,6 +8,7 @@ namespace HeatingDataMonitor.API.Hubs
 {
     public interface IHeatingDataHubClient
     {
-        Task ReceiveHeatingData(HeatingData data);
+        Task OnDataPointReceived(HeatingData data);
+        Task OnDataPointArchived(HeatingData data);
     }
 }

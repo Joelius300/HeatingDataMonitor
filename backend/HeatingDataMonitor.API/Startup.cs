@@ -78,6 +78,7 @@ namespace HeatingDataMonitor.API
             else
             {
                 services.AddSerialPortHeatingDataReceiver();
+                services.AddHostedService<HeatingDataHistoryService>();
             }
 
             services.AddHostedService<HeatingDataRealTimeService>();
