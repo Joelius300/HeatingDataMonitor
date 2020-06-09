@@ -20,7 +20,7 @@ export class RealTimeService {
     }
 
     this.hubConnection = new HubConnectionBuilder()
-                            .withUrl('http://localhost:5000/realTimeFeed')
+                            .withUrl('/realTimeFeed')
                             .build();
 
     this.hubConnection.on('OnDataPointReceived', (args) => {

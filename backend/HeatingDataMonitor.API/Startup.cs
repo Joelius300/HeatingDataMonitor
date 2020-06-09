@@ -10,6 +10,7 @@ using HeatingDataMonitor.History;
 using HeatingDataMonitor.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -91,11 +92,10 @@ namespace HeatingDataMonitor.API
                 app.UseDeveloperExceptionPage();
             }
 
-            // In production we serve the SPA files from wwwroot
-            if (env.IsProduction())
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
-                app.UseStaticFiles();
-            }
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseRouting();
 
@@ -110,12 +110,6 @@ namespace HeatingDataMonitor.API
                 endpoints.MapControllers();
                 endpoints.MapHub<HeatingDataHub>("/realTimeFeed");
             });
-
-            if (env.IsProduction())
-            {
-                // no configuration required because we serve it from wwwroot but null throws
-                app.UseSpa(o => { });
-            }
         }
     }
 }
