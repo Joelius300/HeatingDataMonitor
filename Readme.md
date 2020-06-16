@@ -10,7 +10,7 @@ Both front- and backend are hosted on a [Raspberry Pi](https://www.raspberrypi.o
 The Raspberry Pi is connected to the heating unit via [RS232](https://en.wikipedia.org/wiki/RS-232) using a [ModMyPi Serial HAT](https://www.pi-shop.ch/modmypi-serial-hat-rs232).  
 The data management below EF Core is done with [PostgreSQL](https://www.postgresql.org/).
 
-I'm using this application as an opportunity to gain experience in several areas including front- and backend web development, database management, hosting and server management (on linux), code management (git & GitHub), working with hardware (Raspberry Pi & RS232) and probably more.
+I'm using this application as an opportunity to gain experience in several areas including front- and backend web development, database management, hosting and server management (on a small scale with linux), code management (git & GitHub), working with hardware (Raspberry Pi & RS232) and probably more.
 
 # Goal
 The app isn't finished yet. The end-goal is to have the following features:
@@ -42,7 +42,9 @@ Also, I don't know what many of the values mean nor their correct unit or mappin
 - `sudo ufw default deny incoming`
 - `sudo ufw default allow outgoing`
 - `sudo ufw allow ssh`
+- `sudo ufw allow sftp`
 - `sudo ufw allow http`
+- `sudo ufw enable`
 - `sudo ufw status verbose` should result in 
   ```
   Status: active
@@ -60,6 +62,14 @@ Also, I don't know what many of the values mean nor their correct unit or mappin
   ```
 
 ## Hosting with nginx
+This could probably be improved but it's working and I get why it's working - for now that's good enough :)
+
+Composed from the following sources:
+
+- https://github.com/diginex/nginx-spa/blob/master/default.conf (SPA)
+- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#configure-nginx (API)
+- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/blazor/server?view=aspnetcore-3.1#linux-with-nginx (SignalR / WebSocket)
+
 ### Install
 - `sudo apt-get install nginx`
 
@@ -111,7 +121,9 @@ server {
 }
 ```
 
-### Add to the top of the html region in /etc/nginx/nginx.conf
+### Add to the top of the http region in /etc/nginx/nginx.conf
+I'm still not sure if that's the correct place to put this but it seems like it has to go inside the `http` context which is defined in here.
+
 ```
 # For SignalR
 map $http_upgrade $connection_upgrade {
@@ -119,59 +131,3 @@ map $http_upgrade $connection_upgrade {
     ''      close;
 }
 ```
-
-## Backend
-### Deploy
-- `dotnet publish -c Release -r linux-arm`
-- Copy `bin\Release\netcoreapp3.1\linux-arm\publish` to `/home/pi/HeatingDataMonitor`
-- `chmod +x /home/pi/HeatingDataMonitor/HeatingDataMonitor`
-
-### Postgres
-- `sudo apt install postgresql postgresql-client` (Note, this might not be the latest major but that's fine)
-- Change user for first connect: `sudo su postgres`
-- `psql`
-- Do everything in `dbCreate.sql` (there are multiple ways of doing so)
-- For connecting later on: `psql -U heatingDataMonitorUser -h 127.0.0.1 HeatingDataMonitor`
-
-### Systemd service
-#### Add and register
-- `sudo nano /etc/systemd/system/heating-data-monitor.service`
-- Paste 
-  ```
-  [Unit]
-  Description=Heating Data Monitor Backend running on .NET Core
-
-  [Service]
-  WorkingDirectory=/home/pi/HeatingDataMonitor
-  ExecStart=/home/pi/HeatingDataMonitor/HeatingDataMonitor
-  Restart=always
-  # Restart service after 10 seconds if the dotnet service crashes:
-  RestartSec=10
-  KillSignal=SIGINT
-  SyslogIdentifier=heating-data-monitor
-  User=pi
-  Environment=ASPNETCORE_ENVIRONMENT=Production
-  Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
-
-  [Install]
-  WantedBy=multi-user.target
-  ```
-- `sudo systemctl enable heating-data-monitor`
-
-#### Manage
-- `sudo systemctl start heating-data-monitor`
-- `sudo systemctl stop heating-data-monitor`
-- `sudo systemctl status heating-data-monitor`
-- `sudo journalctl -fu heating-data-monitor`
-
-## Frontend
-### Deploy
-- `ng build --prod`
-- Copy `dist\heating-data-monitor\` to `/usr/share/nginx/html/`
-
-## Handy commands
-### Start backend in dev mode from CLI
-`env ASPNETCORE_ENVIRONMENT=Development ./HeatingDataMonitor`
-
-### Adjusting the sequence after importing old data
-`SELECT setval('"HeatingData_Id_seq"', WhateverIdTheLatestRowHas);`
