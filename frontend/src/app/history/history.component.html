@@ -1,0 +1,14 @@
+<div class="container">
+  <mat-form-field>
+    <input
+      type="text"
+      matInput
+      ngxDaterangepickerMd
+      [linkedCalendars]="true"
+      [timePicker]="true"
+      [timePicker24Hour]="true"
+      [(ngModel)]="selected"
+    />
+  </mat-form-field>
+  <div>Chosen date: {{ selected | json }}</div>
+</div>
