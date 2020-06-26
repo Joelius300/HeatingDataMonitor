@@ -1,4 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
+// Created from the mixin with the pre-built material style pink-bluegray.
+// https://github.com/fetrarij/ngx-daterangepicker-material/issues/295#issuecomment-649401754
+@import './datetime-picker-style-workaround/pink-bluegrey.css';
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -18,13 +18,19 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { HistoryComponent } from './history/history.component';
+import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 registerLocaleData(localeDeCh);
 
 @NgModule({
   declarations: [
     AppComponent,
     DashboardComponent,
-    NullHashesPipe
+    NullHashesPipe,
+    HistoryComponent
   ],
   imports: [
     BrowserModule,
@@ -37,9 +43,13 @@ registerLocaleData(localeDeCh);
     MatButtonModule,
     LayoutModule,
     MatToolbarModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
     MatSidenavModule,
     MatListModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    NgxDaterangepickerMd.forRoot()
   ],
   providers: [{provide: LOCALE_ID, useValue: 'de-CH'}],
   bootstrap: [AppComponent]
