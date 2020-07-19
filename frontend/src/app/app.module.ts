@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, LOCALE_ID } from '@angular/core';
 import localeDeCh from '@angular/common/locales/de-CH';
+import { environment } from '../environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -23,6 +24,7 @@ import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { API_BASE_URL } from './model/API_BASE_URL';
 registerLocaleData(localeDeCh);
 
 @NgModule({
@@ -49,9 +51,12 @@ registerLocaleData(localeDeCh);
     MatSidenavModule,
     MatListModule,
     FlexLayoutModule,
-    NgxDaterangepickerMd.forRoot()
+    NgxDaterangepickerMd.forRoot(),
   ],
-  providers: [{provide: LOCALE_ID, useValue: 'de-CH'}],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'de-CH' },
+    { provide: API_BASE_URL, useValue: environment.apiBaseUrl }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
