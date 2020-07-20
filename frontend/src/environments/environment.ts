@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  // When disabling CORS (e.g. via plugin or cli-switch), you can use the deployed url to work with real data (since it's readonly anyway)
   apiBaseUrl: 'http://localhost:5000/'
 };
 

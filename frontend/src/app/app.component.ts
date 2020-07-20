@@ -1,8 +1,9 @@
 import { RealTimeService } from './services/real-time.service';
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, Inject, LOCALE_ID } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
 import { map, shareReplay } from 'rxjs/operators';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-root',
@@ -10,8 +11,6 @@ import { map, shareReplay } from 'rxjs/operators';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'heating-data-monitor';
-
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
@@ -19,7 +18,8 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
   constructor(private breakpointObserver: BreakpointObserver,
-              private realTimeService: RealTimeService) { }
+              private realTimeService: RealTimeService,
+              @Inject(LOCALE_ID) private localeId: string) { }
 
   @HostListener('window:unload')
   disconnect(): Promise<void> {
@@ -27,6 +27,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): Promise<void> {
+    moment.locale(this.localeId);
+
     return this.realTimeService.startConnection();
   }
 
