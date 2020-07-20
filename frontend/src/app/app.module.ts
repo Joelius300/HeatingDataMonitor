@@ -24,6 +24,7 @@ import { NgxDaterangepickerMd } from 'ngx-daterangepicker-material';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { API_BASE_URL } from './model/API_BASE_URL';
 registerLocaleData(localeDeCh);
 
@@ -36,6 +37,7 @@ registerLocaleData(localeDeCh);
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     MatGridListModule,

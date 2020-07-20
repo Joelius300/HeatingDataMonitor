@@ -8,7 +8,8 @@
       [timePicker]="true"
       [timePicker24Hour]="true"
       [(ngModel)]="selected"
+      (ngModelChange)="ngModelChange($event)"
     />
   </mat-form-field>
-  <div>Chosen date: {{ selected | json }}</div>
+  <div #chartContainer class="chart-container"></div>
 </div>

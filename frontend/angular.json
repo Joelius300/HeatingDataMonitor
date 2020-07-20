@@ -30,6 +30,7 @@
             "styles": [
               "./node_modules/ngx-daterangepicker-material/prebuilt-themes/pink-bluegrey.css",
               "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",
+              "./node_modules/uplot/dist/uPlot.min.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -96,6 +97,7 @@
             "styles": [
               "./node_modules/ngx-daterangepicker-material/prebuilt-themes/pink-bluegrey.css",
               "./node_modules/@angular/material/prebuilt-themes/pink-bluegrey.css",
+              "./node_modules/uplot/dist/uPlot.min.css",
               "src/styles.scss"
             ],
             "scripts": []
