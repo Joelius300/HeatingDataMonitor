@@ -42,6 +42,7 @@ namespace HeatingDataMonitor.API.Controllers
 
             Expression<Func<HeatingData, object>> selector = d => new
             {
+                d.ReceivedTime,
                 d.Kessel,
                 d.Boiler_1,
                 d.Puffer_Oben,
