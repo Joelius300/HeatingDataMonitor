@@ -4,7 +4,7 @@ import uPlot from 'uplot';
 import { HttpClient } from '@angular/common/http';
 import { HeatingData } from '../model/heating-data';
 import { API_BASE_URL } from '../model/API_BASE_URL';
-import localeDeCh from '@angular/common/locales/de-CH';
+import { ChartBuilderService } from '../services/chart-builder.service';
 
 @Component({
   selector: 'app-history',
@@ -19,7 +19,8 @@ export class HistoryComponent implements OnInit {
   public selected: { chosenLabel?: string; startDate: moment.Moment; endDate: moment.Moment; };
 
   constructor(@Inject(API_BASE_URL) private apiBaseUrl: string,
-              private httpClient: HttpClient) { }
+              private httpClient: HttpClient,
+              private chartBuilder: ChartBuilderService) { }
 
   ngOnInit(): void {
     const now = moment();
@@ -28,75 +29,36 @@ export class HistoryComponent implements OnInit {
       endDate: now.add(5, 'minutes'),
     };
 
-    const dateNames: uPlot.DateNames = {
-      MMM: localeDeCh[6][1],
-      MMMM: localeDeCh[6][2],
-      WWW: localeDeCh[3][3],
-      WWWW: localeDeCh[3][2]
-    };
-
-    const degreeScaleKey = '° C';
-    const degreeFormatter = (u: uPlot, v: number) => (v == null ? '-' : v.toFixed(2) + ' °');
-    const seriesWidth = 1 / devicePixelRatio;
-
-    this.chartOptions = {
-      title: undefined,
-      width: 0,  // dynamically set
-      height: 0, // dynamically set
-      fmtDate: tpl => uPlot.fmtDate(tpl, dateNames),
-      series: [
-        {
-          label: 'Zeit',
-          value: '{DD}.{MM}.{YYYY} {HH}:{mm}:{ss}'
-        },
-        {
-          label: 'Boiler',
-          scale: degreeScaleKey,
-          value: degreeFormatter,
-          stroke: 'red',
-          width: seriesWidth,
-        },
-        {
-          label: 'Kessel',
-          scale: degreeScaleKey,
-          value: degreeFormatter,
-          stroke: 'blue',
-          width: seriesWidth,
-        },
-        {
-          label: 'Puffer Oben',
-          scale: degreeScaleKey,
-          value: degreeFormatter,
-          stroke: 'green',
-          width: seriesWidth,
-        },
-        {
-          label: 'Puffer Unten',
-          scale: degreeScaleKey,
-          value: degreeFormatter,
-          stroke: 'yellow',
-          width: seriesWidth,
-        },
-      ],
-      axes: [
-        {
-          // You might need to modify the type file for this to compile but the code handles it correctly
-          values: [
-            [3600 * 24 * 365,    '{YYYY}',            7,   '{YYYY}',                       ],
-            [3600 * 24 * 28,     '{MMM}',             7,   '{MMM}\n{YYYY}',                ],
-            [3600 * 24,          '{DD}.{MM}',         7,   '{DD}.{MM}\n{YYYY}',            ],
-            [3600,               '{HH}',              4,   '{HH}\n{DD}.{MM}',              ],
-            [60,                 '{HH}:{mm}',         4,   '{HH}:{mm}\n{DD}.{MM}',         ],
-            [1,                  '{mm}:{ss}',         2,   '{HH}:{mm}:{ss}\n{DD}.{MM}',    ],
-            [1e-3,               '{mm}:{ss}.{fff}',   2,   '{HH}:{mm}:{ss}\n{DD}.{MM}'     ]
-          ]
-        },
-        {
+    const degreeScaleKey = 'degreeCelsius';
+    this.chartOptions = this.chartBuilder.getTimeChartOptions(
+      [
+        this.chartBuilder.getAxis({
           scale: degreeScaleKey,
           values: (u, vals, space) => vals.map((v) => +v.toFixed(1) + '°'),
-        },
+        })
       ],
-    };
+      [
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Boiler',
+          stroke: 'red',
+        }),
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Kessel',
+          stroke: 'blue',
+        }),
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Puffer Oben',
+          stroke: 'green',
+        }),
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Puffer Unten',
+          stroke: 'yellow',
+        })
+      ]);
   }
 
   ngModelChange(e: {startDate: moment.Moment, endDate: moment.Moment}): void {
@@ -110,11 +72,8 @@ export class HistoryComponent implements OnInit {
                         data.map(v => v.Puffer_Unten)
                       ];
 
-                      this.chartOptions.width = this.chartContainer.nativeElement.clientWidth;
-                      this.chartOptions.height = this.chartContainer.nativeElement.clientHeight;
-
                       this.currentChart?.destroy();
-                      this.currentChart = new uPlot(this.chartOptions, chartData, this.chartContainer.nativeElement);
+                      this.currentChart = this.chartBuilder.createChart(this.chartOptions, chartData, this.chartContainer.nativeElement);
                    });
   }
 }
