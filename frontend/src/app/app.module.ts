@@ -26,6 +26,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { API_BASE_URL } from './model/API_BASE_URL';
+import { LiveViewComponent } from './live-view/live-view.component';
 registerLocaleData(localeDeCh);
 
 @NgModule({
@@ -33,7 +34,8 @@ registerLocaleData(localeDeCh);
     AppComponent,
     DashboardComponent,
     NullHashesPipe,
-    HistoryComponent
+    HistoryComponent,
+    LiveViewComponent
   ],
   imports: [
     BrowserModule,

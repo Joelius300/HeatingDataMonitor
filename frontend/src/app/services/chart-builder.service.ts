@@ -57,8 +57,13 @@ export class ChartBuilderService {
 
   private get baseCeliusSeriesConfig(): uPlot.Series {
     return {
-      scale: '° C',
       value: (u: uPlot, v: number) => (v == null ? '-' : v.toFixed(2) + ' °'),
+    };
+  }
+
+  private get basePercentSeriesConfig(): uPlot.Series {
+    return {
+      value: (u: uPlot, v: number) => (v == null ? '-' : v.toFixed(2) + ' %'),
     };
   }
 
@@ -72,6 +77,10 @@ export class ChartBuilderService {
 
   public getCelsiusSeries(options: uPlot.Series): uPlot.Series {
     return Object.assign(this.baseCeliusSeriesConfig, this.getSeries(options));
+  }
+
+  public getPercentSeries(options: uPlot.Series): uPlot.Series {
+    return Object.assign(this.basePercentSeriesConfig, this.getSeries(options));
   }
 
   public getTimeChartOptions(xAxes: uPlot.Axis[],
