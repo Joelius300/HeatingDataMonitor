@@ -77,6 +77,7 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
                      for (const value of values) {
                        this.addChartData(value);
                      }
+                     this.chart?.setData(this.chartData);
                    });
 
     this.subscription = this.realTimeService.currentDataChange.subscribe((newData: HeatingData) => {
