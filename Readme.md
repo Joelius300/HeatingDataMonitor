@@ -15,10 +15,11 @@ I'm using this application as an opportunity to gain experience in several areas
 # Goal
 The app isn't finished yet. The end-goal is to have the following features:
 
-- Real time view of the current state of the heating unit
+- Real time view (dashboard) of the current state of the heating unit
 - History view with graph to inspect the activity within a certain timespan
-- Real time graph of archived datapoints in the last 15 minutes (so the 15 latest entries, updated in real time)
 - A forecast when the heating unit needs to be fired up for the boiler temp not to get below a certain point (using ML)
+- ~~Real time graph of archived datapoints in the last 15 minutes (so the 15 latest entries, updated in real time)~~
+- Real time graph of the last x values received from the heating unit
 
 Also, I don't know what many of the values mean nor their correct unit or mapping (for enums). I'll have to contact the manufacturer of the heating unit in order to correctly display and interpret those.
 
@@ -131,3 +132,31 @@ map $http_upgrade $connection_upgrade {
     ''      close;
 }
 ```
+
+# Questions and resources
+There were some questions and issues that came up along the journey as well as some resources I used.
+- [Correct way of specifying similar locations for nginx (StackOverflow)](https://superuser.com/questions/1559030/correct-way-of-specifying-similar-locations-for-nginx)
+- [Selection isn't highlighted (Issue in ngx-daterangepicker)](https://github.com/fetrarij/ngx-daterangepicker-material/issues/295)
+- [How (not) to use Machine Learning for time series forecasting: Avoiding the pitfalls](https://towardsdatascience.com/how-not-to-use-machine-learning-for-time-series-forecasting-avoiding-the-pitfalls-19f9d7adf424)
+- [Forecasting: Principles and Practice (by Rob J Hyndman and George Athanasopoulos)](https://otexts.com/fpp3/)
+- [An Overview of ML.Net (by KTL Solutions)](https://www.erpsoftwareblog.com/2019/04/an-overview-of-ml-net/)
+- [Angular Docs](https://angular.io/docs)
+- [Angular Material Docs](https://material.angular.io/)
+- [SignalR Core Docs](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-3.1)
+
+# Credits / Licenses
+- Frontend page icon (TODO: SELECT AND ATTRIBUTE)
+  - https://icons8.com/icon/22561/temperature-inside (https://icons8.com/license)
+  - https://www.flaticon.com/free-icon/thermometer_899746 (https://support.flaticon.com/hc/en-us/articles/207248209-How-I-must-insert-the-attribution-)
+- [angular/components](https://github.com/angular/components) ([MIT](https://github.com/angular/components/blob/master/LICENSE))  
+  Component infrastructure and Material Design components for Angular
+- [angular/flex-layout](https://github.com/angular/flex-layout) ([MIT](https://github.com/angular/flex-layout/blob/master/LICENSE))  
+  Provides HTML UI layout for Angular applications; using Flexbox and a Responsive API
+- [μPlot](https://github.com/leeoniya/uPlot) ([MIT](https://github.com/leeoniya/uPlot/blob/master/LICENSE))  
+  A small, fast chart for time series, lines, areas, ohlc & bars
+- [ngx-daterangepicker-material](https://github.com/fetrarij/ngx-daterangepicker-material) ([MIT](https://github.com/fetrarij/ngx-daterangepicker-material/blob/master/LICENSE))  
+  Pure Angular 2+ date range picker with material design theme
+- [Moment.js](https://momentjs.com/) ([MIT](https://github.com/moment/moment/blob/develop/LICENSE))  
+  Parse, validate, manipulate, and display dates in javascript.
+- [CsvHelper](https://github.com/JoshClose/CsvHelper)  ([Apache-2.0/Ms-Pl](https://github.com/JoshClose/CsvHelper/blob/master/LICENSE.txt))  
+  Library to help reading and writing CSV files
