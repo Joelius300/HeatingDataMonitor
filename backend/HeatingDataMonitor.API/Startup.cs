@@ -65,6 +65,9 @@ namespace HeatingDataMonitor.API
                                                    .WithOrigins("http://localhost:4200"));
             });
 
+            services.AddOptions<CacheOptions>()
+                    .Bind(Configuration.GetSection("Cache"));
+
             IConfiguration serialSection = Configuration.GetSection("Serial");
             services.AddOptions<SerialHeatingDataOptions>()
                     .Bind(serialSection);
@@ -81,6 +84,9 @@ namespace HeatingDataMonitor.API
                 services.AddSerialPortHeatingDataReceiver();
                 services.AddHostedService<HeatingDataHistoryService>();
             }
+
+            services.AddSingleton<HeatingDataCacheService>();
+            services.AddHostedService(sp => sp.GetRequiredService<HeatingDataCacheService>());
 
             services.AddHostedService<HeatingDataRealTimeService>();
         }

@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, Inject } from '@angular/core';
 import uPlot from 'uplot';
 import { ChartBuilderService } from '../services/chart-builder.service';
 import { RealTimeService } from '../services/real-time.service';
 import { HeatingData } from '../model/heating-data';
 import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../model/API_BASE_URL';
 
 @Component({
   selector: 'app-live-view',
@@ -21,7 +23,9 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly MaxCount = 100;
 
   constructor(private chartBuilder: ChartBuilderService,
-              private realTimeService: RealTimeService) { }
+              private realTimeService: RealTimeService,
+              private httpClient: HttpClient,
+              @Inject(API_BASE_URL) private apiBaseUrl: string) { }
 
   ngOnInit(): void {
     const degreeScaleKey = 'degreeCelsius';
@@ -68,14 +72,12 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
       ]);
 
     this.chartData = [[], [], [], [], [], []];
-
-    // TODO instead, fetch the last N values from endpoint. this replaces latest kessel values
-    // the MaxCount is passed to the endpoint as the maximum to return. it's probably not
-    // going to cache that many anyway for memory reasons.
-    const currentData = this.realTimeService.currentData;
-    if (currentData) {
-      this.addChartData(currentData);
-    }
+    this.httpClient.get<HeatingData[]>(`${this.apiBaseUrl}api/HeatingDataHistory/CachedValues?count=${this.MaxCount}`)
+                   .subscribe(values => {
+                     for (const value of values) {
+                       this.addChartData(value);
+                     }
+                   });
 
     this.subscription = this.realTimeService.currentDataChange.subscribe((newData: HeatingData) => {
       this.addChartData(newData);

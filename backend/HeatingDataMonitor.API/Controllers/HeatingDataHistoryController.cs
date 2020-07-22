@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.History;
 using HeatingDataMonitor.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,13 @@ namespace HeatingDataMonitor.API.Controllers
     [Route("api/[controller]")]
     public class HeatingDataHistoryController : ControllerBase
     {
-        private const int MaxFetchCount = 1000;
         private readonly HeatingDataDbContext _dbContext;
+        private readonly HeatingDataCacheService _cacheService;
 
-        public HeatingDataHistoryController(HeatingDataDbContext dbContext)
+        public HeatingDataHistoryController(HeatingDataDbContext dbContext, HeatingDataCacheService cacheService)
         {
             _dbContext = dbContext;
+            _cacheService = cacheService;
         }
 
         [HttpGet]
@@ -57,19 +59,13 @@ namespace HeatingDataMonitor.API.Controllers
             return Ok(data);
         }
 
-        [HttpGet("LatestKesselValues")]
-        public async Task<IActionResult> GetLatestKesselValues([FromQuery] int count)
+        [HttpGet("CachedValues")]
+        public IActionResult GetCachedValues([FromQuery] int count)
         {
-            if (count > MaxFetchCount)
-                return BadRequest($"The maximum number of values you're allowed to fetch is {MaxFetchCount}.");
-
-            var data = await _dbContext.HeatingData
-                                       .OrderBy(d => d.ReceivedTime)
-                                       .Select(d => d.Kessel)
-                                       .Take(count)
-                                       .ToListAsync();
-
-            return Ok(data);
+            if (count <= 0)
+                return BadRequest();
+            
+            return Ok(_cacheService.GetCache(count));
         }
     }
 }
