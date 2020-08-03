@@ -26,18 +26,18 @@ namespace HeatingDataMonitor.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<HeatingData>>> Get([FromQuery] Instant from, [FromQuery] Instant to)
+        public IActionResult Get([FromQuery] Instant from, [FromQuery] Instant to)
         {
             if (from > to)
                 return BadRequest();
 
-            return await _dbContext.HeatingData
-                                   .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
-                                   .ToListAsync();
+            return Ok(_dbContext.HeatingData
+                                .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
+                                .OrderBy(d => d.ReceivedTime));
         }
 
         [HttpGet("MainTemperatures")]
-        public async Task<IActionResult> GetMainTemperatures([FromQuery] Instant from, [FromQuery] Instant to)
+        public IActionResult GetMainTemperatures([FromQuery] Instant from, [FromQuery] Instant to)
         {
             if (from > to)
                 return BadRequest();
@@ -51,10 +51,10 @@ namespace HeatingDataMonitor.API.Controllers
                 d.Puffer_Unten
             };
 
-            var data = await _dbContext.HeatingData
-                                       .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
-                                       .Select(selector)
-                                       .ToListAsync();
+            var data = _dbContext.HeatingData
+                                 .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
+                                 .OrderBy(d => d.ReceivedTime)
+                                 .Select(selector);
 
             return Ok(data);
         }
