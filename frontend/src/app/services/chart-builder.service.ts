@@ -15,13 +15,13 @@ export class ChartBuilderService {
   };
 
   private readonly deChAxisValues = [
-    [3600 * 24 * 365, '{YYYY}', 7, '{YYYY}',],
-    [3600 * 24 * 28, '{MMM}', 7, '{MMM}\n{YYYY}',],
-    [3600 * 24, '{DD}.{MM}', 7, '{DD}.{MM}\n{YYYY}',],
-    [3600, '{HH}', 4, '{HH}\n{DD}.{MM}',],
-    [60, '{HH}:{mm}', 4, '{HH}:{mm}\n{DD}.{MM}',],
-    [1, '{mm}:{ss}', 2, '{HH}:{mm}:{ss}\n{DD}.{MM}',],
-    [1e-3, '{mm}:{ss}.{fff}', 2, '{HH}:{mm}:{ss}\n{DD}.{MM}']
+    [3600 * 24 * 365,   '{YYYY}',           7,  '{YYYY}',                     false],
+    [3600 * 24 * 28,    '{MMM}',            7,  '\n{YYYY}',                   true ],
+    [3600 * 24,         '{DD}.{MM}',        7,  '\n{YYYY}',                   true ],
+    [3600,              '{HH}',             4,  '\n{DD}.{MM}',                true ],
+    [60,                '{HH}:{mm}',        4,  '\n{DD}.{MM}',                true ],
+    [1,                 '{mm}:{ss}',        2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  false],
+    [1e-3,              '{mm}:{ss}.{fff}',  2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  false]
   ];
 
   private readonly deChDateFormatter = (tpl: string) => uPlot.fmtDate(tpl, this.deChDateNames);
