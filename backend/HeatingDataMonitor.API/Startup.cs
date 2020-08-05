@@ -52,6 +52,8 @@ namespace HeatingDataMonitor.API
                            // We only add and fetch rows so we don't need to waste performance on tracking.
                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
+            services.AddSingleton(typeof(IJsonStreamingResultExecutor<>), typeof(JsonStreamingResultExecutor<>));
+
             services.AddSignalR()
                     .AddJsonProtocol(options => _configureJsonOptions(options.PayloadSerializerOptions));
 

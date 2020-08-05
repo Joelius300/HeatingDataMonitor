@@ -8,6 +8,7 @@ using HeatingDataMonitor.History;
 using HeatingDataMonitor.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NodaTime;
 
 namespace HeatingDataMonitor.API.Controllers
@@ -18,11 +19,13 @@ namespace HeatingDataMonitor.API.Controllers
     {
         private readonly HeatingDataDbContext _dbContext;
         private readonly HeatingDataCacheService _cacheService;
+        private readonly JsonOptions _jsonOptions;
 
-        public HeatingDataHistoryController(HeatingDataDbContext dbContext, HeatingDataCacheService cacheService)
+        public HeatingDataHistoryController(HeatingDataDbContext dbContext, HeatingDataCacheService cacheService, IOptions<JsonOptions> jsonOptions)
         {
             _dbContext = dbContext;
             _cacheService = cacheService;
+            _jsonOptions = jsonOptions.Value;
         }
 
         [HttpGet]
@@ -31,9 +34,11 @@ namespace HeatingDataMonitor.API.Controllers
             if (from > to)
                 return BadRequest();
 
-            return Ok(_dbContext.HeatingData
-                                .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
-                                .OrderBy(d => d.ReceivedTime));
+            var data = _dbContext.HeatingData
+                                 .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
+                                 .OrderBy(d => d.ReceivedTime);
+
+            return JsonStreamingResult.Create(data, _jsonOptions.JsonSerializerOptions);
         }
 
         [HttpGet("MainTemperatures")]
@@ -42,21 +47,19 @@ namespace HeatingDataMonitor.API.Controllers
             if (from > to)
                 return BadRequest();
 
-            Expression<Func<HeatingData, object>> selector = d => new
-            {
-                d.ReceivedTime,
-                d.Kessel,
-                d.Boiler_1,
-                d.Puffer_Oben,
-                d.Puffer_Unten
-            };
-
             var data = _dbContext.HeatingData
                                  .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
                                  .OrderBy(d => d.ReceivedTime)
-                                 .Select(selector);
+                                 .Select(d => new
+                                 {
+                                     d.ReceivedTime,
+                                     d.Kessel,
+                                     d.Boiler_1,
+                                     d.Puffer_Oben,
+                                     d.Puffer_Unten
+                                 });
 
-            return Ok(data);
+            return JsonStreamingResult.Create(data, _jsonOptions.JsonSerializerOptions);
         }
 
         [HttpGet("CachedValues")]
