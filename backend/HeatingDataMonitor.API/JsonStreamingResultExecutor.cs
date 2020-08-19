@@ -16,6 +16,8 @@ namespace HeatingDataMonitor.API
 {
     internal class JsonStreamingResultExecutor<T> : IJsonStreamingResultExecutor<T>
     {
+        private const int BufferSizeTheshold = 4 * 1024 * 1024;
+
         public async Task ExecuteAsync(ActionContext context, JsonStreamingResult<T> result)
         {
             HttpResponse response = context.HttpContext.Response;
@@ -26,35 +28,34 @@ namespace HeatingDataMonitor.API
             // Once that's implemented, this can be simplified and optimized a lot
             if (result.Data is IAsyncEnumerable<T> asyncEnumerable)
             {
-                Utf8JsonWriter writer = new Utf8JsonWriter(response.Body);
+                using MemoryStream memoryStream = new MemoryStream();
+                Utf8JsonWriter writer = new Utf8JsonWriter(memoryStream);
+
                 try
                 {
-                    writer.WriteStartArray(); // won't cause a flush
+                    writer.WriteStartArray();
 
                     await foreach (T value in asyncEnumerable)
                     {
-                        /* It's important that this method calls SerializeAsync instead of Serialize
-                         * because the network stream only accepts async writes.
-                         * Unfortunately, there's no SerializeAsync method which takes a Utf8JsonWriter
-                         * and thus a new one is created for every single value which is quite a few
-                         * in our scenario. There's also a buffer created on every single pass.
-                         * See here: https://github.com/dotnet/runtime/blob/fe41d3c762695cfeb364a8a0b61e2e376d22da5a/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/JsonSerializer.Write.Stream.cs#L107-L108
-                         * I believe that might be the reason the performance isn't improved but in fact worse.
-                         */
-                        await JsonSerializer.SerializeAsync(response.Body, value, result.SerializerOptions).ConfigureAwait(false);
+                        JsonSerializer.Serialize(writer, value, result.SerializerOptions);
+
+                        if (memoryStream.Length >= BufferSizeTheshold)
+                        {
+                            memoryStream.Position = 0;
+                            await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
+                            memoryStream.Position = 0;
+                            memoryStream.SetLength(0);
+                        }
                     }
 
-                    // Make 100% sure the array-end can't be the trigger for a synchronous
-                    // flush which would result in an exception.
-                    await writer.FlushAsync().ConfigureAwait(false);
-
-                    // won't flush because everything was just flushed
                     writer.WriteEndArray();
                 }
                 finally
                 {
                     // flush the array-end and close
                     await writer.DisposeAsync().ConfigureAwait(false);
+                    memoryStream.Position = 0;
+                    await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
                 }
             }
             else
