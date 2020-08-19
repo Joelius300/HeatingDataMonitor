@@ -9,9 +9,9 @@ using System.Text;
 
 namespace HeatingDataMonitor.Model
 {
-    internal class HeatingDataCsvMap : ClassMap<HeatingData>
+    public class HeatingDataCsvMap : ClassMap<HeatingData>
     {
-        private static readonly IPattern<LocalDateTime> s_dateTimePattern =
+        protected static IPattern<LocalDateTime> DateTimeReadPattern { get; } =
             LocalDateTimePattern.Create("dd.MM.yyHH:mm:ss", CultureInfo.InvariantCulture);
 
         public HeatingDataCsvMap()
@@ -80,7 +80,7 @@ namespace HeatingDataMonitor.Model
             string datePart = row.GetField<string>(0);
             string timePart = row.GetField<string>(1);
 
-            return s_dateTimePattern.Parse(datePart + timePart).Value;
+            return DateTimeReadPattern.Parse(datePart + timePart).Value;
         }
     }
 }

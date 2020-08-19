@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.Data", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MigrateExistingData", "MigrateExistingData\MigrateExistingData.csproj", "{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{CA00B068-D438-4B69-B222-A4C6E7D980B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{CA00B068-D438-4B69-B222-A4C6E7D980B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Backup", "HeatingDataMonitor.Backup\HeatingDataMonitor.Backup.csproj", "{CBC4E01E-AD05-4E2B-9BF9-351F5ED34B24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBC4E01E-AD05-4E2B-9BF9-351F5ED34B24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBC4E01E-AD05-4E2B-9BF9-351F5ED34B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBC4E01E-AD05-4E2B-9BF9-351F5ED34B24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBC4E01E-AD05-4E2B-9BF9-351F5ED34B24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
