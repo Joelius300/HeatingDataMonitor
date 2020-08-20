@@ -16,7 +16,7 @@ namespace HeatingDataMonitor.API
 {
     internal class JsonStreamingResultExecutor<T> : IJsonStreamingResultExecutor<T>
     {
-        private const int BufferSizeTheshold = 4 * 1024 * 1024;
+        private const int BufferSizeThreshold = 4 * 1024 * 1024;
 
         public async Task ExecuteAsync(ActionContext context, JsonStreamingResult<T> result)
         {
@@ -35,14 +35,14 @@ namespace HeatingDataMonitor.API
                 {
                     writer.WriteStartArray();
 
-                    await foreach (T value in asyncEnumerable)
+                    await foreach (T value in asyncEnumerable.ConfigureAwait(false))
                     {
                         JsonSerializer.Serialize(writer, value, result.SerializerOptions);
 
-                        if (memoryStream.Length >= BufferSizeTheshold)
+                        if (memoryStream.Length >= BufferSizeThreshold)
                         {
                             memoryStream.Position = 0;
-                            await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
+                            await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted).ConfigureAwait(false);
                             memoryStream.Position = 0;
                             memoryStream.SetLength(0);
                         }
@@ -55,7 +55,7 @@ namespace HeatingDataMonitor.API
                     // flush the array-end and close
                     await writer.DisposeAsync().ConfigureAwait(false);
                     memoryStream.Position = 0;
-                    await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted);
+                    await memoryStream.CopyToAsync(response.Body, context.HttpContext.RequestAborted).ConfigureAwait(false);
                 }
             }
             else
