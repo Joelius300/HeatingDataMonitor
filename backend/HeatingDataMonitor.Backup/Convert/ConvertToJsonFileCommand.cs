@@ -13,7 +13,7 @@ namespace HeatingDataMonitor.Backup.Convert
     [Command("convert toJsonFile", Description = "Converts a 7z-archive backup file to a single json file.")]
     public class ConvertToJsonFileCommand : ICommand
     {
-        [CommandParameter(0, Description = ]
+        [CommandParameter(0, Description = "The 7z-archive to convert to a single file.")]
         public string Archive { get; set; }
 
         [CommandOption("output", 'o', Description = "The path to save the json file to.")]
