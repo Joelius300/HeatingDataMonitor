@@ -145,6 +145,10 @@ There were some questions and issues that came up along the journey as well as s
 - [SignalR Core Docs](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-3.1)
 
 # Credits / Licenses
+This project is licensed under the [GNU Affero General Public License Version 3](https://www.gnu.org/licenses/agpl-3.0.en.html). This applies to every file within this repository unless there is a license notice at the top of the file that says otherwise.  
+If you have any questions about this or would like to use a specific part under a different license, please open an issue and I'll try my best to assist.
+
+## Used in the project
 - Frontend page icon (TODO: SELECT AND ATTRIBUTE)
   - https://icons8.com/icon/22561/temperature-inside (https://icons8.com/license)
   - https://www.flaticon.com/free-icon/thermometer_899746 (https://support.flaticon.com/hc/en-us/articles/207248209-How-I-must-insert-the-attribution-)
