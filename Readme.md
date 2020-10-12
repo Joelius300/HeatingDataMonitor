@@ -23,6 +23,11 @@ The app isn't finished yet. The end-goal is to have the following features:
 
 Also, I don't know what many of the values mean nor their correct unit or mapping (for enums). I'll have to contact the manufacturer of the heating unit in order to correctly display and interpret those.
 
+# Demo
+The interface isn't the prettiest but it gets the job done :)
+
+![Demo](Demo.gif)
+
 # Setup
 ## Enable Serial Port on Raspberry Pi (4)
 - Get a Serial HAT (e.g. [ModMyPi Serial HAT RS232](https://www.pi-shop.ch/modmypi-serial-hat-rs232))
