@@ -64,6 +64,11 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
           label: 'Puffer Unten',
           stroke: 'yellow',
         }),
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Abgas',
+          stroke: 'white'
+        }),
         this.chartBuilder.getPercentSeries({
           scale: percentScaleKey,
           label: 'CO2',
@@ -71,7 +76,7 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       ]);
 
-    this.chartData = [[], [], [], [], [], []];
+    this.chartData = [[], [], [], [], [], [], []];
     this.httpClient.get<HeatingData[]>(`${this.apiBaseUrl}api/HeatingDataHistory/CachedValues?count=${this.MaxCount}`)
                    .subscribe(values => {
                      for (const value of values) {
@@ -96,7 +101,8 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.chartData[2].push(data.Kessel);
     this.chartData[3].push(data.Puffer_Oben);
     this.chartData[4].push(data.Puffer_Unten);
-    this.chartData[5].push(data.CO2_Ist);
+    this.chartData[5].push(data.Abgas);
+    this.chartData[6].push(data.CO2_Ist);
 
     const length = this.chartData[0].length;
     if (length > this.MaxCount) {
