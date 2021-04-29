@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import uPlot from 'uplot';
 import localeDeCh from '@angular/common/locales/de-CH';
-import { R3TargetBinder } from '@angular/compiler';
 
 @Injectable({
   providedIn: 'root'
@@ -15,13 +14,13 @@ export class ChartBuilderService {
   };
 
   private readonly deChAxisValues = [
-    [3600 * 24 * 365,   '{YYYY}',           7,  '{YYYY}',                     false],
-    [3600 * 24 * 28,    '{MMM}',            7,  '\n{YYYY}',                   true ],
-    [3600 * 24,         '{DD}.{MM}',        7,  '\n{YYYY}',                   true ],
-    [3600,              '{HH}',             4,  '\n{DD}.{MM}',                true ],
-    [60,                '{HH}:{mm}',        4,  '\n{DD}.{MM}',                true ],
-    [1,                 '{mm}:{ss}',        2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  false],
-    [1e-3,              '{mm}:{ss}.{fff}',  2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  false]
+    [3600 * 24 * 365,   '{YYYY}',           7,  '{YYYY}',                     0],
+    [3600 * 24 * 28,    '{MMM}',            7,  '\n{YYYY}',                   1],
+    [3600 * 24,         '{DD}.{MM}',        7,  '\n{YYYY}',                   1],
+    [3600,              '{HH}',             4,  '\n{DD}.{MM}',                1],
+    [60,                '{HH}:{mm}',        4,  '\n{DD}.{MM}',                1],
+    [1,                 '{mm}:{ss}',        2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  0],
+    [1e-3,              '{mm}:{ss}.{fff}',  2,  '{HH}:{mm}:{ss}\n{DD}.{MM}',  0]
   ];
 
   private readonly deChDateFormatter = (tpl: string) => uPlot.fmtDate(tpl, this.deChDateNames);
