@@ -57,6 +57,11 @@ export class HistoryComponent implements OnInit {
           scale: degreeScaleKey,
           label: 'Puffer Unten',
           stroke: 'yellow',
+        }),
+        this.chartBuilder.getCelsiusSeries({
+          scale: degreeScaleKey,
+          label: 'Abgas',
+          stroke: 'white'
         })
       ]);
   }
@@ -69,7 +74,8 @@ export class HistoryComponent implements OnInit {
                         data.map(v => v.Boiler_1),
                         data.map(v => v.Kessel),
                         data.map(v => v.Puffer_Oben),
-                        data.map(v => v.Puffer_Unten)
+                        data.map(v => v.Puffer_Unten),
+                        data.map(v => v.Abgas)
                       ];
 
                       this.currentChart?.destroy();

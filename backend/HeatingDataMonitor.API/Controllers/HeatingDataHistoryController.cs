@@ -56,7 +56,8 @@ namespace HeatingDataMonitor.API.Controllers
                                      d.Kessel,
                                      d.Boiler_1,
                                      d.Puffer_Oben,
-                                     d.Puffer_Unten
+                                     d.Puffer_Unten,
+                                     d.Abgas
                                  });
 
             return JsonStreamingResult.Create(data, _jsonOptions.JsonSerializerOptions);
