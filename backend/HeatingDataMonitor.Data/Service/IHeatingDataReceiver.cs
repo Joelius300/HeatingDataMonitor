@@ -1,15 +1,11 @@
-﻿using HeatingDataMonitor.Model;
+﻿using System;
+using HeatingDataMonitor.Data.Model;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace HeatingDataMonitor.Service
+namespace HeatingDataMonitor.Data.Service;
+
+public interface IHeatingDataReceiver : IHostedService
 {
-    public interface IHeatingDataReceiver : IHostedService
-    {
-        event EventHandler<HeatingData> DataReceived;
-        HeatingData Current { get; }
-    }
+    event EventHandler<HeatingData> DataReceived;
+    HeatingData? Current { get; }
 }

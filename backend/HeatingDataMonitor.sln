@@ -1,15 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.API", "HeatingDataMonitor.API\HeatingDataMonitor.API.csproj", "{1940F4AC-D36A-4791-A7B9-ABAC01289524}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{EF31B55C-4187-4968-8B91-B5E239389CCB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeatingDataMonitor.Data", "HeatingDataMonitor.Data\HeatingDataMonitor.Data.csproj", "{9793B6AE-882F-46DC-8F5A-3138D4E8E534}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Data", "HeatingDataMonitor.Data\HeatingDataMonitor.Data.csproj", "{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MigrateExistingData", "MigrateExistingData\MigrateExistingData.csproj", "{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{CA00B068-D438-4B69-B222-A4C6E7D980B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.API", "HeatingDataMonitor.API\HeatingDataMonitor.API.csproj", "{E28A6109-CA90-4193-9DDF-5E10B1D8418D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,27 +12,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1940F4AC-D36A-4791-A7B9-ABAC01289524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1940F4AC-D36A-4791-A7B9-ABAC01289524}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1940F4AC-D36A-4791-A7B9-ABAC01289524}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1940F4AC-D36A-4791-A7B9-ABAC01289524}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9793B6AE-882F-46DC-8F5A-3138D4E8E534}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07A500D8-B8A2-4CC6-8BAE-F5C83E4C305E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA00B068-D438-4B69-B222-A4C6E7D980B4}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F72D5724-4BBE-432A-A1C1-634B0F808887}
+		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

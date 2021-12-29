@@ -65,3 +65,4 @@ Note the double quotes in single quotes, those are very important for the case s
 - `sudo systemctl stop heating-data-monitor`
 - `sudo systemctl status heating-data-monitor`
 - `sudo journalctl -fu heating-data-monitor`
+ 

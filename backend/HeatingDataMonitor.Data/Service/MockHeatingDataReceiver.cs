@@ -1,122 +1,136 @@
-﻿using CsvHelper;
+﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using CsvHelper;
 using CsvHelper.Configuration;
-using HeatingDataMonitor.Model;
-using HeatingDataMonitor.Service;
-using Microsoft.Extensions.Configuration;
+using HeatingDataMonitor.Data.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NodaTime;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace HeatingDataMonitor.Service
+namespace HeatingDataMonitor.Data.Service;
+
+// This contains too much redundancy from SerialPortHeatingDataReceiver. Maybe base class.
+public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataReceiver
 {
-    // This contains too much redundancy from SerialPortHeatingDataReceiver. Maybe base class.
-    public class MockHeatingDataReceiver : BackgroundService, IHeatingDataReceiver
+    private readonly SerialHeatingDataOptions _options;
+    private readonly ILogger<MockHeatingDataReceiver> _logger;
+    private readonly IClock _clock;
+    private StreamReader _fileReader = null!;
+    private CsvReader _csvReader = null!;
+
+    public event EventHandler<HeatingData>? DataReceived;
+    public HeatingData? Current { get; private set; }
+
+    public MockHeatingDataReceiver(IOptions<SerialHeatingDataOptions> options, ILogger<MockHeatingDataReceiver> logger, IClock clock)
     {
-        private readonly SerialHeatingDataOptions _options;
-        private readonly ILogger<MockHeatingDataReceiver> _logger;
-        private StreamReader _fileReader;
-        private CsvReader _csvReader;
+        _options = options.Value;
+        _logger = logger;
+        _clock = clock;
+    }
 
-        public event EventHandler<HeatingData> DataReceived;
-        public HeatingData Current { get; private set; }
+    private void OnDataReceived(HeatingData data)
+    {
+        Current = data;
+        DataReceived?.Invoke(this, data);
+    }
 
-        public MockHeatingDataReceiver(IOptions<SerialHeatingDataOptions> options, ILogger<MockHeatingDataReceiver> logger)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        if (string.IsNullOrWhiteSpace(_options.PortName))
+            throw new InvalidOperationException("The specified file (port name) can't be null or whitespace.");
+
+        if (!Path.GetExtension(_options.PortName).Equals(".csv", StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(_options.PortName))
         {
-            _options = options.Value;
-            _logger = logger;
+            _logger.LogError("The sample data file at '{PortName}' is not an existing csv file", _options.PortName);
+            return;
         }
 
-        protected virtual void OnDataReceived(HeatingData data)
-        {
-            Current = data;
-            DataReceived?.Invoke(this, data);
-        }
+        // TODO Improve csvReader instantiation logic (refactor method)
+        CsvConfiguration csvConfig = CreateCsvOptions();
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            if (string.IsNullOrWhiteSpace(_options.PortName))
-                throw new InvalidOperationException("The specified file (port name) can't be null or whitespace.");
+        _fileReader = new StreamReader(_options.PortName);
+        _csvReader = new CsvReader(_fileReader, csvConfig);
+        _csvReader.Context.RegisterClassMap<HeatingDataCsvMap>();
 
-            if (!Path.GetExtension(_options.PortName).Equals(".csv", StringComparison.OrdinalIgnoreCase) ||
-                !File.Exists(_options.PortName))
+        while (!stoppingToken.IsCancellationRequested &&
+               await _csvReader.ReadAsync())
+        {
+            HeatingData? record = null;
+            try
             {
-                _logger.LogError($"The sample data file at '{_options.PortName}' is not an existing csv file.");
-                return;
+                record = _csvReader.GetRecord<HeatingData>();
+            }
+            catch (CsvHelperException e)
+            {
+                // Todo optimize logging arguments
+                StringBuilder sb = new();
+                sb.AppendLine($"Couldn't parse record to {nameof(HeatingData)}.");
+                if (e.InnerException != null)
+                {
+                    sb.AppendLine($"Reason: {e.InnerException.Message}");
+                }
+                sb.AppendLine($"Record: {e.Context.Parser.RawRecord}");
+                _logger.LogError(sb.ToString());
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Unexpected exception while reading data - Aborting");
+                break;
             }
 
-            CsvConfiguration csvConfig = CreateCsvOptions();
-
-            _fileReader = new StreamReader(_options.PortName);
-            _csvReader = new CsvReader(_fileReader, csvConfig);
-
-            while (!stoppingToken.IsCancellationRequested &&
-                   _csvReader.Read())
+            if (record != null)
             {
-                HeatingData record = null;
-                try
-                {
-                    record = _csvReader.GetRecord<HeatingData>();
-                }
-                catch (CsvHelperException e)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine($"Couldn't parse record to {nameof(HeatingData)}.");
-                    if (e.InnerException != null)
-                    {
-                        sb.AppendLine($"Reason: {e.InnerException.Message}");
-                    }
-                    sb.AppendLine($"Record: {e.ReadingContext.RawRecord}");
-                    _logger.LogError(sb.ToString());
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Unexpected exception while reading data. Aborting.");
-                    break;
-                }
+                record.ReceivedTime = _clock.GetCurrentInstant();
+                OnDataReceived(record);
+            }
 
-                if (record != null)
-                {
-                    record.ReceivedTime = SystemClock.Instance.GetCurrentInstant();
-                    OnDataReceived(record);
-                }
-
-                try
-                {
-                    await Task.Delay(3000, stoppingToken);
-                }
-                catch (TaskCanceledException e)
-                {
-                    _logger.LogDebug(e.Message);
-                    break;
-                }
+            try
+            {
+                await Task.Delay(3000, stoppingToken);
+            }
+            catch (TaskCanceledException e)
+            {
+                _logger.LogDebug(e.Message);
+                break;
             }
         }
+    }
 
-        private CsvConfiguration CreateCsvOptions()
+    private CsvConfiguration CreateCsvOptions()
+    {
+        if (string.IsNullOrEmpty(_options.Delimiter))
+            throw new InvalidOperationException("The specified delimiter is invalid.");
+
+        CsvConfiguration config = new(CultureInfo.InvariantCulture)
         {
-            if (string.IsNullOrEmpty(_options.Delimiter))
-                throw new InvalidOperationException("The specified delimiter is invalid.");
+            Delimiter = _options.Delimiter,
+            IgnoreBlankLines = true,
+            HasHeaderRecord = false
+        };
 
-            CsvConfiguration config = new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                Delimiter = _options.Delimiter,
-                IgnoreBlankLines = true,
-                IgnoreQuotes = _options.ReadQuotesAsText,
-                HasHeaderRecord = false
-            };
+        return config;
+    }
 
-            config.RegisterClassMap<HeatingDataCsvMap>();
+    private void Dispose(bool disposing)
+    {
+        if (!disposing)
+            return;
 
-            return config;
-        }
+        _fileReader.Dispose();
+        _csvReader.Dispose();
+
+        // No need to dispose base as it would only cancel the service which
+        // must already be done, otherwise this instance wouldn't get disposed.
+    }
+
+    public override void Dispose()
+    {
+        Dispose(true);
     }
 }

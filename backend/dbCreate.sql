@@ -89,5 +89,6 @@ CREATE ROLE "heatingDataMonitorUser" WITH
 	NOREPLICATION
 	CONNECTION LIMIT -1
 	PASSWORD 'dontworrythispasswordwillchangeinproduction';
-	
+
 GRANT "heatingDataMonitorRole" TO "heatingDataMonitorUser";
+

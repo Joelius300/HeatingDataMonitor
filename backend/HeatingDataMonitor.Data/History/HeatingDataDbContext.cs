@@ -1,17 +1,13 @@
-﻿using HeatingDataMonitor.Model;
+﻿using HeatingDataMonitor.Data.Model;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace HeatingDataMonitor.History
+namespace HeatingDataMonitor.Data.History;
+
+public class HeatingDataDbContext : DbContext
 {
-    public class HeatingDataDbContext : DbContext
-    {
-        public DbSet<HeatingData> HeatingData { get; set; }
+    public DbSet<HeatingData> HeatingData { get; set; } = null!;
 
-        public HeatingDataDbContext(DbContextOptions options) : base(options)
-        {
-        }
+    public HeatingDataDbContext(DbContextOptions options) : base(options)
+    {
     }
 }

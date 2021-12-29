@@ -1,26 +1,24 @@
-﻿using HeatingDataMonitor.Service;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace HeatingDataMonitor.Data.Service;
+
+// Inspired by the ..ServiceCollectionExtensions in the aspnetcore middlewares
+public static class HeatingDataReceiverServiceCollectionExtensions
 {
-    // Inspired by the ..ServiceCollectionExtensions in the aspnetcore middlewares
-    public static class HeatingDataReceiverServiceCollectionExtensions
+    public static IServiceCollection AddSerialPortHeatingDataReceiver(this IServiceCollection services)
     {
-        public static IServiceCollection AddSerialPortHeatingDataReceiver(this IServiceCollection services)
-        {
-            services.AddOptions(); // add options if not done yet
+        services.AddOptions(); // add options if not done yet
 
-            // If IConfigureOptions<SerialPortOptions> was already registered, this doesn't do anything.
-            services.TryAddTransient<IConfigureOptions<SerialHeatingDataOptions>, SerialHeatingDataOptionsSetup>();
+        // If IConfigureOptions<SerialPortOptions> was already registered, this doesn't do anything.
+        // If no options were configured, this setup instantiates a default config with the first
+        // serial port found on this machine.
+        services.TryAddTransient<IConfigureOptions<SerialHeatingDataOptions>, SerialHeatingDataOptionsSetup>();
 
-            services.AddSingleton<IHeatingDataReceiver, SerialPortHeatingDataReceiver>();
-            services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
+        services.AddSingleton<IHeatingDataReceiver, SerialPortHeatingDataReceiver>();
+        services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
 
-            return services;
-        }
+        return services;
     }
 }

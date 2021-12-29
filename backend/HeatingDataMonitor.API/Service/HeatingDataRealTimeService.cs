@@ -1,52 +1,49 @@
-﻿using HeatingDataMonitor.API.Hubs;
-using HeatingDataMonitor.Model;
-using HeatingDataMonitor.Service;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using HeatingDataMonitor.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using HeatingDataMonitor.Data.Model;
+using HeatingDataMonitor.Data.Service;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace HeatingDataMonitor.API.Service
+namespace HeatingDataMonitor.API.Service;
+
+public class HeatingDataRealTimeService : IHostedService
 {
-    public class HeatingDataRealTimeService : IHostedService
+    private readonly ILogger<HeatingDataRealTimeService> _logger;
+    private readonly IHubContext<HeatingDataHub, IHeatingDataHubClient> _hubContext;
+    private readonly EventHandler<HeatingData> _receivedHandler;
+    private readonly IHeatingDataReceiver _heatingDataReceiver;
+
+    public HeatingDataRealTimeService(ILogger<HeatingDataRealTimeService> logger,
+        IHubContext<HeatingDataHub, IHeatingDataHubClient> hubContext,
+        IHeatingDataReceiver heatingDataReceiver)
     {
-        private readonly ILogger<HeatingDataRealTimeService> _logger;
-        private readonly IHubContext<HeatingDataHub, IHeatingDataHubClient> _hubContext;
-        private readonly EventHandler<HeatingData> _receivedHandler;
-        private readonly IHeatingDataReceiver _heatingDataReceiver;
+        _logger = logger;
+        _hubContext = hubContext;
+        _heatingDataReceiver = heatingDataReceiver;
+        _receivedHandler = SendReceivedData;
+    }
 
-        public HeatingDataRealTimeService(ILogger<HeatingDataRealTimeService> logger,
-                                          IHubContext<HeatingDataHub, IHeatingDataHubClient> hubContext,
-                                          IHeatingDataReceiver heatingDataReceiver)
-        {
-            _logger = logger;
-            _hubContext = hubContext;
-            _heatingDataReceiver = heatingDataReceiver;
-            _receivedHandler = new EventHandler<HeatingData>(SendReceivedData);
-        }
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _heatingDataReceiver.DataReceived += _receivedHandler;
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            _heatingDataReceiver.DataReceived += _receivedHandler;
+        return Task.CompletedTask;
+    }
 
-            return Task.CompletedTask;
-        }
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _heatingDataReceiver.DataReceived -= _receivedHandler;
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _heatingDataReceiver.DataReceived -= _receivedHandler;
+        return Task.CompletedTask;
+    }
 
-            return Task.CompletedTask;
-        }
-
-        private async void SendReceivedData(object sender, HeatingData newData)
-        {
-            await _hubContext.Clients.All.OnDataPointReceived(newData);
-            _logger.LogDebug($"Sent data to all clients with timestamp: {newData.ReceivedTime}");
-        }
+    private async void SendReceivedData(object? sender, HeatingData newData)
+    {
+        await _hubContext.Clients.All.OnDataPointReceived(newData);
+        _logger.LogDebug("Sent data to all clients with timestamp: {Timestamp}", newData.ReceivedTime);
     }
 }
