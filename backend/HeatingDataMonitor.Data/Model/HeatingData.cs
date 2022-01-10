@@ -1,4 +1,7 @@
 ﻿using NodaTime;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable IdentifierTypo
 
 namespace HeatingDataMonitor.Data.Model;
 

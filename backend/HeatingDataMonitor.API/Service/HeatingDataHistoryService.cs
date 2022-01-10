@@ -1,13 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using HeatingDataMonitor.API.Hubs;
+﻿using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.Data.History;
 using HeatingDataMonitor.Data.Model;
 using HeatingDataMonitor.Data.Service;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace HeatingDataMonitor.API.Service;
 

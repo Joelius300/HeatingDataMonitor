@@ -1,4 +1,3 @@
-using System.Linq;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Data.History;
 using Microsoft.AspNetCore.Mvc;

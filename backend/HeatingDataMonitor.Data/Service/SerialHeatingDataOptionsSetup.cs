@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO.Ports;
+﻿using System.IO.Ports;
 using Microsoft.Extensions.Options;
 
 namespace HeatingDataMonitor.Data.Service;

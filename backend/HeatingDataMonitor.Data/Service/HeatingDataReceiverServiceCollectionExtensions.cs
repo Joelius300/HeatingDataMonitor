@@ -7,6 +7,7 @@ namespace HeatingDataMonitor.Data.Service;
 // Inspired by the ..ServiceCollectionExtensions in the aspnetcore middlewares
 public static class HeatingDataReceiverServiceCollectionExtensions
 {
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddSerialPortHeatingDataReceiver(this IServiceCollection services)
     {
         services.AddOptions(); // add options if not done yet

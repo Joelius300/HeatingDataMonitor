@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using HeatingDataMonitor.Data.Model;
+﻿using HeatingDataMonitor.Data.Model;
 
 namespace HeatingDataMonitor.API.Hubs;
 

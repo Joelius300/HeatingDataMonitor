@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.IO.Ports;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO.Ports;
 
 // https://stackoverflow.com/questions/52187/virtual-serial-port-for-linux
 

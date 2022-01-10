@@ -1,5 +1,4 @@
-﻿using System;
-using HeatingDataMonitor.Data.Model;
+﻿using HeatingDataMonitor.Data.Model;
 using Microsoft.Extensions.Hosting;
 
 namespace HeatingDataMonitor.Data.Service;
