@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  frontend-server:
+    #    build:
+    #      context: ./frontend
+    #      dockerfile: Dockerfile
+    #      args:
+    image: nginx:latest
+    restart: always
+    ports:
+      - 5001:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  postgres:
+    image: postgres:latest
+    restart: always
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: "heatingDataMonitorUser"
+      POSTGRES_PASSWORD: "dontworrythispasswordwillchangeinproduction"
+      POSTGRES_DB: "HeatingDataMonitor"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db-scripts/create.sql:/docker-entrypoint-initdb.d/init.sql
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    expose:
+      - 80
+    environment:
+      Urls: "http://+:80"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__HeatingDataDatabase: "Server=127.0.0.1;Port=5432;Database=HeatingDataMonitor;User Id=heatingDataMonitorUser;Password=dontworrythispasswordwillchangeinproduction;"
+      Serial__PortName: "/dev/pts/6"
+    devices:
+      - /dev/pts/6:/dev/pts/6
+    depends_on:
+      - postgres
+volumes:
+  pgdata:

@@ -66,29 +66,3 @@ CREATE TABLE "HeatingData" (
 );
 
 CREATE INDEX "IX_HeatingData_ReceivedTime" ON "HeatingData" ("ReceivedTime") INCLUDE ("Kessel", "Puffer_Oben", "Puffer_Unten", "Boiler_1");
-
-
-CREATE ROLE "heatingDataMonitorRole" WITH
-	NOLOGIN
-	NOSUPERUSER
-	NOCREATEDB
-	NOCREATEROLE
-	INHERIT
-	NOREPLICATION
-	CONNECTION LIMIT -1;
-
-REVOKE ALL ON ALL TABLES IN SCHEMA public from "heatingDataMonitorRole";
-GRANT SELECT, INSERT on "HeatingData" to "heatingDataMonitorRole";
-
-CREATE ROLE "heatingDataMonitorUser" WITH
-	LOGIN
-	NOSUPERUSER
-	NOCREATEDB
-	NOCREATEROLE
-	INHERIT
-	NOREPLICATION
-	CONNECTION LIMIT -1
-	PASSWORD 'dontworrythispasswordwillchangeinproduction';
-
-GRANT "heatingDataMonitorRole" TO "heatingDataMonitorUser";
-
