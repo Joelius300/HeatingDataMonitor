@@ -1,7 +1,27 @@
 # HeatingDataMonitor Backend
 
-The backend itself is split into two parts.  
-One part contains the models, the logic for retrieving data from the heating unit and the database context for the history aspect.  
+TODO:
+- Use a single process for retrieving data from the heating unit and adding it to the database. This process should also send a notification (possibly via json-rpc or something like that) that a new datapoint was received. This project will run without docker (at least as long as the serial port doesn't work correctly) while the others all run in containers and consume the data from the database and act on the signal from the retriever.
+We could also avoid sending an extra event and just sending and receiving notifications from postgres: https://www.graymatterdeveloper.com/2019/12/02/listening-events-postgresql/
+- (Of course update this and the other readmes when we're done)
+
+### New database stuff:
+- Used timescaledb inside a docker container
+- Used updated dbCreate.sql script
+  - Everything snake_case
+  - No more id field
+  - Create hypertable on received_time (we don't really care about sps_time)
+  - No more index with included columns
+- Imported old data by using csv export command (see history on raspberry pi), then dropping the first column in vs code, then importing with `\copy heating_data from mycsv.csv DELIMITER ',' CSV HEADER`
+
+
+
+-- old stuff
+
+
+
+The backend itself is split into two parts.
+One part contains the models, the logic for retrieving data from the heating unit and the database context for the history aspect.
 The other part contains the actual API logic including handling background processes, responding to http requests, opening a SignalR-Hub for real-time communication and actually using the provided database context with a specific implementation (here PostgreSQL).
 
 The solution also contains two standalone applications:
@@ -30,7 +50,7 @@ In development mode, the CORS policy is relaxed for `localhost:4200` where the a
 - For connecting later on: `psql -U heatingDataMonitorUser -h 127.0.0.1 HeatingDataMonitor`
 
 ### Adjusting the sequence after importing old data
-This is necessary depending on how you import the data. Otherwise the sequence might generate already existing ids.  
+This is necessary depending on how you import the data. Otherwise the sequence might generate already existing ids.
 Note the double quotes in single quotes, those are very important for the case sensitivity of PostgreSQL.
 
 `SELECT setval('"HeatingData_Id_seq"', WhateverIdTheLatestRowHas);`
@@ -38,7 +58,7 @@ Note the double quotes in single quotes, those are very important for the case s
 ## Systemd service
 ### Add and register
 - `sudo nano /etc/systemd/system/heating-data-monitor.service`
-- Paste 
+- Paste
   ```
   [Unit]
   Description=Heating Data Monitor Backend running on .NET Core
@@ -65,4 +85,4 @@ Note the double quotes in single quotes, those are very important for the case s
 - `sudo systemctl stop heating-data-monitor`
 - `sudo systemctl status heating-data-monitor`
 - `sudo journalctl -fu heating-data-monitor`
- 
+
