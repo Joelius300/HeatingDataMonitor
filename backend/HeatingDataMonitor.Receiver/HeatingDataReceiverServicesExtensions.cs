@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace HeatingDataMonitor.Receiver;
 
 // Inspired by the ..ServiceCollectionExtensions in the aspnetcore middlewares
-public static class HeatingDataReceiverServiceCollectionExtensions
+public static class HeatingDataReceiverServicesExtensions
 {
     // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddSerialPortHeatingDataReceiver(this IServiceCollection services)
@@ -14,7 +14,7 @@ public static class HeatingDataReceiverServiceCollectionExtensions
 
         // If IConfigureOptions<SerialPortOptions> was already registered, this doesn't do anything.
         // If no options were configured, this setup instantiates a default config with the first
-        // serial port found on this machine.
+        // serial port found on this machine. I think I was just excited to implement this regardless of usefulness..
         services.TryAddTransient<IConfigureOptions<SerialHeatingDataOptions>, SerialHeatingDataOptionsSetup>();
 
         services.AddSingleton<IHeatingDataReceiver, SerialPortHeatingDataReceiver>();

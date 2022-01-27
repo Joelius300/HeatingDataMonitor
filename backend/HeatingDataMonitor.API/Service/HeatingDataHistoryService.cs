@@ -48,14 +48,12 @@ public sealed class HeatingDataHistoryService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             HeatingData? current = _heatingDataReceiver.Current;
-            if (current != null && !ReferenceEquals(_lastAdded, current))
+            if (current is not null && !ReferenceEquals(_lastAdded, current))
             {
                 using (IServiceScope scope = _scopeFactory.CreateScope())
                 {
-                    HeatingDataDbContext context = scope.ServiceProvider.GetRequiredService<HeatingDataDbContext>();
-                    context.HeatingData.Add(current);
-                    // Since the archiving is only done every few seconds at most, calling SaveChanges for every row shouldn't be an issue
-                    await context.SaveChangesAsync(stoppingToken);
+                    IHeatingDataRepository repository = scope.ServiceProvider.GetRequiredService<IHeatingDataRepository>();
+                    await repository.InsertRecordAsync(current);
                 }
 
                 // In the very unlikely event that the archiving cycle is faster than the heating unit, don't trip

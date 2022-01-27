@@ -9,7 +9,7 @@ namespace HeatingDataMonitor.Models;
 // TODO We could use Postgres Enums instead of shorts which gives us
 // nicer queries in SQL and probably also some very small perf gain idk tho.
 // https://www.npgsql.org/doc/types/enums_and_composites.html
-public class HeatingData
+public sealed class HeatingData
 {
     public LocalDateTime SPS_Zeit { get; set; }
     public Instant ReceivedTime { get; set; }

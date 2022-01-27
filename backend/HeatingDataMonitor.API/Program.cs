@@ -6,13 +6,10 @@ using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Receiver;
 using HeatingDataMonitor.Receiver.Testing;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 var services = builder.Services;
 var configuration = builder.Configuration;
 
@@ -29,12 +26,7 @@ void ConfigureOptions(JsonSerializerOptions options)
 services.AddControllers()
         .AddJsonOptions(o => ConfigureOptions(o.JsonSerializerOptions));
 
-services.AddDbContext<HeatingDataDbContext>(b =>
-        b.UseNpgsql(configuration.GetConnectionString("HeatingDataDatabase"),
-                          options => options.UseNodaTime())
-               // We only add and fetch rows so we don't need to waste performance on tracking.
-               .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-               .UseSnakeCaseNamingConvention());
+services.AddHeatingDataDatabaseTimescaledb(configuration.GetConnectionString("HeatingDataDatabase"));
 
 services.AddSignalR()
         .AddJsonProtocol(options => ConfigureOptions(options.PayloadSerializerOptions));

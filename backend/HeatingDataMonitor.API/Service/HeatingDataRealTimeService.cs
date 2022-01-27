@@ -39,6 +39,6 @@ public class HeatingDataRealTimeService : IHostedService
     private async void SendReceivedData(object? sender, HeatingData newData)
     {
         await _hubContext.Clients.All.OnDataPointReceived(newData);
-        _logger.LogDebug("Sent data to all clients with timestamp: {Timestamp}", newData.ReceivedTime);
+        _logger.LogTrace("Sent data to all clients with timestamp: {Timestamp}", newData.ReceivedTime);
     }
 }

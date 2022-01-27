@@ -1,7 +1,6 @@
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 namespace HeatingDataMonitor.API.Controllers;
@@ -10,50 +9,31 @@ namespace HeatingDataMonitor.API.Controllers;
 [Route("api/[controller]")]
 public class HeatingDataHistoryController : ControllerBase
 {
-    private readonly HeatingDataDbContext _dbContext;
+    private readonly IHeatingDataRepository _repository;
     private readonly HeatingDataCacheService _cacheService;
 
-    public HeatingDataHistoryController(HeatingDataDbContext dbContext, HeatingDataCacheService cacheService)
+    public HeatingDataHistoryController(IHeatingDataRepository repository, HeatingDataCacheService cacheService)
     {
-        _dbContext = dbContext;
+        _repository = repository;
         _cacheService = cacheService;
     }
 
     [HttpGet]
-    public IActionResult Get([FromQuery] Instant from, [FromQuery] Instant to)
+    public async Task<IActionResult> Get([FromQuery] Instant from, [FromQuery] Instant to)
     {
         if (from > to)
             return BadRequest();
 
-        var data = _dbContext.HeatingData
-                             .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
-                             .OrderBy(d => d.ReceivedTime)
-                             .AsAsyncEnumerable();
-
-        return Ok(data);
+        return Ok(await _repository.FetchAsync(from, to));
     }
 
     [HttpGet("MainTemperatures")]
-    public IActionResult GetMainTemperatures([FromQuery] Instant from, [FromQuery] Instant to)
+    public async Task<IActionResult> GetMainTemperatures([FromQuery] Instant from, [FromQuery] Instant to)
     {
         if (from > to)
             return BadRequest();
 
-        var data = _dbContext.HeatingData
-                             .Where(d => d.ReceivedTime >= from && d.ReceivedTime <= to)
-                             .OrderBy(d => d.ReceivedTime)
-                             .Select(d => new
-                             {
-                                 d.ReceivedTime,
-                                 d.Kessel,
-                                 d.Boiler_1,
-                                 d.Puffer_Oben,
-                                 d.Puffer_Unten,
-                                 d.Abgas
-                             })
-                             .AsAsyncEnumerable();
-
-        return Ok(data);
+        return Ok(await _repository.FetchMainTemperaturesAsync(from, to));
     }
 
     [HttpGet("CachedValues")]

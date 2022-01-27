@@ -67,7 +67,7 @@ public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataRec
                 // Todo optimize logging arguments
                 StringBuilder sb = new();
                 sb.AppendLine($"Couldn't parse record to {nameof(HeatingData)}.");
-                if (e.InnerException != null)
+                if (e.InnerException is not null)
                 {
                     sb.AppendLine($"Reason: {e.InnerException.Message}");
                 }
@@ -80,7 +80,7 @@ public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataRec
                 break;
             }
 
-            if (record != null)
+            if (record is not null)
             {
                 record.ReceivedTime = _clock.GetCurrentInstant();
                 OnDataReceived(record);

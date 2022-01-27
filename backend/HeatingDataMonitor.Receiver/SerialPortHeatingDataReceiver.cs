@@ -133,7 +133,7 @@ internal sealed class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDis
                 // Todo optimize logging arguments
                 StringBuilder sb = new();
                 sb.AppendLine($"Couldn't parse record to {nameof(HeatingData)}.");
-                if (e.InnerException != null)
+                if (e.InnerException is not null)
                 {
                     sb.AppendLine($"Reason: {e.InnerException.Message}");
                 }
@@ -147,7 +147,7 @@ internal sealed class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDis
                 break;
             }
 
-            if (record != null)
+            if (record is not null)
             {
                 record.ReceivedTime = _clock.GetCurrentInstant();
                 OnDataReceived(record);
