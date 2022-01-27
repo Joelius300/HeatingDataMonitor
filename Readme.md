@@ -3,6 +3,8 @@ This is a web app which allows me and my family to monitor the heating unit of o
 
 The interface is in swiss german. Because the heating unit is german, the names (class, column) are also specified in german which allows for easier reference in manuals and co.
 
+_Note: I'm currently doing [another rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2) to retire my [second big rework](https://github.com/Joelius300/HeatingDataMonitor/tree/v1) which superseeded the [initial system](https://github.com/Joelius300/HeatingDataMonitor/tree/v0), which was actually my first ever application involving web dev I believe._
+
 The data retrieval, storage and sending is done with an [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core) backend using [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).  
 Reading the semicolon separated values from the heating unit is done with [CsvHelper](https://github.com/JoshClose/CsvHelper).  
 The user interface is realized with an [Angular](https://angular.io/) frontend using [flex-layout](https://github.com/angular/flex-layout) and [angular-material](https://material.angular.io/).  
