@@ -13,7 +13,8 @@ public class HeatingDataDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // We don't need/have a primary key
-        modelBuilder.Entity<HeatingData>().HasNoKey();
+        // There's no real PK afaik but ReceivedTime should always be unique
+        // and in order to insert a new record, EF core needs a key assigned.
+        modelBuilder.Entity<HeatingData>().HasKey(e => e.ReceivedTime);
     }
 }
