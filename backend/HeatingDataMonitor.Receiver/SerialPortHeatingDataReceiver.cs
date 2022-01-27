@@ -3,12 +3,12 @@ using System.IO.Ports;
 using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
-using HeatingDataMonitor.Data.Model;
+using HeatingDataMonitor.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NodaTime;
 
-namespace HeatingDataMonitor.Data.Service;
+namespace HeatingDataMonitor.Receiver;
 
 // TODO This and MockHeatingDataReceiver need to be refactored.
 // They should be split so that one class is the receiver which

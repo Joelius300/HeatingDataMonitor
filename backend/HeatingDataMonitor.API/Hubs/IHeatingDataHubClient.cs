@@ -1,4 +1,4 @@
-﻿using HeatingDataMonitor.Data.Model;
+﻿using HeatingDataMonitor.Models;
 
 namespace HeatingDataMonitor.API.Hubs;
 

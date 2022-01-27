@@ -1,7 +1,7 @@
 ﻿using System.IO.Ports;
 using Microsoft.Extensions.Options;
 
-namespace HeatingDataMonitor.Data.Service;
+namespace HeatingDataMonitor.Receiver;
 
 internal class SerialHeatingDataOptionsSetup : IConfigureOptions<SerialHeatingDataOptions>
 {

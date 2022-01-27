@@ -2,7 +2,7 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable IdentifierTypo
 // ReSharper disable UnusedMember.Global
-namespace HeatingDataMonitor.Data.Model;
+namespace HeatingDataMonitor.Models;
 
 // int values are not according to order in specs (p. 49)
 public enum BetriebsPhaseHK

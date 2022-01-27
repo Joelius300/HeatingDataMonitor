@@ -1,5 +1,5 @@
-﻿using HeatingDataMonitor.Data.Model;
-using HeatingDataMonitor.Data.Service;
+﻿using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Receiver;
 using Microsoft.Extensions.Options;
 
 namespace HeatingDataMonitor.API.Service;

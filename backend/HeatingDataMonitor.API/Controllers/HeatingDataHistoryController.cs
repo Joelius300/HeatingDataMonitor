@@ -1,5 +1,5 @@
 using HeatingDataMonitor.API.Service;
-using HeatingDataMonitor.Data.History;
+using HeatingDataMonitor.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;

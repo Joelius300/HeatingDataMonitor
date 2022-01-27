@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace HeatingDataMonitor.Data.Service;
+namespace HeatingDataMonitor.Receiver;
 
 // Inspired by the ..ServiceCollectionExtensions in the aspnetcore middlewares
 public static class HeatingDataReceiverServiceCollectionExtensions

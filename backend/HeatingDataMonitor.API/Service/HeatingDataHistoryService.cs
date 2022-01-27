@@ -1,7 +1,7 @@
 ﻿using HeatingDataMonitor.API.Hubs;
-using HeatingDataMonitor.Data.History;
-using HeatingDataMonitor.Data.Model;
-using HeatingDataMonitor.Data.Service;
+using HeatingDataMonitor.Database;
+using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Receiver;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HeatingDataMonitor.API.Service;

@@ -1,6 +1,6 @@
 ﻿using System.IO.Ports;
 
-namespace HeatingDataMonitor.Data.Service;
+namespace HeatingDataMonitor.Receiver;
 
 public class SerialHeatingDataOptions
 {

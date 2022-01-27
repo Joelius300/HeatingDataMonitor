@@ -1,10 +1,11 @@
 ﻿using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using HeatingDataMonitor.Models;
 using NodaTime;
 using NodaTime.Text;
 
-namespace HeatingDataMonitor.Data.Model;
+namespace HeatingDataMonitor.Receiver;
 
 internal sealed class HeatingDataCsvMap : ClassMap<HeatingData>
 {

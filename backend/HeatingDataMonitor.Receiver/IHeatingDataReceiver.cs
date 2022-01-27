@@ -1,7 +1,7 @@
-﻿using HeatingDataMonitor.Data.Model;
+﻿using HeatingDataMonitor.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace HeatingDataMonitor.Data.Service;
+namespace HeatingDataMonitor.Receiver;
 
 public interface IHeatingDataReceiver : IHostedService
 {

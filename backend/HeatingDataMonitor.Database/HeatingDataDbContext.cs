@@ -1,7 +1,7 @@
-﻿using HeatingDataMonitor.Data.Model;
+﻿using HeatingDataMonitor.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace HeatingDataMonitor.Data.History;
+namespace HeatingDataMonitor.Database;
 
 public class HeatingDataDbContext : DbContext
 {
