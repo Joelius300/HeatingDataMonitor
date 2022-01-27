@@ -1,10 +1,11 @@
 -- Create the db on the postgres service-db, then reopen the connection to the actual db
 CREATE DATABASE heating_data_monitor;
 
--- With the help of https://github.com/dotnet/efcore/issues/5096#issuecomment-326045537
+-- Order of the columns (esp. first two) has to remain the same for compatibility reasons.
+-- While we could switch them, I don't want to be the guy to debug the issues if they don't get switched somewhere.
 CREATE TABLE heating_data (
     sps_zeit timestamp without time zone NOT NULL,
-    received_time timestamp without time zone NOT NULL,
+    received_time timestamp with time zone NOT NULL,
     kessel real NULL,
     ruecklauf real NULL,
     abgas real NULL,
@@ -62,7 +63,5 @@ CREATE TABLE heating_data (
     a_phase_3 integer NULL,
     a_phase_4 integer NULL
 );
-
--- CREATE INDEX ix_heating_data_received_time ON heating_data (received_time) INCLUDE (kessel, puffer_oben, puffer_unten, boiler_1);
 
 SELECT create_hypertable('heating_data', 'received_time');
