@@ -16,8 +16,8 @@ public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataRec
     private readonly SerialHeatingDataOptions _options;
     private readonly ILogger<MockHeatingDataReceiver> _logger;
     private readonly IClock _clock;
-    private StreamReader _fileReader = null!;
-    private CsvReader _csvReader = null!;
+    private StreamReader? _fileReader;
+    private CsvReader? _csvReader;
 
     public event EventHandler<HeatingData>? DataReceived;
     public HeatingData? Current { get; private set; }
@@ -118,8 +118,8 @@ public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataRec
         if (!disposing)
             return;
 
-        _fileReader.Dispose();
-        _csvReader.Dispose();
+        _fileReader?.Dispose();
+        _csvReader?.Dispose();
 
         // No need to dispose base as it would only cancel the service which
         // must already be done, otherwise this instance wouldn't get disposed.
