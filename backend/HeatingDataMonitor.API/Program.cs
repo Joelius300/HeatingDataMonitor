@@ -32,7 +32,8 @@ services.AddDbContext<HeatingDataDbContext>(b =>
         b.UseNpgsql(configuration.GetConnectionString("HeatingDataDatabase"),
                           options => options.UseNodaTime())
                // We only add and fetch rows so we don't need to waste performance on tracking.
-               .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+               .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+               .UseSnakeCaseNamingConvention());
 
 services.AddSignalR()
         .AddJsonProtocol(options => ConfigureOptions(options.PayloadSerializerOptions));

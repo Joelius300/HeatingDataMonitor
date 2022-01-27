@@ -10,4 +10,10 @@ public class HeatingDataDbContext : DbContext
     public HeatingDataDbContext(DbContextOptions options) : base(options)
     {
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // We don't need/have a primary key
+        modelBuilder.Entity<HeatingData>().HasNoKey();
+    }
 }

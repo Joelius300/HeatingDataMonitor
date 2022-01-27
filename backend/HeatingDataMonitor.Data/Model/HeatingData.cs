@@ -5,16 +5,16 @@
 
 namespace HeatingDataMonitor.Data.Model;
 
+// TODO We could use Postgres Enums instead of shorts which gives us
+// nicer queries in SQL and probably also some very small perf gain idk tho.
+// https://www.npgsql.org/doc/types/enums_and_composites.html
 public class HeatingData
 {
-    public int Id { get; set; }
-
     public LocalDateTime SPS_Zeit { get; set; }
     public Instant ReceivedTime { get; set; }
     public float? Kessel { get; set; }
     public float? Ruecklauf { get; set; }
     public float? Abgas { get; set; }
-    public float? Brennkammer { get; set; }
     public float? CO2_Soll { get; set; }
     public float? CO2_Ist { get; set; }
     public float? Saugzug_Ist { get; set; }
@@ -26,45 +26,26 @@ public class HeatingData
     public float? Vorlauf_HK1_Ist { get; set; }
     public float? Vorlauf_HK1_Soll { get; set; }
     public BetriebsPhaseHK? Betriebsphase_HK1 { get; set; }
-    public int? Betriebsart_Fern_HK1 { get; set; }
-    public float? Verschiebung_Fern_HK1 { get; set; }
-    public float? Freigabekontakt_HK1 { get; set; }
     public float? Vorlauf_HK2_Ist { get; set; }
     public float? Vorlauf_HK2_Soll { get; set; }
     public BetriebsPhaseHK? Betriebsphase_HK2 { get; set; }
-    public int? Betriebsart_Fern_HK2 { get; set; }
-    public float? Verschiebung_Fern_HK2 { get; set; }
-    public float? Freigabekontakt_HK2 { get; set; }
-    public float? Vorlauf_HK3_Ist { get; set; }
-    public float? Vorlauf_HK3_Soll { get; set; }
-    public BetriebsPhaseHK? Betriebsphase_HK3 { get; set; }
-    public int? Betriebsart_Fern_HK3 { get; set; }
-    public float? Verschiebung_Fern_HK3 { get; set; }
-    public float? Freigabekontakt_HK3 { get; set; }
-    public float? Vorlauf_HK4_Ist { get; set; }
-    public float? Vorlauf_HK4_Soll { get; set; }
-    public BetriebsPhaseHK? Betriebsphase_HK4 { get; set; }
-    public int? Betriebsart_Fern_HK4 { get; set; }
-    public float? Verschiebung_Fern_HK4 { get; set; }
-    public float? Freigabekontakt_HK4 { get; set; }
     public float? Boiler_1 { get; set; }
-    public float? Boiler_2 { get; set; }
-    public int? DI_0 { get; set; }
-    public int? DI_1 { get; set; }
-    public int? DI_2 { get; set; }
-    public int? DI_3 { get; set; }
-    public int? A_W_0 { get; set; }
-    public int? A_W_1 { get; set; }
-    public int? A_W_2 { get; set; }
-    public int? A_W_3 { get; set; }
-    public int? A_EA_0 { get; set; }
-    public int? A_EA_1 { get; set; }
-    public int? A_EA_2 { get; set; }
-    public int? A_EA_3 { get; set; }
-    public int? A_EA_4 { get; set; }
-    public int? A_PHASE_0 { get; set; }
-    public int? A_PHASE_1 { get; set; }
-    public int? A_PHASE_2 { get; set; }
-    public int? A_PHASE_3 { get; set; }
-    public int? A_PHASE_4 { get; set; }
+    public short? DI_0 { get; set; }
+    public short? DI_1 { get; set; }
+    public short? DI_2 { get; set; }
+    public short? DI_3 { get; set; }
+    public short? A_W_0 { get; set; }
+    public short? A_W_1 { get; set; }
+    public short? A_W_2 { get; set; }
+    public short? A_W_3 { get; set; }
+    public short? A_EA_0 { get; set; }
+    public short? A_EA_1 { get; set; }
+    public short? A_EA_2 { get; set; }
+    public short? A_EA_3 { get; set; }
+    public short? A_EA_4 { get; set; }
+    public short? A_PHASE_0 { get; set; }
+    public short? A_PHASE_1 { get; set; }
+    public short? A_PHASE_2 { get; set; }
+    public short? A_PHASE_3 { get; set; }
+    public short? A_PHASE_4 { get; set; }
 }
