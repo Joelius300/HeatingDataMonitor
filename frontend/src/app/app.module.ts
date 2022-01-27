@@ -6,7 +6,6 @@ import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { NullHashesPipe } from './pipes/null-hashes.pipe';
 import { registerLocaleData } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -33,7 +32,6 @@ registerLocaleData(localeDeCh);
   declarations: [
     AppComponent,
     DashboardComponent,
-    NullHashesPipe,
     HistoryComponent,
     LiveViewComponent
   ],
