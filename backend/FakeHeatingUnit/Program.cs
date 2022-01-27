@@ -1,7 +1,7 @@
 ﻿using System.IO.Ports;
 
 // https://stackoverflow.com/questions/52187/virtual-serial-port-for-linux
-
+// Welp.. https://github.com/dotnet/runtime/issues/62554
 Console.Write("File: ");
 string file = Console.ReadLine()!;
 Console.Write("Port: ");
