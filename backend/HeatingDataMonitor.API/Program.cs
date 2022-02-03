@@ -3,8 +3,6 @@ using System.Text.Json.Serialization;
 using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
-using HeatingDataMonitor.Receiver;
-using HeatingDataMonitor.Receiver.Testing;
 using Microsoft.AspNetCore.HttpOverrides;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -43,12 +41,6 @@ services.AddCors(options =>
 services.AddOptions<CacheOptions>()
         .Bind(configuration.GetSection("Cache"));
 
-IConfiguration serialSection = configuration.GetSection("Serial");
-services.AddOptions<SerialHeatingDataOptions>()
-        .Bind(serialSection);
-
-services.AddSingleton<IClock>(SystemClock.Instance);
-
 // this and the FakeReceiver could probably be improved regarding encapsulation and responsibility
 string portName = serialSection.GetValue(nameof(SerialHeatingDataOptions.PortName), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sampleData.csv"));
 if (Path.GetExtension(portName).Equals(".csv", StringComparison.OrdinalIgnoreCase))
@@ -62,6 +54,7 @@ else
     services.AddHostedService<HeatingDataHistoryService>();
 }
 
+// TODO once every reading is written in the db and real-time is moved to postgres notify, this caching stuff can be nuked
 services.AddSingleton<HeatingDataCacheService>();
 services.AddHostedService(sp => sp.GetRequiredService<HeatingDataCacheService>());
 
@@ -88,4 +81,4 @@ app.UseEndpoints(endpoints =>
     endpoints.MapHub<HeatingDataHub>("/realTimeFeed");
 });
 
-app.Run();
+await app.RunAsync();

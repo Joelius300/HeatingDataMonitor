@@ -1,22 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-HeatingDataMonitor.Receiver-4FAA67FE-08EA-4D2A-AED0-7A0B9429EB40</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CsvHelper" Version="27.2.1" />
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-      <PackageReference Include="NodaTime" Version="3.0.9" />
-      <PackageReference Include="System.IO.Ports" Version="6.0.0" />
+        <PackageReference Include="CsvHelper" Version="27.2.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
+        <PackageReference Include="System.IO.Ports" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HeatingDataMonitor.Models\HeatingDataMonitor.Models.csproj" />
+      <ProjectReference Include="..\HeatingDataMonitor.Database\HeatingDataMonitor.Database.csproj" />
     </ItemGroup>
-
 </Project>

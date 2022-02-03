@@ -3,8 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace HeatingDataMonitor.Receiver;
 
-public interface IHeatingDataReceiver : IHostedService
+public interface IHeatingDataReceiver
 {
-    event EventHandler<HeatingData> DataReceived;
-    HeatingData? Current { get; }
+    IAsyncEnumerable<HeatingData> StreamHeatingData(CancellationToken cancellationToken);
 }

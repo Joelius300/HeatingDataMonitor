@@ -2,7 +2,7 @@
 
 namespace HeatingDataMonitor.Receiver;
 
-public class SerialHeatingDataOptions
+public class SerialPortOptions
 {
     // Defaults from:
     // https://github.com/dotnet/runtime/blob/f185bd5571f2500b4843d145418c4418747246b6/src/libraries/System.IO.Ports/src/System/IO/Ports/SerialPort.cs
