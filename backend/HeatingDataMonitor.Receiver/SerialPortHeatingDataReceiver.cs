@@ -19,22 +19,11 @@ namespace HeatingDataMonitor.Receiver;
 // Alternatively, a base class for the receiver with CSV and notification logic would do the same.
 internal sealed class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDisposable
 {
-    private readonly SerialHeatingDataOptions _options;
-    private readonly CsvConfiguration _csvConfig;
-    private readonly ILogger<SerialPortHeatingDataReceiver> _logger;
-    private readonly IClock _clock;
-    private readonly SerialPort _serialPort;
-    private readonly CsvReader _csvReader;
-    private readonly MemoryStream _buffer;
-    private readonly StreamReader _bufferReader;
-    private readonly StreamWriter _bufferWriter;
-    private readonly string[] _newLineSplitArray;
-    private string? _unfinishedLine;
 
     public HeatingData? Current { get; private set; }
     public event EventHandler<HeatingData>? DataReceived;
 
-    public SerialPortHeatingDataReceiver(IOptions<SerialHeatingDataOptions> options, ILogger<SerialPortHeatingDataReceiver> logger, IClock clock)
+    public SerialPortHeatingDataReceiver(IOptions<SerialPortOptions> options, ILogger<SerialPortHeatingDataReceiver> logger, IClock clock)
     {
         _options = options.Value;
         _logger = logger;
@@ -161,69 +150,4 @@ internal sealed class SerialPortHeatingDataReceiver : IHeatingDataReceiver, IDis
         DataReceived?.Invoke(this, data);
     }
 
-    private CsvConfiguration CreateCsvOptions()
-    {
-        if (string.IsNullOrEmpty(_options.Delimiter))
-            throw new InvalidOperationException("The specified delimiter is invalid.");
-
-        Encoding encoding;
-        try
-        {
-            encoding = Encoding.GetEncoding(_options.Encoding);
-        }
-        catch (ArgumentException e) when (e.ParamName == "name")
-        {
-            throw new InvalidOperationException($"The specified encoding '{_options.Encoding}' is invalid or unsupported.");
-        }
-
-        CsvConfiguration config = new(CultureInfo.InvariantCulture)
-        {
-            Delimiter = _options.Delimiter,
-            IgnoreBlankLines = true,
-            Encoding = encoding,
-            HasHeaderRecord = false
-        };
-
-        return config;
-    }
-
-    private SerialPort CreateSerialPort()
-    {
-        string portName = _options.PortName;
-        if (string.IsNullOrWhiteSpace(portName))
-            throw new InvalidOperationException("The specified serial port name is invalid.");
-
-        if (!SerialPort.GetPortNames().Contains(portName))
-            throw new InvalidOperationException($"The specified serial port name '{portName}' was not found.");
-
-        return new SerialPort
-        {
-            PortName = portName,
-            BaudRate = _options.BaudRate,
-            DataBits = _options.DataBits,
-            Parity = _options.Parity,
-            Handshake = _options.Handshake,
-            StopBits = _options.StopBits,
-            Encoding = _csvConfig.Encoding,
-            DiscardNull = true,
-            NewLine = _options.NewLine
-        };
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!disposing)
-            return;
-
-        _csvReader.Dispose();
-        _serialPort.Dispose();
-        _bufferReader.Dispose();
-        _bufferWriter.Dispose();
-        _buffer.Dispose();
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-    }
 }

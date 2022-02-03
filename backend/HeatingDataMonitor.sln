@@ -2,13 +2,15 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeatingUnit\FakeHeatingUnit.csproj", "{EF31B55C-4187-4968-8B91-B5E239389CCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Receiver", "HeatingDataMonitor.Receiver\HeatingDataMonitor.Receiver.csproj", "{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.API", "HeatingDataMonitor.API\HeatingDataMonitor.API.csproj", "{E28A6109-CA90-4193-9DDF-5E10B1D8418D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Models", "HeatingDataMonitor.Models\HeatingDataMonitor.Models.csproj", "{2074291C-539E-4B4E-9F3D-53AB43140756}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database", "HeatingDataMonitor.Database\HeatingDataMonitor.Database.csproj", "{C2F741EA-B598-4791-B628-8B9D4A80A863}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Receiver", "HeatingDataMonitor.Receiver\HeatingDataMonitor.Receiver.csproj", "{F9EE3BB6-E11A-46BB-BB84-44289BCCE36A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingGrounds", "TestingGrounds\TestingGrounds.csproj", "{467374B0-2D88-426B-9D9A-C7D5D8F66BE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,10 +22,6 @@ Global
 		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF31B55C-4187-4968-8B91-B5E239389CCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{660ADC6D-FCBC-45DC-AD4A-AC2F5A2EEF6B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E28A6109-CA90-4193-9DDF-5E10B1D8418D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -36,5 +34,13 @@ Global
 		{C2F741EA-B598-4791-B628-8B9D4A80A863}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2F741EA-B598-4791-B628-8B9D4A80A863}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2F741EA-B598-4791-B628-8B9D4A80A863}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9EE3BB6-E11A-46BB-BB84-44289BCCE36A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9EE3BB6-E11A-46BB-BB84-44289BCCE36A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9EE3BB6-E11A-46BB-BB84-44289BCCE36A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9EE3BB6-E11A-46BB-BB84-44289BCCE36A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{467374B0-2D88-426B-9D9A-C7D5D8F66BE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{467374B0-2D88-426B-9D9A-C7D5D8F66BE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{467374B0-2D88-426B-9D9A-C7D5D8F66BE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{467374B0-2D88-426B-9D9A-C7D5D8F66BE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

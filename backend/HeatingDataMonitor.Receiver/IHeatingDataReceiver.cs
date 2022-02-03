@@ -1,10 +1,19 @@
-﻿using HeatingDataMonitor.Models;
+﻿using System.Collections.Generic;
+using HeatingDataMonitor.Models;
 using Microsoft.Extensions.Hosting;
 
 namespace HeatingDataMonitor.Receiver;
 
-public interface IHeatingDataReceiver : IHostedService
+/// <summary>
+/// A service to stream strongly typed heating data from some source.
+/// </summary>
+public interface IHeatingDataReceiver
 {
-    event EventHandler<HeatingData> DataReceived;
-    HeatingData? Current { get; }
+    /// <summary>
+    /// Returns an infinite stream of strongly typed heating data objects as they arrive.
+    /// You may use the <paramref name="cancellationToken"/> parameter, <c>WithCancellation(CancellationToken)</c>
+    /// or <c>break</c> within an <c>await foreach</c> to stop steaming/receiving data.
+    /// </summary>
+    /// <param name="cancellationToken">Token to cancel data streaming.</param>
+    IAsyncEnumerable<HeatingData> StreamHeatingData(CancellationToken cancellationToken);
 }

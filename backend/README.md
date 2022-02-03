@@ -25,6 +25,37 @@ We could also avoid sending an extra event and just sending and receiving notifi
 - Reset TimeZone: `SET TimeZone='Europe/Zurich';`
 - Check if import worked correctly (`select sps_zeit, received_time from heating_data LIMIT 10;`)
 
+
+### Setup for testing serial port receiver
+I did this today 08.02.22 and everything seems to work. I will continue with the parser and then db-insertion, which can luckily both be tested completely without a serial port.
+
+- Install Raspberry PI OS Lite 64-bit
+- `sudo apt update && sudo apt upgrade`
+- `sudo raspi-config`
+  - Interfacing Options -> Serial
+    - Login Shell: No
+    - Enable hardware: Yes
+- Reboot
+- Edit `/boot/config.txt` and add `dtoverlay=disable-bt
+- Configure minicom with `sudo minicom -s` (don't forget to save)
+  - Device: `/dev/ttyAMA0`
+  - Speed: 9600
+  - Parity: None
+  - Data: 8
+  - Stopbits: 1
+  - (you need to configure minicom the same way on the host pc obviously, also for my Manjaro PC I needed "Hardware Flow Control" disabled)
+- Now you can open minicom on both raspi and host and see if you receive the data correctly.
+- Next, use the receiver to check if everything works
+  - Add tons of logging statements to the SerialPortCsvHeatingDataReceiver
+  - Use a simple test-worker, which uses an await foreach and just logs each line it gets
+  - Install .NET on raspi (https://docs.microsoft.com/en-us/dotnet/iot/deployment)
+  - Copy necessary source files over and adjust some csproj stuff
+  - Use `dotnet run` to run the reading loop
+  - Use minicom on the host to send data. IMPORTANT: Dont use Enter, it sends a CR (\r), not a LF (\n). To send a newline, you need to use Ctrl+j (at least on my system).
+  - After that works correctly, use `echo -n "blabla\nblabla" > /dev/ttyS0` and similar to ensure receiving junks of data, potentially including line-breaks works correctly
+  - TODO document/archive Using the testing code from the TestingGrounds, run through it with the actual serial port and minicom
+
+
 -- old stuff
 
 

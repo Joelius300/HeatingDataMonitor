@@ -13,7 +13,7 @@ namespace HeatingDataMonitor.Receiver.Testing;
 // This contains too much redundancy from SerialPortHeatingDataReceiver. Maybe base class.
 public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataReceiver
 {
-    private readonly SerialHeatingDataOptions _options;
+    private readonly SerialPortOptions _options;
     private readonly ILogger<MockHeatingDataReceiver> _logger;
     private readonly IClock _clock;
     private StreamReader? _fileReader;
@@ -22,7 +22,7 @@ public sealed class MockHeatingDataReceiver : BackgroundService, IHeatingDataRec
     public event EventHandler<HeatingData>? DataReceived;
     public HeatingData? Current { get; private set; }
 
-    public MockHeatingDataReceiver(IOptions<SerialHeatingDataOptions> options, ILogger<MockHeatingDataReceiver> logger, IClock clock)
+    public MockHeatingDataReceiver(IOptions<SerialPortOptions> options, ILogger<MockHeatingDataReceiver> logger, IClock clock)
     {
         _options = options.Value;
         _logger = logger;
