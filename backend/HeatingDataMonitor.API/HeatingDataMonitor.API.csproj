@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
     <ItemGroup>

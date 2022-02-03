@@ -13,23 +13,21 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
-void ConfigureOptions(JsonSerializerOptions options)
+void ConfigureJsonOptions(JsonSerializerOptions options)
 {
-    // We expect a lot of null values so let's not blow up the response unnecessarily.
-    // Also we want to keep the original names.
     options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    options.PropertyNamingPolicy = null;
+    options.PropertyNamingPolicy = null; // keep PascalCase naming
     options.Converters.Add(NodaConverters.InstantConverter);
     options.Converters.Add(NodaConverters.LocalDateTimeConverter);
 }
 
-services.AddControllers()
-        .AddJsonOptions(o => ConfigureOptions(o.JsonSerializerOptions));
-
 services.AddHeatingDataDatabaseTimescaledb(configuration.GetConnectionString("HeatingDataDatabase"));
 
+services.AddControllers()
+        .AddJsonOptions(options => ConfigureJsonOptions(options.JsonSerializerOptions));
+
 services.AddSignalR()
-        .AddJsonProtocol(options => ConfigureOptions(options.PayloadSerializerOptions));
+        .AddJsonProtocol(options => ConfigureJsonOptions(options.PayloadSerializerOptions));
 
 const string debugPolicyName = "DebugPolicy";
 services.AddCors(options =>
@@ -69,17 +67,7 @@ services.AddHostedService(sp => sp.GetRequiredService<HeatingDataCacheService>()
 
 services.AddHostedService<HeatingDataRealTimeService>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
