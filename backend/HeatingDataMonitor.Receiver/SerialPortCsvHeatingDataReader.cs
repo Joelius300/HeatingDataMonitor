@@ -1,4 +1,5 @@
 using System.IO.Ports;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
@@ -18,34 +19,80 @@ namespace HeatingDataMonitor.Receiver;
  * - Or it could return a new class which contains all the necessary stuff as members. Because we're also working with events here, this might be the better option.
  * - The inner class
  */
-public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader
+public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
 {
     private readonly SerialPortOptions _serialPortOptions;
 
     public SerialPortCsvHeatingDataReader(IOptions<SerialPortOptions> serialPortOptions) =>
         _serialPortOptions = serialPortOptions.Value;
 
-    public IAsyncEnumerable<string> ReadCsvLines(CancellationToken cancellationToken) =>
+    public IAsyncEnumerable<string> ReadCsvLines(CancellationToken cancellationToken) => this;
+
+    IAsyncEnumerator<string> IAsyncEnumerable<string>.GetAsyncEnumerator(CancellationToken cancellationToken) =>
         new ReadingEnumerable(_serialPortOptions, cancellationToken);
 
-    private class ReadingEnumerable : IAsyncEnumerable<string>, IDisposable, IAsyncDisposable
+    private class ReadingEnumerable : IAsyncEnumerator<string>, IDisposable
     {
         private readonly CancellationToken _cancellationToken;
         private readonly Channel<string> _queue;
         private readonly SerialPort _serialPort;
         private string? _unfinishedLine;
-        private bool _startedReading;
+
+        public string Current { get; private set; } = null!;
 
         public ReadingEnumerable(SerialPortOptions serialPortOptions, CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
             _queue = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
             {
-                SingleReader = true,
-                SingleWriter = true,
+                SingleReader = true, SingleWriter = true,
             });
-            _cancellationToken.Register(() => _queue.Writer.TryComplete());
             _serialPort = SetupSerialPort(serialPortOptions);
+        }
+
+        public async ValueTask<bool> MoveNextAsync()
+        {
+            if (!await _queue.Reader.WaitToReadAsync(_cancellationToken))
+                throw new ObjectDisposedException($"Enumerator of call {nameof(ReadCsvLines)}",
+                                                "MoveNextAsync was called after queue was completed, " +
+                                                  "which can only happen when the enumerator is disposed.");
+
+            if (!_queue.Reader.TryRead(out string? current)) // we should always get true here but just in case..
+                throw new InvalidOperationException("Couldn't read from queue, even though we waited for it.");
+
+            Current = current;
+
+            return true;
+        }
+
+        private void ProcessSerialPortData(object sender, SerialDataReceivedEventArgs e)
+        {
+            string newData = _serialPort.ReadExisting();
+            string allData = _unfinishedLine + newData;
+            string[] separateLines = allData.Split(_serialPort.NewLine);
+            if (separateLines.Length == 1) // no new data, append to unfinished line
+            {
+                _unfinishedLine = allData;
+            }
+            else
+            {
+                // enqueue all lines except for the last one, which becomes our new unfinished line
+                for (int i = 0; i < separateLines.Length - 1; i++)
+                {
+                    _queue.Writer.TryWrite(separateLines[i]);
+                }
+
+                _unfinishedLine = separateLines[^1];
+            }
+        }
+
+        private SerialPort SetupSerialPort(SerialPortOptions options)
+        {
+            SerialPort port = CreateSerialPort(options);
+            port.DataReceived += ProcessSerialPortData;
+            port.Open();
+
+            return port;
         }
 
         private static SerialPort CreateSerialPort(SerialPortOptions options)
@@ -82,50 +129,16 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader
             };
         }
 
-        private SerialPort SetupSerialPort(SerialPortOptions options)
+        public void Dispose()
         {
-            SerialPort port = CreateSerialPort(options);
-            port.DataReceived += ProcessSerialPortData;
-            port.Open();
-
-            return port;
+            _serialPort.Dispose(); // .Close() is equal to .Dispose()
         }
 
-        private void ProcessSerialPortData(object sender, SerialDataReceivedEventArgs e)
+        public ValueTask DisposeAsync()
         {
-            string newData = _serialPort.ReadExisting();
-            string allData = _unfinishedLine + newData;
-            string[] separateLines = allData.Split(_serialPort.NewLine);
-            if (separateLines.Length == 1) // no new data, append to unfinished line
-            {
-                _unfinishedLine = allData;
-            }
-            else
-            {
-                // enqueue all lines except for the last one, which becomes our new unfinished line
-                for (int i = 0; i < separateLines.Length - 1; i++)
-                {
-                    _queue.Writer.TryWrite(separateLines[i]);
-                }
+            Dispose();
 
-                _unfinishedLine = separateLines[^1];
-            }
+            return default;
         }
-
-        public IAsyncEnumerator<string> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        {
-            if (_startedReading)
-                throw new InvalidOperationException("Cannot read more than once on this enumeration container.");
-
-            _startedReading = true;
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken);
-
-            return _queue.Reader.ReadAllAsync(cts.Token).GetAsyncEnumerator(cts.Token);
-        }
-
-        public void Dispose() => throw new NotImplementedException();
-
-        public async ValueTask DisposeAsync() => throw new NotImplementedException();
-
     }
 }
