@@ -27,7 +27,6 @@ public sealed class CsvSerialPortReceiver : IHeatingDataReceiver, IDisposable
 
         _csvConfig = CreateCsvOptions();
         _serialPort = CreateSerialPort();
-        _newLineSplitArray = new[] {_serialPort.NewLine};
     }
 
     public IAsyncEnumerable<HeatingData> StreamHeatingData(CancellationToken cancellationToken)
@@ -76,28 +75,6 @@ public sealed class CsvSerialPortReceiver : IHeatingDataReceiver, IDisposable
         return config;
     }
 
-    private SerialPort CreateSerialPort()
-    {
-        string portName = _options.PortName;
-        if (string.IsNullOrWhiteSpace(portName))
-            throw new InvalidOperationException("The specified serial port name is invalid.");
-
-        if (!SerialPort.GetPortNames().Contains(portName))
-            throw new InvalidOperationException($"The specified serial port name '{portName}' was not found.");
-
-        return new SerialPort
-        {
-            PortName = portName,
-            BaudRate = _options.BaudRate,
-            DataBits = _options.DataBits,
-            Parity = _options.Parity,
-            Handshake = _options.Handshake,
-            StopBits = _options.StopBits,
-            Encoding = _csvConfig.Encoding,
-            DiscardNull = true,
-            NewLine = _options.NewLine
-        };
-    }
 
     private void Dispose(bool disposing)
     {
