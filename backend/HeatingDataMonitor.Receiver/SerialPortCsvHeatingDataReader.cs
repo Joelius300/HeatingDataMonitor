@@ -6,56 +6,97 @@ using Microsoft.Extensions.Options;
 
 namespace HeatingDataMonitor.Receiver;
 
-/* new Idea..
- * From outside:
- * - Create Class with SerialPort config
- * - Call method which returns IAsyncEnumerable and loop over it
- * - Everything is setup when the call is made and everything is disposed once iteration is finished
- * - You could iterate multiple times on the same instance by calling the method multiple times
- * - It's not threadsafe, no concurrent iteration because SerialPort just doesn't work that way
- * From inside:
- * - The actual public facing class should only contain everything required to setup and start a new iteration
- * - It could either have a method which returns IAsyncEnumerable which contains all the necessary stuff as local vars
- * - Or it could return a new class which contains all the necessary stuff as members. Because we're also working with events here, this might be the better option.
- * - The inner class
- */
+// You'll find this class littered with comments, logs, exceptions and triple checks.
+// This is because working with serial ports is an absolute joy and never poses any challenges :)
+// It's easily the most challenging part of this whole system thus far while also being the most
+// important core component, so I want to make sure everything works and can be understood later on.
+// On top of that, https://github.com/dotnet/runtime/issues/62554 made it very difficult to test this class with
+// an actual serial port. And yes, testing with a mocked serial port would be great wouldn't it? Unfortunately,
+// successfully mocking SerialPort is in an of itself extremely hard and even if you manage to do it, you just wont
+// be able to simulate the weird, borderline inexplicable issues you sometimes run into with serial ports.
 public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
 {
     private readonly SerialPortOptions _serialPortOptions;
+    private readonly ILogger<SerialPortCsvHeatingDataReader> _logger;
 
-    public SerialPortCsvHeatingDataReader(IOptions<SerialPortOptions> serialPortOptions) =>
+    public SerialPortCsvHeatingDataReader(IOptions<SerialPortOptions> serialPortOptions,
+        ILogger<SerialPortCsvHeatingDataReader> logger)
+    {
         _serialPortOptions = serialPortOptions.Value;
+        _logger = logger;
+    }
 
-    public IAsyncEnumerable<string> ReadCsvLines(CancellationToken cancellationToken) => this;
+    public IAsyncEnumerable<string> ReadCsvLines() => this;
 
     IAsyncEnumerator<string> IAsyncEnumerable<string>.GetAsyncEnumerator(CancellationToken cancellationToken) =>
-        new ReadingEnumerable(_serialPortOptions, cancellationToken);
+        new SerialPortLineEnumerator(_serialPortOptions, _logger, cancellationToken);
 
-    private class ReadingEnumerable : IAsyncEnumerator<string>, IDisposable
+    /* The enumerator uses a queue, which is populated from an event of the serial port.
+     * On MoveNextAsync, one item is dequeued and put into Current.
+     * The serial port will never stop providing data, therefore the enumeration is infinite unless cancelled.
+     * Cancellation can happen with break or with WithCancellation(CancellationToken).
+     * Disposal is handled automatically when using await foreach.
+     */
+    private class SerialPortLineEnumerator : IAsyncEnumerator<string>, IDisposable
     {
+        private readonly SerialPort _serialPort;
+        private readonly ILogger<SerialPortCsvHeatingDataReader> _logger;
         private readonly CancellationToken _cancellationToken;
         private readonly Channel<string> _queue;
-        private readonly SerialPort _serialPort;
         private string? _unfinishedLine;
+        private bool _disposed;
 
         public string Current { get; private set; } = null!;
 
-        public ReadingEnumerable(SerialPortOptions serialPortOptions, CancellationToken cancellationToken)
+        // ReSharper disable once ContextualLoggerProblem
+        public SerialPortLineEnumerator(SerialPortOptions serialPortOptions, ILogger<SerialPortCsvHeatingDataReader> logger, CancellationToken cancellationToken)
         {
+            _logger = logger;
             _cancellationToken = cancellationToken;
-            _queue = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
+            // Using a bounded queue with 100 slots to avoid infinite memory growth if something goes wrong.
+            // If everything works correctly, there will only be one item in the queue at a time because it will
+            // be dequeued, parsed and saved to the db before the next item arrives (ca. 6 seconds later).
+            // If for whatever reason the parsing and db-insertion take longer than that, the queue can contain more
+            // than 1 item. It'd then have 10 min (6s * 100 slots) time to catch up aka speeding up again
+            // before the queue is full and an exception is thrown (manually by us).
+            _queue = Channel.CreateBounded<string>(new BoundedChannelOptions(100)
             {
-                SingleReader = true, SingleWriter = true,
+                SingleReader = true,
+                SingleWriter = true,
+                FullMode = BoundedChannelFullMode.Wait // makes TryWrite return false for a full queue
             });
-            _serialPort = SetupSerialPort(serialPortOptions);
+
+            // we can open the port this early because this class is only instantiated once the enumeration
+            // starts (in the lowered code from an await foreach).
+            _serialPort = SetupAndOpenSerialPort(serialPortOptions);
         }
 
         public async ValueTask<bool> MoveNextAsync()
         {
-            if (!await _queue.Reader.WaitToReadAsync(_cancellationToken))
+            // Minor (correctness) optimization, in case token is cancelled during the very small time frame outside of WaitToReadAsync
+            if (_cancellationToken.IsCancellationRequested)
+                return false;
+
+            bool hasMoreData;
+            try
+            {
+                hasMoreData = await _queue.Reader.WaitToReadAsync(_cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation token from WithCancellation has signaled to cancel so the enumeration ends here.
+                return false;
+            }
+
+            if (!hasMoreData)
+            {
+                if (!_disposed)
+                    throw new InvalidOperationException("Okay something has gone VERY wrong.");
+
                 throw new ObjectDisposedException($"Enumerator of call {nameof(ReadCsvLines)}",
-                                                "MoveNextAsync was called after queue was completed, " +
-                                                  "which can only happen when the enumerator is disposed.");
+                    "MoveNextAsync was called after queue was completed, " +
+                    "which can only happen when the enumerator is disposed.");
+            }
 
             if (!_queue.Reader.TryRead(out string? current)) // we should always get true here but just in case..
                 throw new InvalidOperationException("Couldn't read from queue, even though we waited for it.");
@@ -77,21 +118,29 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
             else
             {
                 // enqueue all lines except for the last one, which becomes our new unfinished line
-                // usually there will only be one full line
+                // usually there will only be one full line.
                 for (int i = 0; i < separateLines.Length - 1; i++)
                 {
-                    _queue.Writer.TryWrite(separateLines[i]);
+                    if (!_queue.Writer.TryWrite(separateLines[i]))
+                    {
+                        if (_disposed) // we obviously can't write to a completed queue but that's not an error, just return
+                            return;
+
+                        // throwing in this context cannot be handled by anyone, so just log
+                        _logger.LogError("Couldn't write to the queue (probably because it's full which means, the parsing and db-insertion took too long)");
+                        Dispose();
+                    }
                 }
 
                 _unfinishedLine = separateLines[^1];
             }
         }
 
-        private SerialPort SetupSerialPort(SerialPortOptions options)
+        private SerialPort SetupAndOpenSerialPort(SerialPortOptions options)
         {
             SerialPort port = CreateSerialPort(options);
-            port.DataReceived += ProcessSerialPortData;
             port.Open();
+            port.DataReceived += ProcessSerialPortData;
 
             return port;
         }
@@ -112,8 +161,7 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
             }
             catch (ArgumentException e) when (e.ParamName == "name")
             {
-                throw new InvalidOperationException(
-                    $"The specified encoding '{options.Encoding}' is invalid or unsupported.");
+                throw new InvalidOperationException($"The specified encoding '{options.Encoding}' is invalid or unsupported.");
             }
 
             return new SerialPort
@@ -132,6 +180,12 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            _queue.Writer.Complete(); // nothing will ever write to the queue again!
             _serialPort.DataReceived -= ProcessSerialPortData;
             _serialPort.Dispose(); // .Close() is equal to .Dispose()
         }
