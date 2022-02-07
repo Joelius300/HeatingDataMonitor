@@ -1,12 +1,11 @@
 using System.IO.Ports;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
 
 namespace HeatingDataMonitor.Receiver;
 
-// You'll find this class littered with comments, logs, exceptions and triple checks.
+// You'll find this class littered with comments, logs, exceptions and just-to-be-sure checks.
 // This is because working with serial ports is an absolute joy and never poses any challenges :)
 // It's easily the most challenging part of this whole system thus far while also being the most
 // important core component, so I want to make sure everything works and can be understood later on.
@@ -185,7 +184,7 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
 
             _disposed = true;
 
-            _queue.Writer.Complete(); // nothing will ever write to the queue again!
+            _queue.Writer.Complete(); // nothing will ever be written to the queue again!
             _serialPort.DataReceived -= ProcessSerialPortData;
             _serialPort.Dispose(); // .Close() is equal to .Dispose()
         }
