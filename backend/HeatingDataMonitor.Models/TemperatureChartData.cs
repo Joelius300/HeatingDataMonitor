@@ -6,6 +6,9 @@ using NodaTime;
 
 namespace HeatingDataMonitor.Models;
 
+// TODO Move this class into a different package (something with views maybe)
+// so it can be consumed by a read repository without being used in a write repo (those need to be split too).
+
 // This class contains a subset of properties of HeatingData.
 // It allows typesafe, high performance partial data fetching from the db
 // at the cost of redundancy and questionable data access (this is basically a DTO on the DAL).

@@ -116,7 +116,7 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
             }
             else
             {
-                // enqueue all lines except for the last one, which becomes our new unfinished line
+                // enqueue all lines except for the last one, which becomes our new unfinished line.
                 // usually there will only be one full line.
                 for (int i = 0; i < separateLines.Length - 1; i++)
                 {

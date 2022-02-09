@@ -7,9 +7,11 @@ using NodaTime.Text;
 
 namespace HeatingDataMonitor.Receiver;
 
+// Example line:
+// 23.04.19;14:19:45;39.1;33.7;28;;12.0;8.4;9000;62.8;50.6;27.4;0;22.2;34.5;36.8;0;;;;25.1;28.1;0;;;;;;;;;;;;;;;;56.00;;0;1;1;1;0;0;0;1;1;1;1;0;0;0;0;0;0;0;
 internal sealed class HeatingDataCsvMap : ClassMap<HeatingData>
 {
-    private static readonly IPattern<LocalDateTime> s_dateTimePattern =
+    private static readonly IPattern<LocalDateTime> s_dateTimePattern = // I think culture isn't used for this pattern
         LocalDateTimePattern.Create("dd.MM.yyHH:mm:ss", CultureInfo.InvariantCulture);
 
     public HeatingDataCsvMap()

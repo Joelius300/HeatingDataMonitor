@@ -13,10 +13,8 @@ public class SerialPortOptions
     private const int DefaultBaudRate = 9600;
     private const string DefaultNewLine = "\n";
     private const string DefaultEncoding = "us-ascii";
-    private const string DefaultDelimiter = ";";
 
     public string PortName { get; set; } = null!;
-    public string Delimiter { get; set; } = DefaultDelimiter;
     public int BaudRate { get; set; } = DefaultBaudRate;
     public int DataBits { get; set; } = DefaultDataBits;
     public Parity Parity { get; set; } = DefaultParity;
