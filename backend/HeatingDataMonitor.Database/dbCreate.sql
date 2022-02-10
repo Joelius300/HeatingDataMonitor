@@ -45,3 +45,15 @@ CREATE TABLE heating_data (
 );
 
 SELECT create_hypertable('heating_data', 'received_time');
+
+CREATE OR REPLACE FUNCTION record_added() -- trigger functions cannot have arguments
+    RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM pg_notify('record_added', to_char(NEW.received_time, 'YYYY-MM-DD"T"HH24:MI:SS"."FF6"Z"'));
+    RETURN NEW; -- returns the record that triggered this function
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER record_added
+AFTER INSERT ON heating_data
+FOR EACH ROW EXECUTE PROCEDURE record_added();
