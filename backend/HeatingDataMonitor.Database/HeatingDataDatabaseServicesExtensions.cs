@@ -8,7 +8,7 @@ namespace HeatingDataMonitor.Database;
 public static class HeatingDataDatabaseServicesExtensions
 {
     /// <summary>
-    /// Registers a scoped <see cref="IHeatingDataRepository"/> dependency which is connected to
+    /// Registers a singleton <see cref="IHeatingDataRepository"/> dependency which is connected to
     /// a timescaledb database with the <paramref name="connectionString"/> (unless it was already registered).
     /// Set 'Max Auto Prepare' to enable automatic statement preparation for better performance
     /// (see <a href="https://www.npgsql.org/doc/prepare.html#automatic-preparation">here</a>).
@@ -21,7 +21,7 @@ public static class HeatingDataDatabaseServicesExtensions
     {
         services.TryAddSingleton<IConnectionProvider<NpgsqlConnection>>(s =>
             new NpgsqlConnectionProvider(connectionString, s.GetRequiredService<ILogger<NpgsqlConnectionProvider>>()));
-        services.TryAddScoped<IHeatingDataRepository, TimescaledbHeatingDataRepository>();
+        services.TryAddSingleton<IHeatingDataRepository, TimescaledbHeatingDataRepository>();
 
         return services;
     }
