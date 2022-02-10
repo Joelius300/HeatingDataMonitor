@@ -45,3 +45,18 @@ CREATE TABLE heating_data (
 );
 
 SELECT create_hypertable('heating_data', 'received_time');
+
+CREATE OR REPLACE FUNCTION record_added() -- trigger functions cannot have arguments
+    RETURNS TRIGGER AS $$
+DECLARE
+BEGIN
+    -- we don't need to pass arguments because we can just fetch the latest record.
+    -- for triggers that fire every 6 seconds I think that's fine, otherwise return an id.
+    PERFORM pg_notify('record_added', '');
+    RETURN NEW; -- returns the record that triggered this function
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER record_added
+AFTER INSERT ON heating_data
+FOR EACH ROW EXECUTE PROCEDURE record_added();

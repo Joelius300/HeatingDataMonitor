@@ -20,4 +20,4 @@ CREATE ROLE "heatingDataMonitorUser" WITH
 	CONNECTION LIMIT -1
 	PASSWORD 'dontworrythispasswordwillchangeinproduction';
 
-GRANT "heatingDataMonitorRole" TO "heatingDataMonitorUser"; 
+GRANT "heatingDataMonitorRole" TO "heatingDataMonitorUser";
