@@ -1,21 +1,23 @@
+using HeatingDataMonitor.Models;
+
 namespace HeatingDataMonitor.Receiver;
 
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly ICsvHeatingDataReader _csvHeatingDataReader;
+    private readonly IHeatingDataReceiver _receiver;
 
-    public Worker(ILogger<Worker> logger, ICsvHeatingDataReader csvHeatingDataReader)
+    public Worker(ILogger<Worker> logger, IHeatingDataReceiver receiver)
     {
         _logger = logger;
-        _csvHeatingDataReader = csvHeatingDataReader;
+        _receiver = receiver;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (string line in _csvHeatingDataReader.ReadCsvLines().WithCancellation(stoppingToken))
+        await foreach (HeatingData record in _receiver.StreamHeatingData(stoppingToken))
         {
-            _logger.LogInformation("Line received: {Line}", line);
+            _logger.LogInformation("Record received: {Record}", System.Text.Json.JsonSerializer.Serialize(record));
         }
     }
 }

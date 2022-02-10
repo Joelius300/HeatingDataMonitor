@@ -7,28 +7,28 @@ using NodaTime;
 
 namespace HeatingDataMonitor.Receiver;
 
-public sealed class CsvHeatingDataReceiver : IHeatingDataReceiver, IDisposable
+internal sealed class CsvHeatingDataReceiver : IHeatingDataReceiver
 {
+    private const string NewLine = "\n";
+    private static readonly CsvConfiguration s_csvConfig = CreateCsvOptions();
     private readonly ICsvHeatingDataReader _csvHeatingDataReader;
     private readonly ILogger<CsvHeatingDataReceiver> _logger;
     private readonly IClock _clock;
-    private readonly CsvConfiguration _csvConfig;
 
     public CsvHeatingDataReceiver(ICsvHeatingDataReader csvHeatingDataReader, ILogger<CsvHeatingDataReceiver> logger, IClock clock)
     {
         _csvHeatingDataReader = csvHeatingDataReader;
         _logger = logger;
         _clock = clock;
-
-        _csvConfig = CreateCsvOptions();
     }
 
     public async IAsyncEnumerable<HeatingData> StreamHeatingData([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await using MemoryStream buffer = new();
-        await using StreamWriter bufferWriter = new(buffer);
+        await using StreamWriter bufferWriter = new(buffer) { NewLine = NewLine };
         using StreamReader bufferReader = new(buffer);
-        using CsvReader csvReader = new(bufferReader, _csvConfig);
+        using CsvReader csvReader = new(bufferReader, s_csvConfig);
+        csvReader.Context.RegisterClassMap<HeatingDataCsvMap>();
 
         await foreach (string line in _csvHeatingDataReader.ReadCsvLines().WithCancellation(cancellationToken))
         {
@@ -39,6 +39,7 @@ public sealed class CsvHeatingDataReceiver : IHeatingDataReceiver, IDisposable
             await bufferWriter.WriteLineAsync(line); // writes csv data + new line
             await bufferWriter.FlushAsync();
 
+            buffer.Position = 0; // go back to the start, where the data was written to
             if (!await csvReader.ReadAsync()) // since there's always one full line in the buffer, this shouldn't fail
                 throw new InvalidOperationException("Couldn't read csv line from buffer.");
 
@@ -65,20 +66,17 @@ public sealed class CsvHeatingDataReceiver : IHeatingDataReceiver, IDisposable
         }
     }
 
-    private CsvConfiguration CreateCsvOptions()
-    {
-        if (string.IsNullOrEmpty(_options.Delimiter))
-            throw new InvalidOperationException("The specified delimiter is invalid.");
-
-        CsvConfiguration config = new(CultureInfo.InvariantCulture)
+    // The culture here is relevant but only for the decimal point and invariant uses '.' so it's fine.
+    private static CsvConfiguration CreateCsvOptions() => new(CultureInfo.InvariantCulture)
         {
-            Delimiter = _options.Delimiter,
+            // one of those cases that, yes, could be made configurable but the output of the heating unit
+            // is well known and won't change, so it's just more unnecessary code.
+            Delimiter = ";",
+            NewLine = NewLine,
             IgnoreBlankLines = true,
             HasHeaderRecord = false,
-            CountBytes = false,
-            MemberTypes = MemberTypes.Properties
+            CountBytes = false, // also makes sure encoding isn't required
+            MemberTypes = MemberTypes.Properties,
+            AllowComments = false,
         };
-
-        return config;
-    }
 }
