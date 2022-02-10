@@ -6,16 +6,25 @@ IHost host = Host.CreateDefaultBuilder(args)
     .UseSystemd() // TODO make sure to use Type=notify in Systemd file
     .ConfigureServices((context, services) =>
     {
-        services.AddOptions<SerialPortOptions>()
-                .BindConfiguration("Serial");
-
         services.AddSingleton<IClock>(SystemClock.Instance);
-        // services.AddSingleton<ICsvHeatingDataReader, SerialPortCsvHeatingDataReader>();
-        services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader("/home/joel/Desktop/output.csv", 10));
+        services.AddHeatingDataDatabaseTimescaledb(context.Configuration.GetConnectionString("HeatingDataDatabase"));
         services.AddSingleton<IHeatingDataReceiver, CsvHeatingDataReceiver>();
-        // services.AddHeatingDataDatabaseTimescaledb(context.Configuration.GetConnectionString("HeatingDataDatabase"));
+        services.AddHostedService<DbInsertionService>();
 
-        services.AddHostedService<Worker>();
+        string? path = context.Configuration.GetValue<string?>("FakeSerialPortData");
+        if (!string.IsNullOrEmpty(path))
+        {
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Specified csv file not found", path);
+
+            services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader(path));
+        }
+        else
+        {
+            services.AddOptions<SerialPortOptions>()
+                    .BindConfiguration("Serial");
+            services.AddSingleton<ICsvHeatingDataReader, SerialPortCsvHeatingDataReader>();
+        }
     })
     .Build();
 
