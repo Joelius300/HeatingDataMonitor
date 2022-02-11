@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using CsvHelper;
 using CsvHelper.Configuration;
 using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
 
 namespace HeatingDataMonitor.Receiver;

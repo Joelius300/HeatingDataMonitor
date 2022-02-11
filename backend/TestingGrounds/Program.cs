@@ -1,6 +1,54 @@
-﻿using HeatingDataMonitor.Database;
+﻿using System.Runtime.CompilerServices;
+using HeatingDataMonitor.Database;
 using Microsoft.Extensions.DependencyInjection;
 using TestingGrounds;
+
+async IAsyncEnumerable<int> GetEnumerable([EnumeratorCancellation] CancellationToken cancellationToken)
+{
+    try
+    {
+        int i = 0;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            yield return i++;
+            try
+            {
+                await Task.Delay(500, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+        }
+    }
+    finally
+    {
+        Console.WriteLine("After loop");
+    }
+}
+
+
+CancellationTokenSource ctsss = new();
+Console.WriteLine("With break");
+await foreach (int i in GetEnumerable(ctsss.Token))
+{
+    Console.WriteLine(i);
+    if (i == 5)
+        break;
+}
+
+Console.WriteLine("with cancel");
+await foreach (int i in GetEnumerable(ctsss.Token))
+{
+    Console.WriteLine(i);
+    if (i == 5)
+        ctsss.Cancel();
+}
+
+
+return;
+
+
 
 IServiceCollection services = new ServiceCollection();
 services.AddHeatingDataDatabaseTimescaledb(

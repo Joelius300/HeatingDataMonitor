@@ -39,6 +39,26 @@ public class PostgresNotificationStuff
             await connection.DisposeAsync();
         });
 
+        /*
+        Task.Run(async () =>
+        {
+            await Task.Delay(10000);
+            Console.WriteLine("10 seconds have passed, disposing connection, but listening again on a different one");
+            connection.DisposeAsync();
+            await using var unlistenConnection = await _connectionProvider.OpenConnection();
+            unlistenConnection.Notification += (o, e) => Console.WriteLine("Got notification on new connection.");
+            await Task.Delay(100_000, cancellationToken);
+*/
+
+            /* This doesn't work, notifications are still received.
+            Console.WriteLine("10 seconds have passed, calling unlisten on a new connection.");
+
+            await using var unlistenConnection = await _connectionProvider.OpenConnection();
+            await unlistenConnection.ExecuteAsync("UNLISTEN record_added;");
+            */
+        //});
+
+
         while (!cancellationToken.IsCancellationRequested)
         {
             try
@@ -60,8 +80,7 @@ public class PostgresNotificationStuff
             }
         }
 
-        await using var unlistenConnection = await _connectionProvider.OpenConnection();
-        await unlistenConnection.ExecuteAsync("UNLISTEN record_added;");
+        await connection.ExecuteAsync("UNLISTEN record_added;");
 
         Console.WriteLine("DoStuff ended");
     }

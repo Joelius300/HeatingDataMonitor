@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using HeatingDataMonitor.Models;
-using Microsoft.Extensions.Hosting;
+﻿using HeatingDataMonitor.Models;
 
-namespace HeatingDataMonitor.Receiver;
+namespace HeatingDataMonitor.Receiver.Shared;
 
 /// <summary>
 /// A service to stream strongly typed heating data from some source.

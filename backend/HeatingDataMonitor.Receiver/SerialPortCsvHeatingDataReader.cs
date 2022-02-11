@@ -13,7 +13,7 @@ namespace HeatingDataMonitor.Receiver;
 // an actual serial port. And yes, testing with a mocked serial port would be great wouldn't it? Unfortunately,
 // successfully mocking SerialPort is in an of itself extremely hard and even if you manage to do it, you just wont
 // be able to simulate the weird, borderline inexplicable issues you sometimes run into with serial ports.
-public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
+internal class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
 {
     private readonly SerialPortOptions _serialPortOptions;
     private readonly ILogger<SerialPortCsvHeatingDataReader> _logger;

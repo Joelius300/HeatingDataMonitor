@@ -1,5 +1,6 @@
 using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Receiver;
+using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
 
 IHost host = Host.CreateDefaultBuilder(args)
@@ -17,7 +18,8 @@ IHost host = Host.CreateDefaultBuilder(args)
             if (!File.Exists(path))
                 throw new FileNotFoundException("Specified csv file not found", path);
 
-            services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader(path));
+            int delay = context.Configuration.GetValue("FakeSerialPortDelay", 6000);
+            services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader(path, delay));
         }
         else
         {
