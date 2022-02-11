@@ -1,3 +1,4 @@
+using HeatingDataMonitor.Receiver.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,15 @@ public static class HeatingDataDatabaseServicesExtensions
         services.TryAddSingleton<IConnectionProvider<NpgsqlConnection>>(s =>
             new NpgsqlConnectionProvider(connectionString, s.GetRequiredService<ILogger<NpgsqlConnectionProvider>>()));
         services.TryAddSingleton<IHeatingDataRepository, TimescaledbHeatingDataRepository>();
+
+        return services;
+    }
+
+    // TODO Do some splitting with read vs write related db stuff. One repo for writing (doesn't need access to views),
+    // one for reading. Then the registration for reading will also register the receiver.
+    public static IServiceCollection AddHeatingDataReceiverTimescaleDb(this IServiceCollection services)
+    {
+        services.TryAddSingleton<IHeatingDataReceiver, NpgsqlNotificationHeatingDataReceiver>();
 
         return services;
     }

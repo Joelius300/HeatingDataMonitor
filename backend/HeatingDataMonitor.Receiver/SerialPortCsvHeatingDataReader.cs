@@ -13,7 +13,7 @@ namespace HeatingDataMonitor.Receiver;
 // an actual serial port. And yes, testing with a mocked serial port would be great wouldn't it? Unfortunately,
 // successfully mocking SerialPort is in an of itself extremely hard and even if you manage to do it, you just wont
 // be able to simulate the weird, borderline inexplicable issues you sometimes run into with serial ports.
-public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
+internal class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
 {
     private readonly SerialPortOptions _serialPortOptions;
     private readonly ILogger<SerialPortCsvHeatingDataReader> _logger;
@@ -57,12 +57,11 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
             // be dequeued, parsed and saved to the db before the next item arrives (ca. 6 seconds later).
             // If for whatever reason the parsing and db-insertion take longer than that, the queue can contain more
             // than 1 item. It'd then have 10 min (6s * 100 slots) time to catch up aka speeding up again
-            // before the queue is full and an exception is thrown (manually by us).
+            // before the queue is full in which case an error is logged and operation is halted.
             _queue = Channel.CreateBounded<string>(new BoundedChannelOptions(100)
             {
                 SingleReader = true,
                 SingleWriter = true,
-                FullMode = BoundedChannelFullMode.Wait // makes TryWrite return false for a full queue
             });
 
             // we can open the port this early because this class is only instantiated once the enumeration
@@ -72,6 +71,8 @@ public class SerialPortCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnume
 
         public async ValueTask<bool> MoveNextAsync()
         {
+            // check for disposed -> ObjectDisposedException omitted. Reasons outlined in NpgsqlNotificationHeatingDataReceiver.cs
+
             // Minor (correctness) optimization, in case token is cancelled during the very small time frame outside of WaitToReadAsync
             if (_cancellationToken.IsCancellationRequested)
                 return false;

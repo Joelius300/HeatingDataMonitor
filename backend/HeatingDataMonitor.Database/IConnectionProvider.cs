@@ -19,5 +19,6 @@ public interface IConnectionProvider<TConnection>
     /// handled by the ADO.NET data provider.
     /// </para>
     /// </summary>
+    // TODO Add CancellationToken param?
     Task<TConnection> OpenConnection();
 }

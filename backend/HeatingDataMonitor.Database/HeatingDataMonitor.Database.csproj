@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\HeatingDataMonitor.Models\HeatingDataMonitor.Models.csproj" />
+      <ProjectReference Include="..\HeatingDataMonitor.Receiver.Shared\HeatingDataMonitor.Receiver.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

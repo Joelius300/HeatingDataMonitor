@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace HeatingDataMonitor.Receiver;
 
 internal class FileCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerable<string>
@@ -7,7 +5,7 @@ internal class FileCsvHeatingDataReader : ICsvHeatingDataReader, IAsyncEnumerabl
     private readonly string _path;
     private readonly int _delay;
 
-    public FileCsvHeatingDataReader(string path, int delay = 6000)
+    public FileCsvHeatingDataReader(string path, int delay)
     {
         _path = path;
         _delay = delay;
