@@ -8,7 +8,9 @@ using Npgsql;
 
 namespace HeatingDataMonitor.Database;
 
-// WIP!
+// WIP! Reconsider this carefully but I think it might actually be nicer / easier to do it the same way as the Serial
+// port stuff because implementing IAsyncEnumerator instead of anything higher gives full control over cleanup with
+// IAsyncDisposable and allows use of class members instead of lots of local variables.
 public class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
 {
     private const string ChannelName = "record_added"; // could be made more configurable, doesn't need to be tho
