@@ -10,20 +10,6 @@ internal class TimescaledbHeatingDataRepository : IHeatingDataRepository
 {
     private readonly IConnectionProvider<NpgsqlConnection> _connectionProvider;
 
-    static TimescaledbHeatingDataRepository()
-    {
-        // I would love to scope this to only this repo or only a certain connection
-        // or whatever but that's a lot of work for something entirely useless in this project
-        // as we only have one database with one model and that will probably stay like that forever.
-        // https://stackoverflow.com/questions/14814972/dapper-map-to-sql-column-with-spaces-in-column-names
-        // Allow snake_case -> PascalCase mapping in Dapper
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
-        // Allow Dapper to directly work with Instants and LocalDateTimes from the Npgsql ADO.NET handler.
-        // https://github.com/DapperLib/Dapper/issues/198#issuecomment-699719732
-        SqlMapper.AddTypeMap(typeof(Instant), DbType.DateTime); // received_time: Instant <-> with timezone (UTC aligned)
-        SqlMapper.AddTypeMap(typeof(LocalDateTime), DbType.DateTime2); // sps_zeit: LocalDateTime <-> without timezone (unknown timezone)
-    }
-
     public TimescaledbHeatingDataRepository(IConnectionProvider<NpgsqlConnection> connectionProvider)
     {
         _connectionProvider = connectionProvider;

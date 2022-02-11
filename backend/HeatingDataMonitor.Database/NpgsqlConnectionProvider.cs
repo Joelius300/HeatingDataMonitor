@@ -1,4 +1,7 @@
+using System.Data;
+using Dapper;
 using Microsoft.Extensions.Logging;
+using NodaTime;
 using Npgsql;
 
 namespace HeatingDataMonitor.Database;
@@ -7,6 +10,20 @@ internal class NpgsqlConnectionProvider : IConnectionProvider<NpgsqlConnection>
 {
     private readonly string _connectionString;
     private readonly ILogger<NpgsqlConnectionProvider> _logger;
+
+    static NpgsqlConnectionProvider()
+    {
+        // I would love to scope this to only one repo or only a certain connection
+        // or whatever but that's a lot of work for something entirely useless in this project
+        // as we only have one database with one model and that will probably stay like that forever.
+        // https://stackoverflow.com/questions/14814972/dapper-map-to-sql-column-with-spaces-in-column-names
+        // Allow snake_case -> PascalCase mapping in Dapper
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        // Allow Dapper to directly work with Instants and LocalDateTimes from the Npgsql ADO.NET handler.
+        // https://github.com/DapperLib/Dapper/issues/198#issuecomment-699719732
+        SqlMapper.AddTypeMap(typeof(Instant), DbType.DateTime); // received_time: Instant <-> with timezone (UTC aligned)
+        SqlMapper.AddTypeMap(typeof(LocalDateTime), DbType.DateTime2); // sps_zeit: LocalDateTime <-> without timezone (unknown timezone)
+    }
 
     public NpgsqlConnectionProvider(string connectionString, ILogger<NpgsqlConnectionProvider> logger)
     {
