@@ -8,35 +8,77 @@ using Npgsql;
 
 namespace HeatingDataMonitor.Database;
 
-// WIP! Reconsider this carefully but I think it might actually be nicer / easier to do it the same way as the Serial
-// port stuff because implementing IAsyncEnumerator instead of anything higher gives full control over cleanup with
-// IAsyncDisposable and allows use of class members instead of lots of local variables.
+// TODO integration tests for this class would make sense. You could use .NET testcontainers.
 public class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
 {
-    private const string ChannelName = "record_added"; // could be made more configurable, doesn't need to be tho
+    public const string ChannelName = "record_added"; // could be made more configurable, doesn't really need to be
     private readonly IConnectionProvider<NpgsqlConnection> _connectionProvider;
 
     public NpgsqlNotificationHeatingDataReceiver(IConnectionProvider<NpgsqlConnection> connectionProvider) => _connectionProvider = connectionProvider;
 
+    public IAsyncEnumerable<HeatingData> StreamHeatingData(CancellationToken cancellationToken) =>
+        new Enumerable(cancellationToken);
+
+    private class Enumerable : IAsyncEnumerable<HeatingData>
+    {
+        private readonly CancellationToken _defaultCancellationToken; // may be overridden by WithCancellation
+        private readonly IConnectionProvider<NpgsqlConnection> _connectionProvider;
+        private readonly Channel<HeatingData> _queue;
+        private NpgsqlConnection? _connection; // creating a connection is async so we can't do it in the constructor
+        private Task _notificationLoopTask;
+
+        public Enumerable(CancellationToken defaultCancellationToken, IConnectionProvider<NpgsqlConnection> connectionProvider)
+        {
+            _defaultCancellationToken = defaultCancellationToken;
+            _connectionProvider = connectionProvider;
+
+            // Use a queue with a max capacity of 100 to prevent infinite memory growth. Limit shouldn't ever be hit -> exception if it does happen
+            _queue = Channel.CreateBounded<HeatingData>(new BoundedChannelOptions(100) {SingleReader = true, SingleWriter = true});
+        }
+
+        // TODO This is all good and splitting into a setup and cleanup function is great BUT the enumerable isn't
+        // disposed (think of List, why would the list be disposed after you're done iterating over it?) so it would make
+        // more sense to have the receiver implement IAsyncEnumerable (just like the serial port one) and (although that's
+        // slightly less nice than yield return etc) manually implement the enumerator which gives full control over cleanup via IAsyncDisposal.
+        // That probably also means you're going to need the two step thing for cancellation which you still have in your stash :)
+        public async IAsyncEnumerator<HeatingData> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            // parameter here (from WithCancellation) has priority over parameter in constructor (from StreamHeatingData)
+            if (cancellationToken == CancellationToken.None)
+            {
+                cancellationToken = _defaultCancellationToken;
+            }
+
+            await SetupConnection(cancellationToken);
+
+            // TODO implement this logic in an enumerator (setup once in movenext with guard, cleanup in disposeasync).
+            // Here you'll only need together with the default token logic to also allow WithCancellation.
+            return new Enumerator(cancellationToken);
+        }
+
+        private async Task SetupConnection(CancellationToken cancellationToken)
+        {
+            _connection = await _connectionProvider.OpenConnection();
+            _connection.Notification += AddRecordToQueue;
+            _notificationLoopTask = Task.Run(() => WaitForNotifications(_connection, cancellationToken), cancellationToken);
+        }
+    }
+
     public async IAsyncEnumerable<HeatingData> StreamHeatingData([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await using NpgsqlConnection connection = await _connectionProvider.OpenConnection();
-        // Use a queue with a max capacity of 100 to prevent infinite memory growth. Limit shouldn't ever be hit -> exception if it does happen
-        Channel<HeatingData> queue = Channel.CreateBounded<HeatingData>(new BoundedChannelOptions(100) {SingleReader = true, SingleWriter = true});
         // ReSharper disable once AccessToDisposedClosure
         await using CancellationTokenRegistration unregisterCallback = cancellationToken.Register(() =>
         {
             connection.Dispose(); // this makes WaitAsync throw an OperationCanceledException, which will terminate the waiting loop
             queue.Writer.Complete(); // stop accepting new
         });
-        connection.Notification += AddRecordToQueue;
         await connection.ExecuteAsync($"LISTEN {ChannelName};");
 
         // Not 100% sure if that's the right way to do this. Since Tasks are hot in .NET, I could also just call the
         // method without awaiting. IIRC this just enables .NET to move it to a different thread if it wants to.
         // ReSharper disable once AccessToDisposedClosure
-        using Task notificationLoop =
-            Task.Run(() => WaitForConnections(connection, cancellationToken), cancellationToken);
+        using Task
 
         try
         {
@@ -77,7 +119,7 @@ public class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
         throw new NotImplementedException();
     }
 
-    private static async Task WaitForConnections(NpgsqlConnection connection, CancellationToken cancellationToken)
+    private static async Task WaitForNotifications(NpgsqlConnection connection, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {

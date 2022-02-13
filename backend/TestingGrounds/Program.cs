@@ -46,6 +46,24 @@ await foreach (int i in GetEnumerable(ctsss.Token))
 }
 
 
+class Enumerable : IAsyncEnumerable<int>, IAsyncDisposable
+{
+    public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken()) => new Enumerator();
+    public async ValueTask DisposeAsync() => Console.WriteLine("Enumerable disposed");
+}
+
+class Enumerator : IAsyncEnumerator<int>
+{
+    public async ValueTask DisposeAsync() => Console.WriteLine("Enumerator disposed");
+
+    public async ValueTask<bool> MoveNextAsync()
+    {
+        return Current++ <= 5;
+    }
+
+    public int Current { get; private set; }
+}
+
 return;
 
 
