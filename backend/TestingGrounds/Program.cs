@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using HeatingDataMonitor.Database;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TestingGrounds;
 /*
 using CancellationTokenSource cts0 = new();
@@ -26,12 +27,26 @@ await someTask;
 return;
 */
 
+/*
+async Task DoSmth()
+{
+    await Task.Delay(100);
+    throw new InvalidOperationException("reeee");
+}
+
+Task faultedTask = DoSmth();
+
+await Task.WhenAll(faultedTask, Task.Delay(500));
+
+return;
+*/
+
 IServiceCollection services = new ServiceCollection();
 services.AddHeatingDataDatabaseTimescaledb(
     "Server=127.0.0.1;Port=5432;Database=heating_data_monitor;User Id=heatingDataMonitorUser;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;");
 services.AddHeatingDataReceiverTimescaleDb();
 services.AddTransient<PostgresNotificationStuff>();
-services.AddLogging();
+services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
 await using var sp = services.BuildServiceProvider();
 
@@ -46,12 +61,15 @@ Console.CancelKeyPress += (o, e) =>
 };
 */
 
-Task task = sp.GetRequiredService<PostgresNotificationStuff>().DoStuff(cts.Token);
+// cts.CancelAfter(12000);
+await sp.GetRequiredService<PostgresNotificationStuff>().DoStuff(cts.Token);
 
-Console.WriteLine("Press any key to cancel.");
-Console.ReadKey(true);
-cts.Cancel();
-await task;
+// GOD YOU FUCKING IDIOT
+// you did it again, this obviously only throws exceptions once I cancel because that's when the task is awaited...
+// stop doing that
+// Console.WriteLine("Press any key to cancel.");
+// Console.ReadKey(true);
+// cts.Cancel();
 
 Console.WriteLine("Press any key to exit..");
 Console.ReadKey(true);

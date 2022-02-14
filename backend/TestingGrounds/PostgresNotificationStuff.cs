@@ -20,6 +20,18 @@ public class PostgresNotificationStuff
 
     public async Task DoStuff(CancellationToken cancellationToken)
     {
+        /*
+        int i = 0;
+        await foreach (HeatingData record in _heatingDataReceiver.StreamHeatingData(cancellationToken))
+        {
+            Console.WriteLine($"Received record: {InstantPattern.ExtendedIso.Format(record.ReceivedTime)} - {record.SPS_Zeit}");
+            if (++i >= 3)
+                break;
+        }
+
+        return; // this below works great _or does it_
+        */
+
         await foreach (HeatingData record in _heatingDataReceiver.StreamHeatingData(cancellationToken))
         {
             Console.WriteLine($"Received record: {InstantPattern.ExtendedIso.Format(record.ReceivedTime)} - {record.SPS_Zeit}");
