@@ -203,27 +203,8 @@ internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
             _disposed = true;
 
             _queue.Writer.TryComplete();
-
             await WaitForNotificationLoopToEnd(maxWaitTime: 1000);
-
-            if (_connection is not null)
-            {
-                try
-                {
-                    // this can easily fail if e.g. the network cut out or something like that
-                    await _connection.ExecuteAsync($"UNLISTEN {NotificationChannelName};");
-                }
-                catch (NpgsqlException ex)
-                {
-                    _logger.LogWarning(ex, "Error while trying to unlisten from notification channel");
-                }
-
-                _connection.Notification -= AddRecordToQueue;
-                // if the connection is still waiting, this will throw an exception; that's why we wait for the loop task beforehand
-                await _connection.DisposeAsync();
-                _connection = null;
-                _logger.LogDebug("Connection disposed successfully");
-            }
+            await TeardownConnection();
         }
 
         private async ValueTask WaitForNotificationLoopToEnd(int maxWaitTime)
@@ -257,6 +238,28 @@ internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
             {
                 _logger.LogDebug("Notification loop finished gracefully");
             }
+        }
+
+        private async ValueTask TeardownConnection()
+        {
+            if (_connection is null)
+                return;
+
+            try
+            {
+                // this can easily fail if e.g. the network cut out or something like that
+                await _connection.ExecuteAsync($"UNLISTEN {NotificationChannelName};");
+            }
+            catch (NpgsqlException ex)
+            {
+                _logger.LogWarning(ex, "Error while trying to unlisten from notification channel");
+            }
+
+            _connection.Notification -= AddRecordToQueue;
+            // if the connection is still waiting, this will throw an exception; that's why we wait for the loop task beforehand
+            await _connection.DisposeAsync();
+            _connection = null;
+            _logger.LogDebug("Connection disposed successfully");
         }
     }
 }
