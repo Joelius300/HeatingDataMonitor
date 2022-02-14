@@ -2,85 +2,57 @@
 using HeatingDataMonitor.Database;
 using Microsoft.Extensions.DependencyInjection;
 using TestingGrounds;
+/*
+using CancellationTokenSource cts0 = new();
+Task someTask = Task.Run(SomeMethod, cts0.Token);
+cts0.CancelAfter(2000);
 
-async IAsyncEnumerable<int> GetEnumerable([EnumeratorCancellation] CancellationToken cancellationToken)
+async Task SomeMethod()
 {
-    try
-    {
-        int i = 0;
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            yield return i++;
-            try
-            {
-                await Task.Delay(500, cancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-                break;
-            }
-        }
-    }
-    finally
-    {
-        Console.WriteLine("After loop");
-    }
+    // await Task.Delay(10000, cts0.Token); --> is canceled, throws TaskCanceledException when awaited
+    // throw new OperationCanceledException(); --> is canceled as well, throws that exception when awaited, even without cancellation stuff
+    await Task.Delay(500);
+    throw new InvalidOperationException("some exception");
 }
 
+await Task.Delay(3000);
 
-CancellationTokenSource ctsss = new();
-Console.WriteLine("With break");
-await foreach (int i in GetEnumerable(ctsss.Token))
-{
-    Console.WriteLine(i);
-    if (i == 5)
-        break;
-}
-
-Console.WriteLine("with cancel");
-await foreach (int i in GetEnumerable(ctsss.Token))
-{
-    Console.WriteLine(i);
-    if (i == 5)
-        ctsss.Cancel();
-}
-
-
-class Enumerable : IAsyncEnumerable<int>, IAsyncDisposable
-{
-    public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken()) => new Enumerator();
-    public async ValueTask DisposeAsync() => Console.WriteLine("Enumerable disposed");
-}
-
-class Enumerator : IAsyncEnumerator<int>
-{
-    public async ValueTask DisposeAsync() => Console.WriteLine("Enumerator disposed");
-
-    public async ValueTask<bool> MoveNextAsync()
-    {
-        return Current++ <= 5;
-    }
-
-    public int Current { get; private set; }
-}
+Console.WriteLine($"Status of task: {someTask.Status}");
+Console.WriteLine($"Is canceled: {someTask.IsCanceled}");
+Console.WriteLine($"Is faulted: {someTask.IsFaulted}");
+Console.WriteLine("awaiting task now..");
+await someTask;
 
 return;
-
-
+*/
 
 IServiceCollection services = new ServiceCollection();
 services.AddHeatingDataDatabaseTimescaledb(
     "Server=127.0.0.1;Port=5432;Database=heating_data_monitor;User Id=heatingDataMonitorUser;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;");
+services.AddHeatingDataReceiverTimescaleDb();
 services.AddTransient<PostgresNotificationStuff>();
 services.AddLogging();
 
 await using var sp = services.BuildServiceProvider();
 
 using CancellationTokenSource cts = new();
+/* GOD WHYYY. This somehow interfered with WaitAsync..
+ I have no idea how but even if I don't pass any cancellation token to
+ WaitAsync, cancelling with a Ctrl+C will cause WaitAsync to block indefinitely
 Console.CancelKeyPress += (o, e) =>
 {
     Console.WriteLine("Cancelled?");
     cts.Cancel();
 };
+*/
 
-await sp.GetRequiredService<PostgresNotificationStuff>().DoStuff(cts.Token);
+Task task = sp.GetRequiredService<PostgresNotificationStuff>().DoStuff(cts.Token);
+
+Console.WriteLine("Press any key to cancel.");
+Console.ReadKey(true);
+cts.Cancel();
+await task;
+
+Console.WriteLine("Press any key to exit..");
+Console.ReadKey(true);
+
