@@ -203,26 +203,7 @@ internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
 
             _queue.Writer.TryComplete();
 
-            if (_notificationLoopTask is not null &&
-                !_notificationLoopTask.IsCompletedSuccessfully &&
-                !_notificationLoopTask.IsCanceled)
-            {
-                // - for a successful or canceled task we don't do anything
-                // - for an unfinished task we await until it terminates, for a maximum of 1 second
-                //   before we move on to dispose the connection
-                // - the task shouldn't be faulted because if a non-cancellation exception occured, it was rethrown in
-                //   the correct context and then the task was set to null. however, if it somehow still happens, await
-                //   ensures that the exception will be thrown at least now.
-                await Task.WhenAny(_notificationLoopTask, Task.Delay(1000));
-                if (!_notificationLoopTask.IsCompletedSuccessfully)
-                {
-                    _logger.LogWarning("Notification loop didn't finish within 1 second during disposal");
-                }
-                else
-                {
-                    _logger.LogDebug("Notification loop finished gracefully");
-                }
-            }
+            await WaitForNotificationLoopToEnd(maxWaitTime: 1000);
 
             if (_connection is not null)
             {
@@ -241,6 +222,39 @@ internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
                 await _connection.DisposeAsync();
                 _connection = null;
                 _logger.LogDebug("Connection disposed successfully");
+            }
+        }
+
+        private async ValueTask WaitForNotificationLoopToEnd(int maxWaitTime)
+        {
+            // - for a successful or canceled task we don't do anything
+            // - for an unfinished task we await until it terminates, for a maximum of 1 second
+            //   before we move on to dispose the connection
+            // - the task shouldn't be faulted because if a non-cancellation exception occured, it was rethrown in
+            //   the correct context and then the task was set to null. If it still happened somehow, we don't want
+            //   to throw it here because that will interfere with the disposal of the connection. Instead just log it.
+            if (_notificationLoopTask is null ||
+                _notificationLoopTask.IsCompletedSuccessfully ||
+                _notificationLoopTask.IsCanceled)
+                return;
+
+            if (_notificationLoopTask.IsFaulted)
+            {
+                _logger.LogError(_notificationLoopTask.Exception!.InnerException,
+                    "Notification loop task was faulted but exception wasn't thrown from MoveNextAsync");
+
+                return;
+            }
+
+            // ReSharper disable once MethodSupportsCancellation
+            await Task.WhenAny(_notificationLoopTask, Task.Delay(maxWaitTime));
+            if (!_notificationLoopTask.IsCompletedSuccessfully)
+            {
+                _logger.LogWarning("Notification loop didn't finish within {MaxWaitTime} ms during disposal", maxWaitTime);
+            }
+            else
+            {
+                _logger.LogDebug("Notification loop finished gracefully");
             }
         }
     }
