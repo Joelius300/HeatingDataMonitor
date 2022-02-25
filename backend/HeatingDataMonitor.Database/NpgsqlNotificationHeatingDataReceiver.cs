@@ -12,7 +12,8 @@ using Npgsql;
 
 namespace HeatingDataMonitor.Database;
 
-// TODO VERY IMPORTANT Test if this works for long durations. If not we may need keepalives.
+// TODONE VERY IMPORTANT Test if this works for long durations. If not we may need keepalives.
+//      I tested this in isolation and didn't encounter any issue. We'll have to see how it behaves in the actual backend.
 // TODO integration tests for this class would make sense. You could use .NET testcontainers.
 // TODO Think through what SQL makes sense to be in here and what SQL should be put into the read repo.
 internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
