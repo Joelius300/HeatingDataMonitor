@@ -1,46 +1,48 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Read;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TestingGrounds;
-/*
-using CancellationTokenSource cts0 = new();
-Task someTask = Task.Run(SomeMethod, cts0.Token);
-cts0.CancelAfter(2000);
 
-async Task SomeMethod()
-{
-    // await Task.Delay(10000, cts0.Token); --> is canceled, throws TaskCanceledException when awaited
-    // throw new OperationCanceledException(); --> is canceled as well, throws that exception when awaited, even without cancellation stuff
-    await Task.Delay(500);
-    throw new InvalidOperationException("some exception");
-}
+IRealTimeConnectionManager connectionManager = new RealTimeConnectionManager();
 
-await Task.Delay(3000);
+connectionManager.FirstUserConnected += (o, e) => Console.WriteLine("First user connected.");
+connectionManager.LastUserDisconnected += (o, e) => Console.WriteLine("Last user disconnected.");
 
-Console.WriteLine($"Status of task: {someTask.Status}");
-Console.WriteLine($"Is canceled: {someTask.IsCanceled}");
-Console.WriteLine($"Is faulted: {someTask.IsFaulted}");
-Console.WriteLine("awaiting task now..");
-await someTask;
+connectionManager.UserConnected("abc");
+Console.WriteLine("Connected Event should've been triggered.");
+Debug.Assert(connectionManager.ConnectedCount == 1);
+
+connectionManager.UserConnected("abc");
+Debug.Assert(connectionManager.ConnectedCount == 1);
+connectionManager.UserConnected("abcd");
+Debug.Assert(connectionManager.ConnectedCount == 2);
+connectionManager.UserConnected("abcdasf");
+Debug.Assert(connectionManager.ConnectedCount == 3);
+Console.WriteLine("Nothing should've been triggered until now.");
+
+connectionManager.UserDisconnected("abcd");
+Debug.Assert(connectionManager.ConnectedCount == 2);
+connectionManager.UserDisconnected("abcd");
+Debug.Assert(connectionManager.ConnectedCount == 2);
+connectionManager.UserDisconnected("abcdasf");
+Debug.Assert(connectionManager.ConnectedCount == 1);
+
+Console.WriteLine("Nothing should've been triggered until now.");
+
+connectionManager.UserDisconnected("abc");
+Console.WriteLine("Disconnected Event should've been triggered.");
+Debug.Assert(connectionManager.ConnectedCount == 0);
+
+connectionManager.UserConnected("reee");
+Console.WriteLine("connected should've been fired");
+connectionManager.UserDisconnected("reee");
+Console.WriteLine("disconnected should've been fired");
 
 return;
-*/
-
-/*
-async Task DoSmth()
-{
-    await Task.Delay(100);
-    throw new InvalidOperationException("reeee");
-}
-
-Task faultedTask = DoSmth();
-
-await Task.WhenAll(faultedTask, Task.Delay(500));
-
-return;
-*/
 
 IServiceCollection services = new ServiceCollection();
 services.AddNpgsqlConnectionProvider(
