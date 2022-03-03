@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using CsvHelper;
 using CsvHelper.Configuration;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
 

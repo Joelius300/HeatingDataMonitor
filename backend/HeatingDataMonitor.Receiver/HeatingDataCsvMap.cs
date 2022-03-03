@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using NodaTime;
 using NodaTime.Text;
 

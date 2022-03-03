@@ -1,4 +1,4 @@
-﻿using HeatingDataMonitor.Models;
+﻿using HeatingDataMonitor.Database.Models;
 
 namespace HeatingDataMonitor.Receiver.Shared;
 

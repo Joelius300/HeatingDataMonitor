@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Threading.Channels;
 using Dapper;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver.Shared;
 using Microsoft.Extensions.Logging;
 using NodaTime;

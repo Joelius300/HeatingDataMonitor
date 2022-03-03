@@ -1,5 +1,5 @@
-using HeatingDataMonitor.Models;
-using HeatingDataMonitor.Views;
+using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Database.Views;
 using NodaTime;
 
 namespace HeatingDataMonitor.Database;
