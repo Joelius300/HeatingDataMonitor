@@ -1,5 +1,6 @@
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
+using HeatingDataMonitor.Database.Read;
 using Microsoft.AspNetCore.Mvc;
 using NodaTime;
 
@@ -10,12 +11,10 @@ namespace HeatingDataMonitor.API.Controllers;
 public class HeatingDataHistoryController : ControllerBase
 {
     private readonly IHeatingDataRepository _repository;
-    private readonly HeatingDataCacheService _cacheService;
 
-    public HeatingDataHistoryController(IHeatingDataRepository repository, HeatingDataCacheService cacheService)
+    public HeatingDataHistoryController(IHeatingDataRepository repository)
     {
         _repository = repository;
-        _cacheService = cacheService;
     }
 
     [HttpGet]
@@ -36,12 +35,12 @@ public class HeatingDataHistoryController : ControllerBase
         return Ok(await _repository.FetchMainTemperaturesAsync(from, to));
     }
 
-    [HttpGet("CachedValues")]
-    public IActionResult GetCachedValues([FromQuery] int count)
+    [HttpGet("Latest")]
+    public async Task<IActionResult> GetCachedValues([FromQuery] int count)
     {
         if (count <= 0)
             return BadRequest();
 
-        return Ok(_cacheService.GetCache(count));
+        return Ok(await _repository.FetchLatestAsync(count));
     }
 }
