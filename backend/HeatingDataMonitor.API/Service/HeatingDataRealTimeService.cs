@@ -1,15 +1,14 @@
 ﻿using HeatingDataMonitor.API.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using HeatingDataMonitor.Database.Models;
-using HeatingDataMonitor.Receiver;
+using HeatingDataMonitor.Receiver.Shared;
 
 namespace HeatingDataMonitor.API.Service;
 
-public class HeatingDataRealTimeService : IHostedService
+public class HeatingDataRealTimeService : BackgroundService
 {
     private readonly ILogger<HeatingDataRealTimeService> _logger;
     private readonly IHubContext<HeatingDataHub, IHeatingDataHubClient> _hubContext;
-    private readonly EventHandler<HeatingData> _receivedHandler;
     private readonly IHeatingDataReceiver _heatingDataReceiver;
 
     public HeatingDataRealTimeService(ILogger<HeatingDataRealTimeService> logger,
@@ -19,26 +18,16 @@ public class HeatingDataRealTimeService : IHostedService
         _logger = logger;
         _hubContext = hubContext;
         _heatingDataReceiver = heatingDataReceiver;
-        _receivedHandler = SendReceivedData;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _heatingDataReceiver.DataReceived += _receivedHandler;
-
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _heatingDataReceiver.DataReceived -= _receivedHandler;
-
-        return Task.CompletedTask;
-    }
-
-    private async void SendReceivedData(object? sender, HeatingData newData)
-    {
-        await _hubContext.Clients.All.OnDataPointReceived(newData);
-        _logger.LogTrace("Sent data to all clients with timestamp: {Timestamp}", newData.ReceivedTime);
+        // TODO This is just for testing it in the beginning. Instead this should only
+        // start sending real-time data when at least one client requests it.
+        await foreach (HeatingData heatingData in _heatingDataReceiver.StreamHeatingData(stoppingToken))
+        {
+            await _hubContext.Clients.All.OnDataPointReceived(heatingData);
+            _logger.LogTrace("Sent data to all clients with timestamp: {Timestamp}", heatingData.ReceivedTime);
+        }
     }
 }

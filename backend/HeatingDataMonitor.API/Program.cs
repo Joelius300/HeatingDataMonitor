@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
+using HeatingDataMonitor.Database.Read;
 using Microsoft.AspNetCore.HttpOverrides;
-using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +19,8 @@ void ConfigureJsonOptions(JsonSerializerOptions options)
     options.Converters.Add(NodaConverters.LocalDateTimeConverter);
 }
 
-services.AddHeatingDataDatabaseTimescaledb(configuration.GetConnectionString("HeatingDataDatabase"));
+services.AddNpgsqlConnectionProvider(configuration.GetConnectionString("HeatingDataDatabase"));
+services.AddHeatingDataTimescaledbReadonly();
 
 services.AddControllers()
         .AddJsonOptions(options => ConfigureJsonOptions(options.JsonSerializerOptions));
@@ -37,26 +38,6 @@ services.AddCors(options =>
                                        // only for the angular development server
                                        .WithOrigins("http://localhost:4200"));
 });
-
-services.AddOptions<CacheOptions>()
-        .Bind(configuration.GetSection("Cache"));
-
-// this and the FakeReceiver could probably be improved regarding encapsulation and responsibility
-string portName = serialSection.GetValue(nameof(SerialHeatingDataOptions.PortName), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sampleData.csv"));
-if (Path.GetExtension(portName).Equals(".csv", StringComparison.OrdinalIgnoreCase))
-{
-    services.AddSingleton<IHeatingDataReceiver, MockHeatingDataReceiver>();
-    services.AddHostedService(sp => sp.GetRequiredService<IHeatingDataReceiver>());
-}
-else
-{
-    services.AddSerialPortHeatingDataReceiver();
-    services.AddHostedService<HeatingDataHistoryService>();
-}
-
-// TODO once every reading is written in the db and real-time is moved to postgres notify, this caching stuff can be nuked
-services.AddSingleton<HeatingDataCacheService>();
-services.AddHostedService(sp => sp.GetRequiredService<HeatingDataCacheService>());
 
 services.AddHostedService<HeatingDataRealTimeService>();
 

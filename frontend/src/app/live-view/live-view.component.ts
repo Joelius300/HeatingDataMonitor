@@ -77,7 +77,7 @@ export class LiveViewComponent implements OnInit, AfterViewInit, OnDestroy {
       ]);
 
     this.chartData = [[], [], [], [], [], [], []];
-    this.httpClient.get<HeatingData[]>(`${this.apiBaseUrl}api/HeatingDataHistory/CachedValues?count=${this.MaxCount}`)
+    this.httpClient.get<HeatingData[]>(`${this.apiBaseUrl}api/HeatingDataHistory/Latest?count=${this.MaxCount}`)
                    .subscribe(values => {
                      for (const value of values) {
                        this.addChartData(value);

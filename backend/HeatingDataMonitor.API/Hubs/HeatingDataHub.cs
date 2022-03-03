@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using HeatingDataMonitor.Database.Models;
-using HeatingDataMonitor.Receiver;
+using HeatingDataMonitor.Database.Read;
 
 namespace HeatingDataMonitor.API.Hubs;
 
 public sealed class HeatingDataHub : Hub<IHeatingDataHubClient>
 {
-    private readonly IHeatingDataReceiver _heatingDataReceiver;
+    private readonly IHeatingDataRepository _heatingDataRepository;
 
-    public HeatingDataHub(IHeatingDataReceiver heatingDataReceiver)
+    public HeatingDataHub(IHeatingDataRepository heatingDataRepository)
     {
-        _heatingDataReceiver = heatingDataReceiver;
+        _heatingDataRepository = heatingDataRepository;
     }
 
-    public HeatingData? GetCurrentHeatingData() => _heatingDataReceiver.Current;
+    public Task<HeatingData?> GetCurrentHeatingData() => _heatingDataRepository.FetchLatestAsync();
 }

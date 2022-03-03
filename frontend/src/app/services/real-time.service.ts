@@ -30,24 +30,13 @@ export class RealTimeService {
       this.onDataReceived(args as HeatingData);
     });
 
-    this.hubConnection.on('OnDataPointArchived', (args) => {
-      this.onDataArchived(args as HeatingData);
-    });
-
     await this.hubConnection.start();
     this.onDataReceived(await this.hubConnection.invoke('GetCurrentHeatingData'));
-    // Currently not needed but works as expected
-    // this.onDataArchived(await this.hubConnection.invoke('GetLastArchivedHeatingData'));
   }
 
   private onDataReceived(heatingData: HeatingData): void {
     this.currentData = heatingData;
     this.currentDataChange.emit(this.currentData);
-  }
-
-  private onDataArchived(heatingData: HeatingData): void {
-    this.lastArchivedData = heatingData;
-    this.lastArchivedDataChange.emit(this.lastArchivedData);
   }
 
   public async stopConnection(): Promise<void> {
