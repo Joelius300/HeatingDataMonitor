@@ -1,6 +1,6 @@
 ﻿using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.Database;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver;
 using Microsoft.AspNetCore.SignalR;
 

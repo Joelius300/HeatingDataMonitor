@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HeatingDataMonitor.Models\HeatingDataMonitor.Models.csproj" />
+      <ProjectReference Include="..\HeatingDataMonitor.Database.Models\HeatingDataMonitor.Database.Models.csproj" />
     </ItemGroup>
 
 </Project>

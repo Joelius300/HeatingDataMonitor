@@ -1,6 +1,6 @@
 using Dapper;
 using HeatingDataMonitor.Database;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
 using NodaTime.Text;

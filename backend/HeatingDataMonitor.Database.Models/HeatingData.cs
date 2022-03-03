@@ -4,7 +4,7 @@
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable IdentifierTypo
 
-namespace HeatingDataMonitor.Models;
+namespace HeatingDataMonitor.Database.Models;
 
 // TODO We could use Postgres Enums instead of shorts which gives us
 // nicer queries in SQL and probably also some very small perf gain idk tho.

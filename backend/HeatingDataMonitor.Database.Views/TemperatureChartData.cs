@@ -4,7 +4,7 @@ using NodaTime;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable IdentifierTypo
 
-namespace HeatingDataMonitor.Views;
+namespace HeatingDataMonitor.Database.Views;
 
 // This class contains a subset of properties of HeatingData.
 // It allows typesafe, high performance partial data fetching from the db

@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeHeatingUnit", "FakeHeat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.API", "HeatingDataMonitor.API\HeatingDataMonitor.API.csproj", "{E28A6109-CA90-4193-9DDF-5E10B1D8418D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Models", "HeatingDataMonitor.Models\HeatingDataMonitor.Models.csproj", "{2074291C-539E-4B4E-9F3D-53AB43140756}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Models", "HeatingDataMonitor.Database.Models\HeatingDataMonitor.Database.Models.csproj", "{2074291C-539E-4B4E-9F3D-53AB43140756}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database", "HeatingDataMonitor.Database\HeatingDataMonitor.Database.csproj", "{C2F741EA-B598-4791-B628-8B9D4A80A863}"
 EndProject
@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingGrounds", "TestingGr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Receiver.Shared", "HeatingDataMonitor.Receiver.Shared\HeatingDataMonitor.Receiver.Shared.csproj", "{82C7A430-CE28-4042-88FE-EE2221154E10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Views", "HeatingDataMonitor.Views\HeatingDataMonitor.Views.csproj", "{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Views", "HeatingDataMonitor.Database.Views\HeatingDataMonitor.Database.Views.csproj", "{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿using HeatingDataMonitor.Models;
+﻿using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver;
 using Microsoft.Extensions.Options;
 

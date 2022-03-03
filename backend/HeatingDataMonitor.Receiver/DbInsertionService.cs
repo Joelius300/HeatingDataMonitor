@@ -1,5 +1,5 @@
 using HeatingDataMonitor.Database;
-using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Receiver.Shared;
 
 namespace HeatingDataMonitor.Receiver;
