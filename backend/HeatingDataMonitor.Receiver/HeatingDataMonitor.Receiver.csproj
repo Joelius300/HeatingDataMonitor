@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HeatingDataMonitor.Database\HeatingDataMonitor.Database.csproj" />
+      <ProjectReference Include="..\HeatingDataMonitor.Database.Write\HeatingDataMonitor.Database.Write.csproj" />
       <ProjectReference Include="..\HeatingDataMonitor.Receiver.Shared\HeatingDataMonitor.Receiver.Shared.csproj" />
     </ItemGroup>
 </Project>

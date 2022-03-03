@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using HeatingDataMonitor.Database;
+using HeatingDataMonitor.Database.Read;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TestingGrounds;
@@ -42,9 +43,9 @@ return;
 */
 
 IServiceCollection services = new ServiceCollection();
-services.AddHeatingDataDatabaseTimescaledb(
+services.AddNpgsqlConnectionProvider(
     "Server=127.0.0.1;Port=5432;Database=heating_data_monitor;User Id=heatingDataMonitorUser;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;");
-services.AddHeatingDataReceiverTimescaleDb();
+services.AddHeatingDataTimescaledbReadonly();
 services.AddTransient<PostgresNotificationStuff>();
 services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 

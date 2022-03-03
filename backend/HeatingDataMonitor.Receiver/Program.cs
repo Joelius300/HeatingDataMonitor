@@ -1,4 +1,5 @@
 using HeatingDataMonitor.Database;
+using HeatingDataMonitor.Database.Write;
 using HeatingDataMonitor.Receiver;
 using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
@@ -8,7 +9,8 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         services.AddSingleton<IClock>(SystemClock.Instance);
-        services.AddHeatingDataDatabaseTimescaledb(context.Configuration.GetConnectionString("HeatingDataDatabase"));
+        services.AddNpgsqlConnectionProvider(context.Configuration.GetConnectionString("HeatingDataDatabase"));
+        services.AddHeatingDataWriteRepositoryTimescaledb();
         services.AddSingleton<IHeatingDataReceiver, CsvHeatingDataReceiver>();
         services.AddHostedService<DbInsertionService>();
 

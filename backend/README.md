@@ -57,6 +57,9 @@ I did this today 08.02.22 and everything seems to work. I will continue with the
   - TODO document/archive Using the testing code from the TestingGrounds, run through it with the actual serial port and minicom
 
 
+### New architecture
+![architecture.svg](heating_data_monitor_architecture.drawio.svg)
+
 -- old stuff
 
 
