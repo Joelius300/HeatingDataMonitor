@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using HeatingDataMonitor.Models;
+using HeatingDataMonitor.Views;
 using NodaTime;
 using Npgsql;
 

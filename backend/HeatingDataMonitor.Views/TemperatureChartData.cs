@@ -4,10 +4,7 @@ using NodaTime;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable IdentifierTypo
 
-namespace HeatingDataMonitor.Models;
-
-// TODO Move this class into a different package (something with views maybe)
-// so it can be consumed by a read repository without being used in a write repo (those need to be split too).
+namespace HeatingDataMonitor.Views;
 
 // This class contains a subset of properties of HeatingData.
 // It allows typesafe, high performance partial data fetching from the db
