@@ -30,7 +30,7 @@ internal class NpgsqlConnectionProvider : IConnectionProvider<NpgsqlConnection>
         _connectionString = connectionString;
         _logger = logger;
 
-        if (!connectionString.Contains("Max Auto Prepare"))
+        if (!connectionString.Contains("Max Auto Prepare", StringComparison.InvariantCultureIgnoreCase))
         {
             // https://www.npgsql.org/doc/prepare.html#automatic-preparation
             _logger.LogWarning(

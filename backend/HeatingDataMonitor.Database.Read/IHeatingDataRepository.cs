@@ -2,17 +2,14 @@ using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Database.Views;
 using NodaTime;
 
-namespace HeatingDataMonitor.Database;
+namespace HeatingDataMonitor.Database.Read;
 
+/// <summary>
+/// Read-only repository for fetching heating data from a database.
+/// </summary>
+// This repo is used a lot more than the write one so I avoided the "Read" word in the name.
 public interface IHeatingDataRepository
 {
-    // TODO Add mention of notification
-    /// <summary>
-    /// Inserts a record into the database.
-    /// </summary>
-    /// <param name="heatingData">The .NET instance of this record.</param>
-    public Task InsertRecordAsync(HeatingData heatingData);
-
     // TODO IAsyncEnumerable once Dapper supports it
     /// <summary>
     /// Fetches all records within a certain time from the database.

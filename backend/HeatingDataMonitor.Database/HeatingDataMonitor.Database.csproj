@@ -8,8 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\HeatingDataMonitor.Database.Models\HeatingDataMonitor.Database.Models.csproj" />
-      <ProjectReference Include="..\HeatingDataMonitor.Receiver.Shared\HeatingDataMonitor.Receiver.Shared.csproj" />
-      <ProjectReference Include="..\HeatingDataMonitor.Database.Views\HeatingDataMonitor.Database.Views.csproj" />
     </ItemGroup>
 
     <ItemGroup>

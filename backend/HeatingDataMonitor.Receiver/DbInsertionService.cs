@@ -1,5 +1,6 @@
 using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Database.Write;
 using HeatingDataMonitor.Receiver.Shared;
 
 namespace HeatingDataMonitor.Receiver;
@@ -10,11 +11,11 @@ namespace HeatingDataMonitor.Receiver;
 /// </summary>
 public class DbInsertionService : BackgroundService
 {
-    private readonly IHeatingDataRepository _repository;
+    private readonly IHeatingDataWriteRepository _repository;
     private readonly IHeatingDataReceiver _receiver;
     private readonly ILogger<DbInsertionService> _logger;
 
-    public DbInsertionService(IHeatingDataRepository repository, IHeatingDataReceiver receiver, ILogger<DbInsertionService> logger)
+    public DbInsertionService(IHeatingDataWriteRepository repository, IHeatingDataReceiver receiver, ILogger<DbInsertionService> logger)
     {
         _repository = repository;
         _receiver = receiver;

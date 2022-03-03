@@ -16,6 +16,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Receiver
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Views", "HeatingDataMonitor.Database.Views\HeatingDataMonitor.Database.Views.csproj", "{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Read", "HeatingDataMonitor.Database.Read\HeatingDataMonitor.Database.Read.csproj", "{63FAB421-5080-475F-B0A6-3A4676F7A91D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Write", "HeatingDataMonitor.Database.Write\HeatingDataMonitor.Database.Write.csproj", "{B5862305-B55B-4C88-8404-8C900C56B2A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,5 +58,13 @@ Global
 		{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE4AB2A3-9506-415E-B0A5-2A9E765F97FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63FAB421-5080-475F-B0A6-3A4676F7A91D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63FAB421-5080-475F-B0A6-3A4676F7A91D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63FAB421-5080-475F-B0A6-3A4676F7A91D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63FAB421-5080-475F-B0A6-3A4676F7A91D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

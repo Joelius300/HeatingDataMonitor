@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\HeatingDataMonitor.Database\HeatingDataMonitor.Database.csproj" />
+      <ProjectReference Include="..\HeatingDataMonitor.Database.Read\HeatingDataMonitor.Database.Read.csproj" />
     </ItemGroup>
 
 </Project>
