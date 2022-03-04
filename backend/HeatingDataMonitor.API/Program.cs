@@ -39,6 +39,7 @@ services.AddCors(options =>
                                        .WithOrigins("http://localhost:4200"));
 });
 
+services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
 
 var app = builder.Build();
