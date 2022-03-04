@@ -57,6 +57,7 @@ internal sealed class HeatingDataRealTimeService : BackgroundService
             //   This case should be recoverable, as nothing is stopping the main loop from continuing (even though
             //   it might go on for longer than necessary if a stop event was issued but the cancellation wasn't ready
             //   yet so it was ignored. Check LastClientDisconnected as they are very closely related.
+            // TODO keep in line with disconnected..
             _logger.LogWarning("Tried to start streaming real-time data to clients but it was already started");
         }
     }
@@ -100,14 +101,27 @@ internal sealed class HeatingDataRealTimeService : BackgroundService
 
     private void LastClientDisconnected(object? sender, EventArgs e)
     {
+        if (_firstUserConnectedSemaphore.CurrentCount == 1)
+        {
+            // this could happen when clients are connecting and disconnecting faster than the ExecuteAsync
+            // loop can handle. Scenario:
+            // - last client disconnects -> cancellation of streaming loop starts with disposal of cts etc.
+            // - new client connects before cancellation is done -> semaphore increases count to 1
+            // - client quickly disconnects again before cancellation is done ->
+            //   cannot cancel because it's not started yet and semaphore is still on 1 so the streaming will start again
+            // To avoid this, we quickly try to take away that 1 on the semaphore which will prevent the streaming
+            // from starting before a new client connects.
+            _firstUserConnectedSemaphore.Wait(10);
+            // TODO Log, also add comment about uncertainty
+        }
+
         if (_lastUserDisconnectedCts is null)
         {
             // if the cts is null when this event happens, the following things are possible:
             // - error in connection manager allowed this event to be fired before start streaming event
             // - race condition where this event fired almost instantly after the other one fired which made
             //   WaitUntilFirstClientConnects return but before _lastUserDisconnectedCts was assigned.
-            //   This is recoverable but could cause the loop to go on for longer than necessary because this
-            //   event was swallowed instead of being buffered.
+            //   This is recoverable and thanks to the if above, the loop shouldn't go on for longer than necessary.
             _logger.LogWarning("Tried to stop streaming real-time data to clients but it seemingly never started");
             return;
         }
