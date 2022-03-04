@@ -6,9 +6,9 @@ namespace HeatingDataMonitor.API.Service;
 public interface IRealTimeConnectionManager
 {
     int ConnectedCount { get; }
-    event EventHandler FirstUserConnected;
-    event EventHandler LastUserDisconnected;
+    event EventHandler FirstClientConnected;
+    event EventHandler LastClientDisconnected;
 
-    void UserConnected(string connectionId);
-    void UserDisconnected(string connectionId);
+    void ClientConnected(string connectionId);
+    void ClientDisconnected(string connectionId);
 }

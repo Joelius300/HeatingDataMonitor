@@ -5,41 +5,43 @@ using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Read;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using TestingGrounds;
 
-IRealTimeConnectionManager connectionManager = new RealTimeConnectionManager();
+var logMock = new Mock<ILogger<RealTimeConnectionManager>>();
+IRealTimeConnectionManager connectionManager = new RealTimeConnectionManager(logMock.Object);
 
-connectionManager.FirstUserConnected += (o, e) => Console.WriteLine("First user connected.");
-connectionManager.LastUserDisconnected += (o, e) => Console.WriteLine("Last user disconnected.");
+connectionManager.FirstClientConnected += (o, e) => Console.WriteLine("First user connected.");
+connectionManager.LastClientDisconnected += (o, e) => Console.WriteLine("Last user disconnected.");
 
-connectionManager.UserConnected("abc");
+connectionManager.ClientConnected("abc");
 Console.WriteLine("Connected Event should've been triggered.");
 Debug.Assert(connectionManager.ConnectedCount == 1);
 
-connectionManager.UserConnected("abc");
+connectionManager.ClientConnected("abc");
 Debug.Assert(connectionManager.ConnectedCount == 1);
-connectionManager.UserConnected("abcd");
+connectionManager.ClientConnected("abcd");
 Debug.Assert(connectionManager.ConnectedCount == 2);
-connectionManager.UserConnected("abcdasf");
+connectionManager.ClientConnected("abcdasf");
 Debug.Assert(connectionManager.ConnectedCount == 3);
 Console.WriteLine("Nothing should've been triggered until now.");
 
-connectionManager.UserDisconnected("abcd");
+connectionManager.ClientDisconnected("abcd");
 Debug.Assert(connectionManager.ConnectedCount == 2);
-connectionManager.UserDisconnected("abcd");
+connectionManager.ClientDisconnected("abcd");
 Debug.Assert(connectionManager.ConnectedCount == 2);
-connectionManager.UserDisconnected("abcdasf");
+connectionManager.ClientDisconnected("abcdasf");
 Debug.Assert(connectionManager.ConnectedCount == 1);
 
 Console.WriteLine("Nothing should've been triggered until now.");
 
-connectionManager.UserDisconnected("abc");
+connectionManager.ClientDisconnected("abc");
 Console.WriteLine("Disconnected Event should've been triggered.");
 Debug.Assert(connectionManager.ConnectedCount == 0);
 
-connectionManager.UserConnected("reee");
+connectionManager.ClientConnected("reee");
 Console.WriteLine("connected should've been fired");
-connectionManager.UserDisconnected("reee");
+connectionManager.ClientDisconnected("reee");
 Console.WriteLine("disconnected should've been fired");
 
 return;

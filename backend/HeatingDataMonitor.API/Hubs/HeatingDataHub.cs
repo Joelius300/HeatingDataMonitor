@@ -21,13 +21,13 @@ public sealed class HeatingDataHub : Hub<IHeatingDataHubClient>
     // Note comments in RealTimeConnectionManager; this works fine for our purposes but won't for multiple servers etc.
     public override Task OnConnectedAsync()
     {
-        _connectionManager.UserConnected(Context.ConnectionId);
+        _connectionManager.ClientConnected(Context.ConnectionId);
         return base.OnConnectedAsync();
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        _connectionManager.UserDisconnected(Context.ConnectionId);
+        _connectionManager.ClientDisconnected(Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
 }
