@@ -1,5 +1,5 @@
 -- Create the db on the postgres service-db, then reopen the connection to the actual db
-CREATE DATABASE heating_data_monitor;
+-- CREATE DATABASE heating_data_monitor;
 
 -- Order of the columns (esp. first two) has to remain the same for compatibility reasons.
 -- While we could switch them, I don't want to be the guy to debug the issues if they don't get switched somewhere.

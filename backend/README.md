@@ -1,8 +1,6 @@
 # HeatingDataMonitor Backend
 
 TODO:
-- Use a single process for retrieving data from the heating unit and adding it to the database. This process should also send a notification (possibly via json-rpc or something like that) that a new datapoint was received. This project will run without docker (at least as long as the serial port doesn't work correctly) while the others all run in containers and consume the data from the database and act on the signal from the retriever.
-We could also avoid sending an extra event and just sending and receiving notifications from postgres: https://www.graymatterdeveloper.com/2019/12/02/listening-events-postgresql/
 - (Of course update this and the other readmes when we're done)
 
 ### New database stuff:
@@ -59,6 +57,29 @@ I did this today 08.02.22 and everything seems to work. I will continue with the
 
 ### New architecture
 ![architecture.svg](heating_data_monitor_architecture.drawio.svg)
+
+## Docker containers
+The application backend (API), the database and the reverse proxy (which also serves the static frontend) run in Docker containers. They need to be able to communicate: Reverse proxy for forwarding the requests and the API for connecting to the database. The database also needs to be exposed outside of the docker network so the receiver process (which isn't running in docker) can connect to it. For this reason and because I want the database to be isolated from the web application and my tinkering with it, I avoided docker-compose for the database. This should also help ensuring the data-collection runs as uninterrupted as possible. The web app on the other hand uses docker-compose for quick installation and updates.
+
+TODO: I mean that's an idea _but_ it's probably cleaner to only use one thing, in this case docker-compose and make use of the [service profiles](https://docs.docker.com/compose/profiles/) if that's handy or [multiple compose files](https://stackoverflow.com/questions/63051200/how-to-docker-compose-up-only-for-services)
+
+TODO: This section should probably go in the main readme. Also what is our goal? is it automatic updates? is it faster deployment? Right know I don't think automatic updates are worth it. Instead I'd like to aim for the following: Cloning the repo, installing some dependencies, editing the docker-compose.yml and install-script for some variables, running said install-script which installs the receiver, adds and enables it as a service and adds the backup-cron-job, and finally running `docker-compose up -d`. Then updates can be done by pulling the repo and running `docker-compose down` and up -d again. The backup jobs and receiver would have to be updated manually unless the install script can handle that but I don't think that's necessary.
+
+### API container
+Build:
+
+From /backend folder
+```bash
+docker build -t joelius300/heatingdatamonitor-api:latest -f HeatingDataMonitor.API/Dockerfile .
+```
+
+### Reverse-proxy including frontend
+Build:
+
+From /frontend folder
+```bash
+docker build -t joelius300/heatingdatamonitor-frontend-server:latest .
+```
 
 -- old stuff
 
