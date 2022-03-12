@@ -1,12 +1,16 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-# Ports are exposed from docker compose
-# EXPOSE 80
+EXPOSE 80
+EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["HeatingDataMonitor.API/HeatingDataMonitor.API.csproj", "HeatingDataMonitor.API/"]
-COPY ["HeatingDataMonitor.Data/HeatingDataMonitor.Data.csproj", "HeatingDataMonitor.Data/"]
+COPY ["HeatingDataMonitor.Database.Read/HeatingDataMonitor.Database.Read.csproj", "HeatingDataMonitor.Database.Read/"]
+COPY ["HeatingDataMonitor.Database.Views/HeatingDataMonitor.Database.Views.csproj", "HeatingDataMonitor.Database.Views/"]
+COPY ["HeatingDataMonitor.Database.Models/HeatingDataMonitor.Database.Models.csproj", "HeatingDataMonitor.Database.Models/"]
+COPY ["HeatingDataMonitor.Database/HeatingDataMonitor.Database.csproj", "HeatingDataMonitor.Database/"]
+COPY ["HeatingDataMonitor.Receiver.Shared/HeatingDataMonitor.Receiver.Shared.csproj", "HeatingDataMonitor.Receiver.Shared/"]
 RUN dotnet restore "HeatingDataMonitor.API/HeatingDataMonitor.API.csproj"
 COPY . .
 WORKDIR "/src/HeatingDataMonitor.API"
