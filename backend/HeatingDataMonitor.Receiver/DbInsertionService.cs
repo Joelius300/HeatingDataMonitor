@@ -28,14 +28,13 @@ public class DbInsertionService : BackgroundService
     {
         // TODO: put the queue timespan and the maxretrytime in a variable, maybe even in a config, and just add a few
         // minutes for the queue one.
-        Channel<HeatingData> queue = CreateQueue(TimeSpan.FromMinutes(15));
+        Channel<HeatingData> queue = CreateQueue(approximateCapacity: TimeSpan.FromMinutes(15));
         Task enqueuingTask = WriteToQueue(queue, stoppingToken); // continuously enqueue until cancellation or data blockage
 
         await foreach (HeatingData record in queue.Reader.ReadAllAsync(stoppingToken))
         {
-            // try to insert the record but retry for 10 minutes if the db isn't working.
-            // this allows the db to be updated or restarted without losing data.
-            await InsertRecordWithRetry(record, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(10), stoppingToken);
+            // this retry and queue routine allows the db to be updated or restarted without losing data.
+            await InsertRecordWithRetry(record, retryInterval: TimeSpan.FromSeconds(1), maxRetryTime: TimeSpan.FromMinutes(10), stoppingToken);
         }
 
         // give 500ms for the enqueuing task to finish as well before "officially" being done
@@ -103,7 +102,7 @@ public class DbInsertionService : BackgroundService
 
             _logger.LogTrace("Added record to database with timestamp {Timestamp}", record.ReceivedTime);
             insertedSuccessfully = true;
-        } while (!insertedSuccessfully && retryCount < maxRetryCount && !cancellationToken.IsCancellationRequested);
+        } while (!cancellationToken.IsCancellationRequested && !insertedSuccessfully && retryCount < maxRetryCount);
 
         if (retryCount >= maxRetryCount)
         {
