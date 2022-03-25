@@ -30,9 +30,10 @@ public class DbInsertionService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         TimeSpan maxRetryTime = TimeSpan.FromMinutes(_resilienceOptions.RetryDurationMinutes);
+
+        // continuously enqueue until service cancellation, db retry timeout or data blockage
         Channel<HeatingData> queue = CreateQueue(approximateCapacity: maxRetryTime.Add(TimeSpan.FromMinutes(2)));
         using CancellationTokenSource enqueuingCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-        // continuously enqueue until service cancellation, db retry timeout or data blockage
         Task enqueuingTask = WriteToQueue(queue, enqueuingCts.Token);
 
         Exception? lastExceptionAfterMaxRetries = null;
@@ -43,14 +44,14 @@ public class DbInsertionService : BackgroundService
         {
             lastExceptionAfterMaxRetries = await TryInsertRecordWithRetry(record,
                 TimeSpan.FromSeconds(_resilienceOptions.RetryIntervalSeconds),
-                maxRetryTime, stoppingToken);
+                maxRetryTime, stoppingToken); // throws on cancellation, Host ignores that for BackgroundServices
 
-            if (lastExceptionAfterMaxRetries is null) // successfully inserted (possibly with a few retries), or canceled
-                continue;
-
-            // couldn't insert data, even after maximum retries -> stop enqueuing more and wait for task before aborting
-            enqueuingCts.Cancel();
-            break;
+            if (lastExceptionAfterMaxRetries is not null)
+            {
+                // couldn't insert data, even after maximum retries -> stop enqueuing more
+                enqueuingCts.Cancel();
+                break;
+            }
         }
 
         // give 200ms for the enqueuing task to finish as well before finishing (either gracefully or with last exception)
@@ -89,9 +90,12 @@ public class DbInsertionService : BackgroundService
     }
 
     /// <summary>
-    /// Tries to insert a given record for a certain time with a certain retry interval. If the record couldn't be
-    /// inserted during the specified <paramref name="maxRetryTime"/>, the method will return the last exception that prevented insertion.
-    /// If insertion was successful, this method will return null!
+    /// Tries to insert a given record for a certain time with a certain retry interval. If the record couldn't be inserted
+    /// during the specified <paramref name="maxRetryTime"/>, the method will return the last exception that prevented insertion.
+    /// If insertion was successful, this method will return null.
+    /// <para>
+    /// THIS METHOD THROWS WHEN CANCELLATION IS REQUESTED. Bold because I usually hate that but here it does make sense.
+    /// </para>
     /// </summary>
     private async Task<Exception?> TryInsertRecordWithRetry(HeatingData record, TimeSpan retryInterval, TimeSpan maxRetryTime, CancellationToken cancellationToken)
     {
@@ -104,6 +108,7 @@ public class DbInsertionService : BackgroundService
             try
             {
                 await _repository.InsertRecordAsync(record);
+                break;
             }
             catch (Exception ex)
             {
@@ -122,48 +127,40 @@ public class DbInsertionService : BackgroundService
                 latestException = ex;
 
                 if (++retryCount >= maxRetryCount)
-                    return latestException;
+                    return latestException; // reached maxed retries; abort
 
-                try
-                {
-                    await Task.Delay(retryInterval, cancellationToken);
-                }
-                catch (TaskCanceledException)
-                {
-                    /* Although in this specific case .NET generic host would handle such exceptions, it's a TryX method
-                     * and we want to avoid throwing exceptions. Also for consistency sake IMO it's better to handle
-                     * cancellation explicitly instead of relying on hidden exception swallowing framework conventions.
-                     */
-                    return null;
-                }
-
-                continue; // try again
+                await Task.Delay(retryInterval, cancellationToken); // throws on cancellation
             }
-
-            _logger.LogTrace("Added record to database with timestamp {Timestamp}", record.ReceivedTime);
-
-            if (retryCount > 0)
-            {
-                _logger.LogInformation("DB insertion succeeded after {RetryCount} retries of {IntervalSeconds} seconds",
-                    retryCount, retryInterval.TotalSeconds);
-            }
-
-            break;
         }
 
-        return null; // if it eventually could be inserted or cancellation was requested, we don't care for the exceptions
+        cancellationToken.ThrowIfCancellationRequested();
+
+        _logger.LogTrace("Added record to database with timestamp {Timestamp}", record.ReceivedTime);
+
+        if (retryCount > 0)
+        {
+            _logger.LogInformation("DB insertion succeeded after {RetryCount} retries of {IntervalSeconds} seconds",
+                retryCount, retryInterval.TotalSeconds);
+        }
+
+        return null; // if it was inserted eventually, we don't care for the exceptions
     }
 
     /// <summary>
     /// Creates a queue which can hold approximately <paramref name="approximateCapacity"/> worth of data.
     /// The queue clogs/blocks meaning new items simply can't be written to it until previous ones are consumed.
     /// </summary>
-    /// <param name="approximateCapacity">A timespan defining how much data the queue should approximately be able to hold when expecting a new item every ~6 seconds.</param>
+    /// <param name="approximateCapacity">
+    /// A timespan defining how much data the queue should approximately be able to
+    /// hold when expecting a new item every {configurable} seconds.
+    /// </param>
     private Channel<HeatingData> CreateQueue(TimeSpan approximateCapacity) =>
         Channel.CreateBounded<HeatingData>(
             new BoundedChannelOptions((int)(approximateCapacity.TotalMilliseconds /
                                             _resilienceOptions.ExpectedNewRecordIntervalMilliseconds))
             {
-                FullMode = BoundedChannelFullMode.Wait, SingleReader = true, SingleWriter = true
+                FullMode = BoundedChannelFullMode.Wait,
+                SingleReader = true,
+                SingleWriter = true
             });
 }
