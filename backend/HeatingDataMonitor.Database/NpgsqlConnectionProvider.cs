@@ -15,7 +15,7 @@ internal class NpgsqlConnectionProvider : IConnectionProvider<NpgsqlConnection>
     {
         // I would love to scope this to only one repo or only a certain connection
         // or whatever but that's a lot of work for something entirely useless in this project
-        // as we only have one database with one model and that will probably stay like that forever.
+        // as we only have one database with one model and that will probably stay like that forever (foreshadowing).
         // https://stackoverflow.com/questions/14814972/dapper-map-to-sql-column-with-spaces-in-column-names
         // Allow snake_case -> PascalCase mapping in Dapper
         DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -51,9 +51,12 @@ internal class NpgsqlConnectionProvider : IConnectionProvider<NpgsqlConnection>
 
             return connection;
         }
-        catch (Exception e)
+        catch
         {
-            _logger.LogError(e, "Couldn't open postgres connection");
+            // The exception will bubble up and must be handled by the consumer either way. Currently, all of those
+            // consumers will either handle and log the exception or let it bubble up to the host, which will log it.
+            // For this reason, the log here is currently disabled to avoid duplicate log entries everytime the db's down.
+            // _logger.LogError(e, "Couldn't open postgres connection");
             if (connection is not null)
                 await connection.DisposeAsync();
 

@@ -13,14 +13,18 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddHeatingDataWriteRepositoryTimescaledb();
         services.AddSingleton<IHeatingDataReceiver, CsvHeatingDataReceiver>();
         services.AddHostedService<DbInsertionService>();
+        services.AddOptions<DbResilienceOptions>()
+                .BindConfiguration("DbResilience");
 
-        string? path = context.Configuration.GetValue<string?>("FakeSerialPortData");
+        string? path = context.Configuration.GetValue<string?>("FakeSerialPort:CsvFilePath");
         if (!string.IsNullOrEmpty(path))
         {
             if (!File.Exists(path))
                 throw new FileNotFoundException("Specified csv file not found", path);
 
-            int delay = context.Configuration.GetValue("FakeSerialPortDelay", 6000);
+            int delay = context.Configuration.GetValue("FakeSerialPort:NewRecordInterval",
+                context.Configuration.GetValue("DbResilience:ExpectedNewRecordIntervalMilliseconds",
+                    DbResilienceOptions.DefaultExpectedNewRecordIntervalMilliseconds));
             services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader(path, delay));
         }
         else

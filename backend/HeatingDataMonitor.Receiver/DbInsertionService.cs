@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Threading.Channels;
-using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Models;
 using HeatingDataMonitor.Database.Write;
 using HeatingDataMonitor.Receiver.Shared;
+using Microsoft.Extensions.Options;
 
 namespace HeatingDataMonitor.Receiver;
 
@@ -16,30 +16,53 @@ public class DbInsertionService : BackgroundService
     private readonly IHeatingDataWriteRepository _repository;
     private readonly IHeatingDataReceiver _receiver;
     private readonly ILogger<DbInsertionService> _logger;
+    private readonly DbResilienceOptions _resilienceOptions;
 
-    public DbInsertionService(IHeatingDataWriteRepository repository, IHeatingDataReceiver receiver, ILogger<DbInsertionService> logger)
+    public DbInsertionService(IHeatingDataWriteRepository repository, IHeatingDataReceiver receiver, ILogger<DbInsertionService> logger, IOptions<DbResilienceOptions> resilienceOptions)
     {
         _repository = repository;
         _receiver = receiver;
         _logger = logger;
+        _resilienceOptions = resilienceOptions.Value;
     }
 
+    // this queue and retry routine allows the db to be updated or restarted without losing data (if fast enough).
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // TODO: put the queue timespan and the maxretrytime in a variable, maybe even in a config, and just add a few
-        // minutes for the queue one.
-        Channel<HeatingData> queue = CreateQueue(approximateCapacity: TimeSpan.FromMinutes(15));
-        Task enqueuingTask = WriteToQueue(queue, stoppingToken); // continuously enqueue until cancellation or data blockage
+        TimeSpan maxRetryTime = TimeSpan.FromMinutes(_resilienceOptions.RetryDurationMinutes);
+        Channel<HeatingData> queue = CreateQueue(approximateCapacity: maxRetryTime.Add(TimeSpan.FromMinutes(2)));
+        using CancellationTokenSource enqueuingCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        // continuously enqueue until service cancellation, db retry timeout or data blockage
+        Task enqueuingTask = WriteToQueue(queue, enqueuingCts.Token);
 
+        Exception? lastExceptionAfterMaxRetries = null;
+
+        // exceptions during data retrieval will be thrown by ReadAllAsync (internally by completing the queue with an ex).
+        // for such exceptions there's no need to wait for the task to finish (it already has) so just let it bubble up.
         await foreach (HeatingData record in queue.Reader.ReadAllAsync(stoppingToken))
         {
-            // this retry and queue routine allows the db to be updated or restarted without losing data.
-            await InsertRecordWithRetry(record, retryInterval: TimeSpan.FromSeconds(1), maxRetryTime: TimeSpan.FromMinutes(10), stoppingToken);
+            lastExceptionAfterMaxRetries = await TryInsertRecordWithRetry(record,
+                TimeSpan.FromSeconds(_resilienceOptions.RetryIntervalSeconds),
+                maxRetryTime, stoppingToken);
+
+            if (lastExceptionAfterMaxRetries is null) // successfully inserted (possibly with a few retries), or canceled
+                continue;
+
+            // couldn't insert data, even after maximum retries -> stop enqueuing more and wait for task before aborting
+            enqueuingCts.Cancel();
+            break;
         }
 
-        // give 500ms for the enqueuing task to finish as well before "officially" being done
-        Task firstTask = await Task.WhenAny(enqueuingTask, Task.Delay(500, CancellationToken.None));
+        // give 200ms for the enqueuing task to finish as well before finishing (either gracefully or with last exception)
+        Task firstTask = await Task.WhenAny(enqueuingTask, Task.Delay(200, CancellationToken.None));
         Debug.Assert(firstTask == enqueuingTask, "firstTask == enqueuingTask");
+
+        if (lastExceptionAfterMaxRetries is not null)
+        {
+            // at this point, data will be lost. In the case of this application it's not that big of a deal.
+            _logger.LogCritical("Record couldn't be inserted after maximum number of retries; aborting with last exception");
+            throw lastExceptionAfterMaxRetries;
+        }
     }
 
     private async Task WriteToQueue(Channel<HeatingData> queue, CancellationToken stoppingToken)
@@ -60,17 +83,23 @@ public class DbInsertionService : BackgroundService
         }
         finally
         {
+            // make ReadAllAsync throw this exception
             queue.Writer.TryComplete(error);
         }
     }
 
-    private async Task InsertRecordWithRetry(HeatingData record, TimeSpan retryInterval, TimeSpan maxRetryTime, CancellationToken cancellationToken)
+    /// <summary>
+    /// Tries to insert a given record for a certain time with a certain retry interval. If the record couldn't be
+    /// inserted during the specified <paramref name="maxRetryTime"/>, the method will return the last exception that prevented insertion.
+    /// If insertion was successful, this method will return null!
+    /// </summary>
+    private async Task<Exception?> TryInsertRecordWithRetry(HeatingData record, TimeSpan retryInterval, TimeSpan maxRetryTime, CancellationToken cancellationToken)
     {
-        bool insertedSuccessfully = false;
-        Exception? exception = null;
+        Exception? latestException = null;
         int retryCount = 0;
         int maxRetryCount = (int)(maxRetryTime.TotalSeconds / retryInterval.TotalSeconds);
-        do
+
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -78,10 +107,11 @@ public class DbInsertionService : BackgroundService
             }
             catch (Exception ex)
             {
-                if (exception is null || exception.Message != ex.Message)
+                if (latestException is null || latestException.Message != ex.Message)
                 {
-                    exception = ex;
-                    _logger.LogError(ex, "DB insertion failed for record with timestamp {Timestamp}", record.ReceivedTime);
+                    _logger.LogError(ex, "DB insertion failed for record with timestamp {Timestamp}; retry in {NextRetrySeconds}s " +
+                                         "(identical exceptions from consecutive retries are only logged once)",
+                        record.ReceivedTime, retryInterval.TotalSeconds);
                 }
                 else
                 {
@@ -89,10 +119,28 @@ public class DbInsertionService : BackgroundService
                         retryInterval.TotalSeconds);
                 }
 
-                retryCount++;
-                await Task.Delay(retryInterval, cancellationToken);
-                continue;
+                latestException = ex;
+
+                if (++retryCount >= maxRetryCount)
+                    return latestException;
+
+                try
+                {
+                    await Task.Delay(retryInterval, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    /* Although in this specific case .NET generic host would handle such exceptions, it's a TryX method
+                     * and we want to avoid throwing exceptions. Also for consistency sake IMO it's better to handle
+                     * cancellation explicitly instead of relying on hidden exception swallowing framework conventions.
+                     */
+                    return null;
+                }
+
+                continue; // try again
             }
+
+            _logger.LogTrace("Added record to database with timestamp {Timestamp}", record.ReceivedTime);
 
             if (retryCount > 0)
             {
@@ -100,15 +148,10 @@ public class DbInsertionService : BackgroundService
                     retryCount, retryInterval.TotalSeconds);
             }
 
-            _logger.LogTrace("Added record to database with timestamp {Timestamp}", record.ReceivedTime);
-            insertedSuccessfully = true;
-        } while (!cancellationToken.IsCancellationRequested && !insertedSuccessfully && retryCount < maxRetryCount);
-
-        if (retryCount >= maxRetryCount)
-        {
-            Debug.Assert(exception is not null, "exception is not null");
-            throw exception;
+            break;
         }
+
+        return null; // if it eventually could be inserted or cancellation was requested, we don't care for the exceptions
     }
 
     /// <summary>
@@ -116,11 +159,11 @@ public class DbInsertionService : BackgroundService
     /// The queue clogs/blocks meaning new items simply can't be written to it until previous ones are consumed.
     /// </summary>
     /// <param name="approximateCapacity">A timespan defining how much data the queue should approximately be able to hold when expecting a new item every ~6 seconds.</param>
-    private static Channel<HeatingData> CreateQueue(TimeSpan approximateCapacity) =>
-        Channel.CreateBounded<HeatingData>(new BoundedChannelOptions((int)(approximateCapacity.TotalSeconds / 6))
-        {
-            FullMode = BoundedChannelFullMode.Wait,
-            SingleReader = true,
-            SingleWriter = true
-        });
+    private Channel<HeatingData> CreateQueue(TimeSpan approximateCapacity) =>
+        Channel.CreateBounded<HeatingData>(
+            new BoundedChannelOptions((int)(approximateCapacity.TotalMilliseconds /
+                                            _resilienceOptions.ExpectedNewRecordIntervalMilliseconds))
+            {
+                FullMode = BoundedChannelFullMode.Wait, SingleReader = true, SingleWriter = true
+            });
 }
