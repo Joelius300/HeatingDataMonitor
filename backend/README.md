@@ -63,16 +63,23 @@ The application backend (API), the database and the reverse proxy (which also se
 
 TODO: I mean that's an idea _but_ it's probably cleaner to only use one thing, in this case docker-compose and make use of the [service profiles](https://docs.docker.com/compose/profiles/) if that's handy or [multiple compose files](https://stackoverflow.com/questions/63051200/how-to-docker-compose-up-only-for-services)
 
+TODO: This section should probably go in the main readme. Also what is our goal? is it automatic updates? is it faster deployment? Right know I don't think automatic updates are worth it. Instead I'd like to aim for the following: Cloning the repo, installing some dependencies, editing the docker-compose.yml and install-script for some variables, running said install-script which installs the receiver, adds and enables it as a service and adds the backup-cron-job, and finally running `docker-compose up -d`. Then updates can be done by pulling the repo and running `docker-compose down` and up -d again. The backup jobs and receiver would have to be updated manually unless the install script can handle that but I don't think that's necessary.
+
 ### API container
 Build:
+
+From /backend folder
 ```bash
-docker build -t heatingdatamonitor-api -f HeatingDataMonitor.API/Dockerfile .
+docker build -t joelius300/heatingdatamonitor-api:latest -f HeatingDataMonitor.API/Dockerfile .
 ```
 
-Run:
+### Reverse-proxy including frontend
+Build:
+
+From /frontend folder
+```bash
+docker build -t joelius300/heatingdatamonitor-frontend-server:latest .
 ```
-
-
 
 -- old stuff
 
