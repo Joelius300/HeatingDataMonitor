@@ -23,7 +23,7 @@
     "@angular/platform-browser-dynamic": "^10.0.7",
     "@angular/router": "^10.0.7",
     "@microsoft/signalr": "^3.1.6",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "ngx-daterangepicker-material": "^3.0.1",
     "rxjs": "~6.5.4",
     "tslib": "^2.0.0",
