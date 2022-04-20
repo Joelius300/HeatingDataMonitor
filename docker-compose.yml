@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   frontend-server:
-    image: joelius300/heatingdatamonitor-frontend-server:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: always
     ports:
       - 5001:80
@@ -12,7 +14,9 @@ services:
     depends_on:
       - backend-api
   backend-api:
-    image: joelius300/heatingdatamonitor-api:latest
+    build:
+      context: ./backend
+      dockerfile: ./HeatingDataMonitor.API/Dockerfile
     restart: always
     expose:
       - 80
@@ -25,8 +29,10 @@ services:
   database:
     image: timescale/timescaledb:latest-pg14
     restart: always
-    expose:
-      - 5432
+    # expose:
+    #  - 5432
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_USER: "heating_data_monitor_user"
       POSTGRES_PASSWORD: "dontworrythispasswordwillchangeinproduction"
