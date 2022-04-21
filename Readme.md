@@ -1,173 +1,79 @@
 # Summary
-This is a web app which allows me and my family to monitor the heating unit of our house in real time.
 
-The interface is in swiss german. Because the heating unit is german, the names (class, column) are also specified in german which allows for easier reference in manuals and co.
+Heating-data-monitor is the creative name of the monitoring system I built for our heating unit. It consists of a database, a receiving/parsing application, a real-time web application, some scripts, sarcastic documentation and more.
 
-_Note: I'm currently doing [another rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2) to retire my [second big rework](https://github.com/Joelius300/HeatingDataMonitor/tree/v1) which superseeded the [initial system](https://github.com/Joelius300/HeatingDataMonitor/tree/v0), which was actually my first ever application involving web dev I believe._
+This is the first web application I have ever worked on and it has given me some wonderful as well as some dreadful first experiences. To pay homage to the impact this project has had on me and how it shaped my path as a programmer, I wrote down some words in the section [journey](#Journey).
 
-The data retrieval, storage and sending is done with an [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core) backend using [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).  
-Reading the semicolon separated values from the heating unit is done with [CsvHelper](https://github.com/JoshClose/CsvHelper).  
-The user interface is realized with an [Angular](https://angular.io/) frontend using [flex-layout](https://github.com/angular/flex-layout) and [angular-material](https://material.angular.io/).  
-Both front- and backend are hosted on a [Raspberry Pi](https://www.raspberrypi.org/) 4 (with [Raspbian Buster Lite](https://www.raspberrypi.org/downloads/raspberry-pi-os/)) using [NGINX](https://www.nginx.com/) and [Kestrel](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel).  
-The Raspberry Pi is connected to the heating unit via [RS232](https://en.wikipedia.org/wiki/RS-232) using a [ModMyPi Serial HAT](https://www.pi-shop.ch/modmypi-serial-hat-rs232).  
-The data management below EF Core is done with [PostgreSQL](https://www.postgresql.org/).
+# Goals
 
-I'm using this application as an opportunity to gain experience in several areas including front- and backend web development, database management, hosting and server management (on a small scale with linux), code management (git & GitHub), working with hardware (Raspberry Pi & RS232) and probably more.
+As long as I have ideas for cool new features I will keep on expanding and rebuilding parts of this system. The following are my current ideas and goals.
 
-# Goal
-The app isn't finished yet. The end-goal is to have the following features:
+- [x] Real time dashboard with the current state of the heating unit
+- [x] Real time graph to visualize recent changes in detail
+- [x] History graph to visualize the state's development during any time period in the past
+- [ ] Forecast graph to visualize predicted temperature development in the near future
+- [ ] Forecast predictions on the dashboard e.g. "Boiler temperature will fall below 40° C in 9 hours"
+- [ ] Push notifications for relevant events and infos
 
-- Real time view (dashboard) of the current state of the heating unit
-- History view with graph to inspect the activity within a certain timespan
-- A forecast when the heating unit needs to be fired up for the boiler temp not to get below a certain point (using ML)
-- ~~Real time graph of archived datapoints in the last 15 minutes (so the 15 latest entries, updated in real time)~~
-- Real time graph of the last x values received from the heating unit
+In addition to that I have a few meta-goals for the whole project:
 
-Also, I don't know what many of the values mean nor their correct unit or mapping (for enums). I'll have to contact the manufacturer of the heating unit in order to correctly display and interpret those.
+- Learning effect & fun have priority over outcome & reason
+- Clean code, coherent documentation, and a tablespoon of sarcasm are a must, as this is _the_ project I like to show to others
+- Think bigger than one Raspberry Pi but keep an eye on the over-engineering-enthusiasm
+- Plan and document new features, ideas, etc. and use GitHub's tools like the Kanban boards
 
 # Demo
+
 The interface isn't the prettiest but it gets the job done :)
 
 ![Demo](Demo.gif)
 
-# Setup
-## Enable Serial Port on Raspberry Pi (4)
-- Get a Serial HAT (e.g. [ModMyPi Serial HAT RS232](https://www.pi-shop.ch/modmypi-serial-hat-rs232))
-- Mount
-- `sudo raspi-config`
-- Interfacing Options -> Serial
-- Disable Login Shell
-- Enable Serial Hardware
-- Reboot
-- `sudo nano /boot/config.txt`
-- Add `dtoverlay=pi3-miniuart-bt` to the end
-- Reboot
-- Test (using minicom and putty is probably easiest)
-- If it doesn't work, you should most likely check your cable but you can check if `/boot/cmdline.txt` still contains `console=serial0,115200` and remove it.
+# Architecture & deployment overview
 
-## Firewall
-- `sudo apt-get install ufw`
-- `sudo ufw default deny incoming`
-- `sudo ufw default allow outgoing`
-- `sudo ufw allow ssh`
-- `sudo ufw allow sftp`
-- `sudo ufw allow http`
-- `sudo ufw enable`
-- `sudo ufw status verbose` should result in 
-  ```
-  Status: active
-  Logging: on (low)
-  Default: deny (incoming), allow (outgoing), disabled (routed)
-  New profiles: skip  
-  To                         Action      From
-  --                         ------      ----
-  22/tcp                     ALLOW IN    Anywhere
-  80/tcp                     ALLOW IN    Anywhere
-  115/tcp                    ALLOW IN    Anywhere
-  22/tcp (v6)                ALLOW IN    Anywhere (v6)
-  80/tcp (v6)                ALLOW IN    Anywhere (v6)
-  115/tcp (v6)               ALLOW IN    Anywhere (v6)
-  ```
+This diagram shows the general architecture of the system with the respective communication channels and deployment locations. The live system is running on a single Raspberry Pi architecture like this, making it the primary guideline for related design decisions.
 
-## Hosting with nginx
-This could probably be improved but it's working and I get why it's working - for now that's good enough :)
+![Architecture overview](architectural_overview.drawio.svg)
 
-Composed from the following sources:
+Still, I have tried to build this system in a way that would allow for a more sophisticated deployment architecture with different servers all over the internet (this relates to the third meta-goal I listed). Below you can see an example of an architecture that I believe should work with this system with very little code changes required. The two sides separated by the dotted line symbolize third party internet hosting providers and the intranet at our house respectively. Everything on the left side symbolizes a general idea, with things like load-balancing accounted for but not illustrated directly. It should be noted that I don't have much experience with third party providers nor am I interested in setting up the deployment pipeline and everything else required for an architecture like this. It's mainly an idea intended to drive me to write modular and portable code as well as to showcase my knowledge and depth of thought put into the project.
 
-- https://github.com/diginex/nginx-spa/blob/master/default.conf (SPA)
-- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#configure-nginx (API)
-- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/blazor/server?view=aspnetcore-3.1#linux-with-nginx (SignalR / WebSocket)
+![Architecture overview of imagined architecture](architectural_overview_imagined.drawio.svg)
 
-### Install
-- `sudo apt-get install nginx`
+# Tech stack
 
-### Manage
-- `sudo service nginx start`
-- `sudo service nginx stop`
-- `sudo service nginx restart`
+The database is [TimescaleDB](https://www.timescale.com/), a time-series extension for [PostgreSQL](https://www.postgresql.org/).  
+All of the backend is written with C# and .NET. The API uses [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction) for real-time communication.  
+Interactions with the database are implemented with [Dapper](https://dapperlib.github.io/Dapper/) and SQL.  
+The user interface is currently built with [Angular](https://angular.io/) and TypeScript.  
+The charting library currently in use is [μPlot](https://leeoniya.github.io/uPlot/).  
+The system is running on a [Raspberry Pi](https://www.raspberrypi.org/), some parts behind [Docker](https://www.docker.com/), others just with systemd.  
+Network traffic is proxied with [NGINX](https://nginx.org/) and secured with Uncomplicated Firewall (UFW).  
+The Raspberry Pi is connected to the heating unit via [RS232](https://en.wikipedia.org/wiki/RS-232).
 
-### /etc/nginx/sites-available/default
-```
-server {
-    listen       80;
-    server_name  localhost;
+### Used previously
 
-    root /var/www/html;
-    index index.html;
+- [SQLite](https://sqlite.org) (database)
+- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) (ORM)
+- [Blazor Server](https://docs.microsoft.com/en-us/aspnet/core/blazor/) (frontend + server-client communication)
+- [Chart.js](https://www.chartjs.org/) (charting library)
+- [ChartJs.Blazor](https://github.com/mariusmuntean/ChartJs.Blazor) (Chart.js Blazor integration)
 
-    location /api {
-        proxy_pass         http://localhost:5000/api;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection keep-alive;
-        proxy_set_header   Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
+# Journey
 
-    location /realTimeFeed {
-        proxy_pass         http://localhost:5000/realTimeFeed;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection $connection_upgrade;
-        proxy_set_header   Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
+This project was my first "real" project and introduction into web dev including frameworks, databases, ORMs, charting libraries, hosting and proxying, git, GitHub and much more. I wanted to create something that had an actual use and luckily I was just given the opportunity to interface our heating unit via serial port.
+I chose my favourite language C# and got to work. But for creating a web site you need more than that and coincidentally there was this shiny new framework called "Blazor" that promised you wouldn't need to write JavaScript and it had just recently launched in beta. \
+In addition to being new and cool, it had the great benefit of blending frontend and backend. You see, Blazor server allows you to write and execute all your frontend code on the backend by propagating all the UI changes to the clients via SignalR.
+Of course there are some obvious downsides to an always-connected web-socket connection from every client to the server but it allowed me to directly hook UI updates to the serial port parser with no communication hurdle in between, absolute madness now that I think about it. \
+In hindsight, Blazor definitely slowed down my progress in understanding web dev because I couldn't even really explain the difference between a frontend and a backend, it just all magically worked and synced in real-time. On the other hand, I would have needed much more time to build a prototype if I had had to learn another language and worry about all the communication between server and client. \
+After a while I wanted to implement a history view with a cute graph. I searched the web and found ChartJs.Blazor, a Blazor integration of Chart.js. Unfortunately for me, the project had been abandoned by Marius and left in a state that didn't work for the latest preview version of Blazor. So being the good programmer I was, I forked the project and.. no wait, I copied all the code in a new repo (what is forking anyway that sounds weird), and started to update and refactor the library. After two weeks it was ready and working again so I added it to my web site and built my first graph. In the meantime I had learned a lot about .NET libraries and NuGet, and my interest in keeping the project alive grew rapidly. \
+Another user, @SeppPenner, showed their interest and dedication and with their help I reworked the library, added tons of features, released updates and built a community.
+After a few months, I decided to contact Marius with the hope that he'd help us merge back the changes I was so proud of and release them as an "official" update. Fortunately, he decided to revive his project and merged all my code back to his project (including the commit history which is awesome) and updated the official ChartJs.Blazor package with a 1.0 release (big mistake in hindsight). More background on the fusion [here](https://github.com/Joelius300/ChartJSBlazor/issues/97). \
+Together with Marius I kept expanding and fixing the library until the end of 2019 when he apparently decided to move away from the project again only sporadically returning for a change or two in mid 2020. I kept on maintaining the library and community until the beginning of 2021 when I finally decided to officially step away. More insight on my goodbye [here](https://github.com/mariusmuntean/ChartJs.Blazor/issues/160). \
+Coming back to the project at hand, I had removed ChartJs.Blazor and Blazor alltogether in my first big rework during the 2020 lockdown. I switched to PostgreSQL (from SQLite), to Angular (from Blazor) and to uPlot (from ChartJs.Blazor). You can check out the state just before the first big rework with the [v0 tag](https://github.com/Joelius300/HeatingDataMonitor/tree/v0). \
+Now it's mid 2022 and I am working on [another big rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2?query=is%3Aopen+sort%3Aupdated-desc), this time to restructure the backend and database architecture as well as the deployment by moving towards Docker. The state before this second rework can be found under the [v1 tag](https://github.com/Joelius300/HeatingDataMonitor/tree/v1).
 
-    location / {
-        root   /usr/share/nginx/html;
-        try_files $uri /index.html; # redirect all request to index.html
-    }
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-```
-
-### Add to the top of the http region in /etc/nginx/nginx.conf
-I'm still not sure if that's the correct place to put this but it seems like it has to go inside the `http` context which is defined in here.
-
-```
-# For SignalR
-map $http_upgrade $connection_upgrade {
-    default Upgrade;
-    ''      close;
-}
-```
-
-# Questions and resources
-There were some questions and issues that came up along the journey as well as some resources I used.
-- [Correct way of specifying similar locations for nginx (StackOverflow)](https://superuser.com/questions/1559030/correct-way-of-specifying-similar-locations-for-nginx)
-- [Selection isn't highlighted (Issue in ngx-daterangepicker)](https://github.com/fetrarij/ngx-daterangepicker-material/issues/295)
-- [How (not) to use Machine Learning for time series forecasting: Avoiding the pitfalls](https://towardsdatascience.com/how-not-to-use-machine-learning-for-time-series-forecasting-avoiding-the-pitfalls-19f9d7adf424)
-- [Forecasting: Principles and Practice (by Rob J Hyndman and George Athanasopoulos)](https://otexts.com/fpp3/)
-- [An Overview of ML.Net (by KTL Solutions)](https://www.erpsoftwareblog.com/2019/04/an-overview-of-ml-net/)
-- [Angular Docs](https://angular.io/docs)
-- [Angular Material Docs](https://material.angular.io/)
-- [SignalR Core Docs](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-3.1)
+There may be more but these are the most notable things in the history of this project; To be continued.
 
 # Credits / Licenses
-This project is licensed under the [GNU Affero General Public License Version 3](https://www.gnu.org/licenses/agpl-3.0.en.html). This applies to every file within this repository unless there is a license notice at the top of the file that says otherwise.  
-If you have any questions about this or would like to use a specific part under a different license, please open an issue and I'll try my best to assist.
 
-## Used in the project
-- Frontend page icon (TODO: SELECT AND ATTRIBUTE)
-  - https://icons8.com/icon/22561/temperature-inside (https://icons8.com/license)
-  - https://www.flaticon.com/free-icon/thermometer_899746 (https://support.flaticon.com/hc/en-us/articles/207248209-How-I-must-insert-the-attribution-)
-- [angular/components](https://github.com/angular/components) ([MIT](https://github.com/angular/components/blob/master/LICENSE))  
-  Component infrastructure and Material Design components for Angular
-- [angular/flex-layout](https://github.com/angular/flex-layout) ([MIT](https://github.com/angular/flex-layout/blob/master/LICENSE))  
-  Provides HTML UI layout for Angular applications; using Flexbox and a Responsive API
-- [μPlot](https://github.com/leeoniya/uPlot) ([MIT](https://github.com/leeoniya/uPlot/blob/master/LICENSE))  
-  A small, fast chart for time series, lines, areas, ohlc & bars
-- [ngx-daterangepicker-material](https://github.com/fetrarij/ngx-daterangepicker-material) ([MIT](https://github.com/fetrarij/ngx-daterangepicker-material/blob/master/LICENSE))  
-  Pure Angular 2+ date range picker with material design theme
-- [Moment.js](https://momentjs.com/) ([MIT](https://github.com/moment/moment/blob/develop/LICENSE))  
-  Parse, validate, manipulate, and display dates in javascript.
-- [CsvHelper](https://github.com/JoshClose/CsvHelper)  ([Apache-2.0/Ms-Pl](https://github.com/JoshClose/CsvHelper/blob/master/LICENSE.txt))  
-  Library to help reading and writing CSV files
+This project is licensed under the [GNU Affero General Public License Version 3](https://www.gnu.org/licenses/agpl-3.0.en.html). This applies to every file within this repository unless there is a license notice at the top of the file that says otherwise.  
+If you have any questions about this or would like to use a specific part under a different license, please open an issue and I will try my best to assist.

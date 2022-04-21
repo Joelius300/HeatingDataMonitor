@@ -177,6 +177,7 @@ internal class NpgsqlNotificationHeatingDataReceiver : IHeatingDataReceiver
             // passing the cancellation token to StreamHeatingData or WithCancellation is easy to handle
             // but this waiting task also has to end when break is used. In that case DisposeAsync is called
             // without cancellation so we set _disposed to true, which will gracefully terminate this loop (after max ~500ms).
+            // NOTE: It might have been cleaner to use a linked token source, which could be canceled in dispose; apparently didn't think of that then.
             while (!_cancellationToken.IsCancellationRequested && !_disposed)
             {
                 try

@@ -9,6 +9,7 @@ COPY ["HeatingDataMonitor.Database.Views/HeatingDataMonitor.Database.Views.cspro
 COPY ["HeatingDataMonitor.Database.Models/HeatingDataMonitor.Database.Models.csproj", "HeatingDataMonitor.Database.Models/"]
 COPY ["HeatingDataMonitor.Database/HeatingDataMonitor.Database.csproj", "HeatingDataMonitor.Database/"]
 COPY ["HeatingDataMonitor.Receiver.Shared/HeatingDataMonitor.Receiver.Shared.csproj", "HeatingDataMonitor.Receiver.Shared/"]
+# Copying the project files and restoring in it's own step allows docker to cache the dependencies which only rarely change.
 RUN dotnet restore "HeatingDataMonitor.API/HeatingDataMonitor.API.csproj"
 COPY . .
 WORKDIR "/src/HeatingDataMonitor.API"
