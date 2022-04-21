@@ -5,6 +5,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # Angular doesn't use environment args as environment args (makes sense right) so edit environment.prod.ts instead
     restart: always
     ports:
       - 5001:80
@@ -29,8 +30,6 @@ services:
   database:
     image: timescale/timescaledb:latest-pg14
     restart: always
-    # expose:
-    #  - 5432
     ports:
       - 5432:5432
     environment:
