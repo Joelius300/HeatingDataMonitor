@@ -3,7 +3,7 @@ This is a web app which allows me and my family to monitor the heating unit of o
 
 The interface is in swiss german. Because the heating unit is german, the names (class, column) are also specified in german which allows for easier reference in manuals and co.
 
-_Note: I'm currently doing [another rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2) to retire my [second big rework](https://github.com/Joelius300/HeatingDataMonitor/tree/v1) which superseeded the [initial system](https://github.com/Joelius300/HeatingDataMonitor/tree/v0), which was actually my first ever application involving web dev I believe._
+_Note: I'm currently doing [another rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2) to retire my [second big rework](https://github.com/Joelius300/HeatingDataMonitor/tree/v1) which superseded the [initial system](https://github.com/Joelius300/HeatingDataMonitor/tree/v0), which was actually my first ever application involving web dev I believe._
 
 The data retrieval, storage and sending is done with an [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core) backend using [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).  
 Reading the semicolon separated values from the heating unit is done with [CsvHelper](https://github.com/JoshClose/CsvHelper).  
@@ -16,6 +16,8 @@ I'm using this application as an opportunity to gain experience in several areas
 
 # Goal
 The app isn't finished yet. The end-goal is to have the following features:
+
+TODO: Get some checkmarks going here and add more sophisticated goals
 
 - Real time view (dashboard) of the current state of the heating unit
 - History view with graph to inspect the activity within a certain timespan
@@ -75,6 +77,8 @@ TODO: document how to install and enable receiver. Will most likely be a bash sc
 
 ## Setup application
 Unlike the receiver, the rest of the application including database, backend, frontend and reverse proxy use docker and docker-compose for fast and simple deployment.
+
+TODO: Explain all the steps necessary before setting it up (adjusting env vars in the compose file and angular env files, etc.)
 
 You can install and enable it with `docker-compose up -d`
 
