@@ -5,6 +5,7 @@ RUN npm install
 COPY ./ .
 
 ARG API_BASE_URL
+# TODO maybe a simple sed invokation to update the prod env file with this arg
 
 RUN npm run build -- --prod
 
