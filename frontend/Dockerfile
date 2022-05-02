@@ -5,7 +5,8 @@ RUN npm install
 COPY ./ .
 
 ARG API_BASE_URL
-# TODO maybe a simple sed invokation to update the prod env file with this arg
+# Angular doesn't use environment args as environment args (makes sense right) so edit env-file instead
+RUN sed -i 's@API_BASE_URL_PLACEHOLDER@'"${API_BASE_URL}"'@' /app/src/environments/environment.prod.ts
 
 RUN npm run build -- --prod
 

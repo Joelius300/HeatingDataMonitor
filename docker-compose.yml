@@ -5,7 +5,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      # Angular doesn't use environment args as environment args (makes sense right) so edit environment.prod.ts instead
+      args:
+        API_BASE_URL: "http://localhost:5001/" # must end with slash
     restart: always
     ports:
       - 5001:80
