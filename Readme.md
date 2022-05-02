@@ -1,7 +1,7 @@
 # Summary
-This is a web app which allows me and my family to monitor the heating unit of our house in real time.
+Heating-data-monitor is the creative name of the monitoring system I built for our heating unit. It consists of a database, a receiving/parsing application, a real-time web application, some scripts, sarcastic documentation and more.
 
-The interface is in swiss german. Because the heating unit is german, the names (class, column) are also specified in german which allows for easier reference in manuals and co.
+This is the first web application I've ever worked on and it's given me some wonderful as well as some dreadful first experiences. To pay homage to the immense impact this project has had on me and how it shaped my path as a programmer, I _will_ write down some words on it's journey **TODO** :)
 
 _Note: I'm currently doing [another rework](https://github.com/Joelius300/HeatingDataMonitor/projects/2) to retire my [second big rework](https://github.com/Joelius300/HeatingDataMonitor/tree/v1) which superseded the [initial system](https://github.com/Joelius300/HeatingDataMonitor/tree/v0), which was actually my first ever application involving web dev I believe._
 
