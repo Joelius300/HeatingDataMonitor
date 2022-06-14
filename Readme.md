@@ -25,9 +25,13 @@ The interface isn't the prettiest but it gets the job done :)
 ![Demo](Demo.gif)
 
 # Architecture & deployment overview
+This diagram shows the general architecture of the system with the respective communication channels and deployment locations. The live system is running on a single Raspberry Pi architecture like this, making it the primary guideline for related design decisions.
+
 ![Architecture overview](architectural_overview.drawio.svg)
 
-TODO Much more complex architecture that should be possible as well as a design goal
+Still, I have tried to build this system in a way that would allow for a more sophisticated deployment architecture with different servers all over the internet (this relates to the third meta-goal I listed). Below you can see an example of an architecture that I believe should work with this system with very little code changes required. The two sides separated by the dotted line symbolize third party internet hosting providers and the intranet at our house respectively. It should be noted that I don't have much experience with third party providers nor am I interested in setting up the deployment pipeline for an architecture like this. It's mainly an idea intended to drive me to write modular and portable code as well as to showcase my knowledge and depth of thought put into the project.
+
+![Architecture overview of imagined architecture](architectural_overview_imagined.drawio.svg)
 
 # Tech stack
 The database is [TimescaleDB](https://www.timescale.com/), a time-series extension for [PostgreSQL](https://www.postgresql.org/).  
@@ -42,7 +46,7 @@ The Raspberry Pi is connected to the heating unit via [RS232](https://en.wikiped
 ### Used previously
 - [SQLite](https://sqlite.org) (database)
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) (ORM)
-- [Blazor Server](https://docs.microsoft.com/en-us/aspnet/core/blazor/) (frontend & server-client communication)
+- [Blazor Server](https://docs.microsoft.com/en-us/aspnet/core/blazor/) (frontend + server-client communication)
 - [Chart.js](https://www.chartjs.org/) (charting library)
 - [ChartJs.Blazor](https://github.com/mariusmuntean/ChartJs.Blazor) (Chart.js Blazor integration)
 
