@@ -25,7 +25,7 @@ services:
     environment:
       Urls: "http://+:80"
       ASPNETCORE_ENVIRONMENT: "Production"
-      ConnectionStrings__HeatingDataDatabase: "Server=database;Port=5432;Database=heating_data_monitor;User Id=heating_data_monitor_user;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;"
+      ConnectionStrings__HeatingDataDatabase: "Server=database;Port=5432;Database=heating_data_monitor;User Id=backend_user;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;"
     depends_on:
       - database
   database:
@@ -34,11 +34,15 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: "heating_data_monitor_user"
+      POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "dontworrythispasswordwillchangeinproduction"
       POSTGRES_DB: "heating_data_monitor"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./backend/HeatingDataMonitor.Database/dbCreate.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/HeatingDataMonitor.Database/dbCreate.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
+      - ./backend/HeatingDataMonitor.API/createDbUser.sql:/docker-entrypoint-initdb.d/01_createBackendUser.sql:ro
+      - ./backend/HeatingDataMonitor.Receiver/createDbUser.sql:/docker-entrypoint-initdb.d/02_createReceiverUser.sql:ro
+      - ./backend/HeatingDataMonitor.Database/importOldData.sql:/docker-entrypoint-initdb.d/03_importOldData.sql:ro
+      - ./old-data.csv:/docker-entrypoint-initdb.d/03_importOldData.sql:ro
 volumes:
   pgdata:
