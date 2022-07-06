@@ -1,6 +1,3 @@
--- Create the db on the postgres service-db, then reopen the connection to the actual db
--- CREATE DATABASE heating_data_monitor;
-
 -- Order of the columns (esp. first two) has to remain the same for compatibility reasons.
 -- While we could switch them, I don't want to be the guy to debug the issues if they don't get switched somewhere.
 CREATE TABLE heating_data (
@@ -46,7 +43,7 @@ CREATE TABLE heating_data (
 
 SELECT create_hypertable('heating_data', 'received_time');
 
-CREATE OR REPLACE FUNCTION record_added() -- trigger functions cannot have arguments
+CREATE OR REPLACE FUNCTION record_added() -- trigger functions cannot have arguments, use NEW directly
     RETURNS TRIGGER AS $$
 BEGIN
     PERFORM pg_notify('record_added', to_char(NEW.received_time, 'YYYY-MM-DD"T"HH24:MI:SS"."FF6"Z"'));
