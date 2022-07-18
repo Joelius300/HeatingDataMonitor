@@ -20,7 +20,5 @@ RUN dotnet publish "HeatingDataMonitor.API.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
-# fix logging: dotnet/dotnet-docker#3274
-ENV Logging__Console__FormatterName=
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "HeatingDataMonitor.API.dll"]
