@@ -29,7 +29,7 @@ Maybe things have changed but considering this is my third rework and I've alrea
 
 In theory it should be simple. Open the serial port, create a stream reader over the `BaseStream` property of the serial port and just parse until I say stop (there's `GetRecordsAsync<T>(CancellationToken): IAsyncEnumerable<T>`). And if it works it's absolutely the simplest and cleanest solution there is. But if anything doesn't quite work as expected, you have no layers to fall back to and investigate what could be wrong because there are 0 abstractions which makes debugging a lot harder. There's also not a lot you could test, you'll need to rely on the simplicity of the implementation and the correctness of the serial port and CsvParser.
 
-I still believe it's is possible (and maybe even "the right way"), why should't it be, but I don't know if I'll ever get back to this because I don't need the additional performance, the current solutions works and I've put a lot of effort into documenting the current implementation to minimize issues later on.
+I still believe it is possible (and maybe even "the right way"), why should't it be, but I don't know if I'll ever get back to this because I don't need the additional performance, the current solutions works and I've put a lot of effort into documenting the current implementation to minimize issues later on.
 
 ## Generics
 There are multiple places where generics could be used because things are not tied to a certain class (this also extends outside of the receiver). However, this just doesn't add any benefit for this project as `HeatingData` will continue to be the only db model we have to worry about and this model can even be updated if columns were to change.

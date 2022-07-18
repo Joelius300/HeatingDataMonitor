@@ -1,7 +1,7 @@
 # Summary
 Heating-data-monitor is the creative name of the monitoring system I built for our heating unit. It consists of a database, a receiving/parsing application, a real-time web application, some scripts, sarcastic documentation and more.
 
-This is the first web application I have ever worked on and it has given me some wonderful as well as some dreadful first experiences. To pay homage to the immense impact this project has had on me and how it shaped my path as a programmer, I _will_ write down some words on it's journey **TODO** :)
+This is the first web application I have ever worked on and it has given me some wonderful as well as some dreadful first experiences. To pay homage to the impact this project has had on me and how it shaped my path as a programmer, I _will_ write down some words on it's journey **TODO** :)
 
 # Goals
 As long as I have ideas for cool new features I will keep on expanding and rebuilding parts of this system. The following are my current ideas and goals.
@@ -29,7 +29,7 @@ This diagram shows the general architecture of the system with the respective co
 
 ![Architecture overview](architectural_overview.drawio.svg)
 
-Still, I have tried to build this system in a way that would allow for a more sophisticated deployment architecture with different servers all over the internet (this relates to the third meta-goal I listed). Below you can see an example of an architecture that I believe should work with this system with very little code changes required. The two sides separated by the dotted line symbolize third party internet hosting providers and the intranet at our house respectively. It should be noted that I don't have much experience with third party providers nor am I interested in setting up the deployment pipeline for an architecture like this. It's mainly an idea intended to drive me to write modular and portable code as well as to showcase my knowledge and depth of thought put into the project.
+Still, I have tried to build this system in a way that would allow for a more sophisticated deployment architecture with different servers all over the internet (this relates to the third meta-goal I listed). Below you can see an example of an architecture that I believe should work with this system with very little code changes required. The two sides separated by the dotted line symbolize third party internet hosting providers and the intranet at our house respectively. Everything on the left side symbolizes a general idea, with things like load-balancing accounted for but not illustrated directly. It should be noted that I don't have much experience with third party providers nor am I interested in setting up the deployment pipeline and everything else required for an architecture like this. It's mainly an idea intended to drive me to write modular and portable code as well as to showcase my knowledge and depth of thought put into the project.
 
 ![Architecture overview of imagined architecture](architectural_overview_imagined.drawio.svg)
 

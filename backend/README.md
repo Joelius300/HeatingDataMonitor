@@ -26,6 +26,7 @@ TODO:
 
 
 ### Setup for testing serial port receiver
+TODO move this to the receiver readme \
 I did this today 08.02.22 and everything seems to work. I will continue with the parser and then db-insertion, which can luckily both be tested completely without a serial port.
 
 - Install Raspberry PI OS Lite 64-bit
@@ -52,10 +53,11 @@ I did this today 08.02.22 and everything seems to work. I will continue with the
   - Use `dotnet run` to run the reading loop
   - Use minicom on the host to send data. IMPORTANT: Dont use Enter, it sends a CR (\r), not a LF (\n). To send a newline, you need to use Ctrl+j (at least on my system).
   - After that works correctly, use `echo -n "blabla\nblabla" > /dev/ttyS0` and similar to ensure receiving junks of data, potentially including line-breaks works correctly
-  - TODO document/archive Using the testing code from the TestingGrounds, run through it with the actual serial port and minicom
 
 
 ### New architecture
+Although I recently did a giant overhaul of the backend architecture (see below) with a clear net positive, I am not entirely happy with how it turned out - especially the database layer. I already have ideas how this could/should be structured instead, which will be probably be reevaluated and implemented as part of the push notifications (see ["Push notifications"-project](https://github.com/Joelius300/HeatingDataMonitor/projects/4)).
+
 ![architecture.svg](heating_data_monitor_architecture.drawio.svg)
 
 ## Docker containers
