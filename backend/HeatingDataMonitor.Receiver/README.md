@@ -1,7 +1,7 @@
 # Improvements and ideas
 
-There are many "improvements" that could be made to better the implementation of parsing the heating data.
-The fact that they are listed here and not implemented is due to the already large amount spent with this implementation including tests, research, hardware-fiddling, etc. and the fact that most of these improvements bring little to no benefit _for this project_.
+There are many improvements that could be made to the implementation of parsing the heating data.
+The fact that they are listed here and not implemented is due to the already large amount of time spent with this implementation including tests, research, hardware-fiddling, etc. and the fact that most of these improvements bring little to no benefit _for this project_.
 
 ## Tighter abstraction around serial port
 
@@ -41,3 +41,32 @@ I still believe it is possible (and maybe even "the right way"), why should't it
 ## Generics
 
 There are multiple places where generics could be used because things are not tied to a certain class (this also extends outside of the receiver). However, this just doesn't add any benefit for this project as `HeatingData` will continue to be the only db model we have to worry about and this model can even be updated if columns were to change.
+
+# Setup for testing serial port receiver
+
+I did this today 08.02.22 and everything seems to work. I will continue with the parser and then db-insertion, which can luckily both be tested completely without a serial port.
+
+-   Install Raspberry PI OS Lite 64-bit
+-   `sudo apt update && sudo apt upgrade`
+-   `sudo raspi-config`
+    -   Interfacing Options -> Serial
+        -   Login Shell: No
+        -   Enable hardware: Yes
+-   Reboot
+-   Edit `/boot/config.txt` and add `dtoverlay=disable-bt
+-   Configure minicom with `sudo minicom -s` (don't forget to save)
+    -   Device: `/dev/ttyAMA0`
+    -   Speed: 9600
+    -   Parity: None
+    -   Data: 8
+    -   Stopbits: 1
+    -   (you need to configure minicom the same way on the host pc obviously, also for my Manjaro PC I needed "Hardware Flow Control" disabled)
+-   Now you can open minicom on both raspi and host and see if you receive the data correctly.
+-   Next, use the receiver to check if everything works
+    -   Add tons of logging statements to the SerialPortCsvHeatingDataReceiver
+    -   Use a simple test-worker, which uses an await foreach and just logs each line it gets
+    -   Install .NET on raspi (https://docs.microsoft.com/en-us/dotnet/iot/deployment)
+    -   Copy necessary source files over and adjust some csproj stuff
+    -   Use `dotnet run` to run the reading loop
+    -   Use minicom on the host to send data. IMPORTANT: Dont use Enter, it sends a CR (\r), not a LF (\n). To send a newline, you need to use Ctrl+j (at least on my system).
+    -   After that works correctly, use `echo -n "blabla\nblabla" > /dev/ttyS0` and similar to ensure receiving junks of data, potentially including line-breaks works correctly
