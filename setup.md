@@ -1,5 +1,15 @@
 # Setup
 
+## Install Raspberry Pi OS 64-bit
+
+- Use Raspberry Pi Imager with the appropriate settings (hostname, ssh, internet, locale, etc.)
+- Expand filesystem (in raspi-config)
+- Update: `sudo apt update && sudo apt full-upgrade`, then reboot
+- Update SSH Port
+  - `sudo vi /etc/ssh/sshd_config`
+  - `sudo systemctl restart ssh`
+  - To connect: `ssh pi@heating-data-monitor.local -p port`, not ":port"
+
 ## Enable Serial Port on Raspberry Pi (4)
 
 - Get and mount a Serial HAT (e.g. [ModMyPi Serial HAT RS232](https://www.pi-shop.ch/modmypi-serial-hat-rs232))
@@ -8,8 +18,8 @@
 - Disable Login Shell
 - Enable Serial Hardware
 - Reboot
-- `sudo nano /boot/config.txt`
-- Add `dtoverlay=pi3-miniuart-bt` to the end
+- `sudo vi /boot/config.txt`
+- Add line `dtoverlay=pi3-miniuart-bt` to the end (below enable_uart)
 - Reboot
 - Test (cat, echo, minicom and putty are all reasonable choices)
 - If it doesn't work, it's most likely your cable but you can check if `/boot/cmdline.txt` still contains `console=serial0,115200` and if so remove it.
@@ -19,36 +29,59 @@
 - `sudo apt-get install ufw`
 - `sudo ufw default deny incoming`
 - `sudo ufw default allow outgoing`
-- `sudo ufw allow ssh`
-- `sudo ufw allow sftp`
+- `sudo ufw allow port/tcp` (replace port with the custom ssh port you chose)
 - `sudo ufw allow http`
 - `sudo ufw enable`
-- `sudo ufw status verbose` should result in
+- `sudo ufw status verbose` should result in (again, port replaced with your ssh port)
+
   ```
   Status: active
   Logging: on (low)
   Default: deny (incoming), allow (outgoing), disabled (routed)
   New profiles: skip
+
   To                         Action      From
   --                         ------      ----
-  22/tcp                     ALLOW IN    Anywhere
   80/tcp                     ALLOW IN    Anywhere
-  115/tcp                    ALLOW IN    Anywhere
-  22/tcp (v6)                ALLOW IN    Anywhere (v6)
+  port/tcp                   ALLOW IN    Anywhere
   80/tcp (v6)                ALLOW IN    Anywhere (v6)
-  115/tcp (v6)               ALLOW IN    Anywhere (v6)
+  port/tcp (v6)              ALLOW IN    Anywhere (v6)
   ```
 
-## Setup receiver
+## Setup heating-data-monitor
+
+To deploy a certain version of heating-data-monitor, you first need to clone said version locally:
+
+- `sudo apt install git`
+- `git clone https://github.com/Joelius300/HeatingDataMonitor.git HeatingDataMonitorRepo`
+- `cd HeatingDataMonitorRepo`
+
+### Setup receiver
 
 The receiver is deployed without docker for multiple reasons but mostly serial port troubles..
 TODO: document how to install and enable receiver. Will most likely be a bash script to compile the app, copy it somewhere and then register a systemd service
 
-## Setup application
+- cd into the receiver folder: `cd backend/HeatingDataMonitor.Receiver`
+- Edit the `appsettings.json` file with the appropriate connection string for the receiver
+- Run install script: `bash deploy-on-rpi.sh`. This will install .NET and publish the app to ~/HeatingDataMonitorReceiver
+- Now just register and enable the systemd service
+  - `sudo cp heating-data-monitor-receiver.service /etc/systemd/system/heating-data-monitor-receiver.service`
+  - `sudo systemctl enable heating-data-monitor-receiver`
+
+#### Cheatsheet - Managing the systemd service
+
+- `sudo systemctl start heating-data-monitor-receiver`
+- `sudo systemctl stop heating-data-monitor-receiver`
+- `sudo systemctl status heating-data-monitor-receiver`
+- `sudo journalctl -fu heating-data-monitor-receiver`
+
+### Setup all the other applications
 
 Unlike the receiver, the rest of the application including database, backend, frontend and reverse proxy use docker and docker-compose for fast and simple deployment.
 
-You can install and enable it with `docker-compose up -d` but you will want to adjust certain config files beforehand.
+Firstly, install Docker: `curl -sSL https://get.docker.com | sudo sh /dev/stdin`
+
+Then you can install and enable the applications with `sudo docker compose up -d` but you will want to adjust certain config files beforehand.
 
 - docker-compose.yml contains many config options like the api-base-url and passwords.
 - database passwords for specific SQL users need to be adjusted in the mounted SQL files before the first run.
