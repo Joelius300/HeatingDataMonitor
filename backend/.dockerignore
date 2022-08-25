@@ -22,5 +22,8 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/*.drawio*
-LICENSE
-README.md
+**/LICENSE
+**/README.md
+HeatingDataMonitor.Receiver
+TestingGrounds
+FakeHeatingUnit
