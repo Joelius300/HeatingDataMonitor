@@ -25,5 +25,6 @@
 **/LICENSE
 **/README.md
 HeatingDataMonitor.Receiver
+HeatingDataMonitor.Database.Write
 TestingGrounds
 FakeHeatingUnit
