@@ -46,7 +46,14 @@ byte[] buffer = new byte[32];
 while (!token.IsCancellationRequested)
 {
     int length = rng.Next(buffer.Length / 2, buffer.Length + 1);
-    fileStream.Read(buffer, 0, length);
+    length = fileStream.Read(buffer, 0, length); // length might decrease if there aren't as many bytes ready
+    if (length == 0)
+    {
+        Console.WriteLine("End of file reached, start from beginning again.");
+        fileStream.Seek(0, SeekOrigin.Begin);
+        continue;
+    }
+
     port.Write(buffer, 0, length);
     Console.WriteLine($"Sent {length} bytes to {portName}.");
 
