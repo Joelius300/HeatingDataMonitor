@@ -53,27 +53,26 @@
 To deploy a certain version of heating-data-monitor, you first need to clone said version locally:
 
 - `sudo apt install git`
-- `git clone https://github.com/Joelius300/HeatingDataMonitor.git HeatingDataMonitorRepo`
-- `cd HeatingDataMonitorRepo`
+- `git clone https://github.com/Joelius300/HeatingDataMonitor.git`
+- `cd HeatingDataMonitor`
 
 ### Setup receiver
 
-The receiver is deployed without docker for multiple reasons but mostly serial port troubles..
-TODO: document how to install and enable receiver. Will most likely be a bash script to compile the app, copy it somewhere and then register a systemd service
+The receiver is deployed without docker for multiple reasons including serial port troubles and ease of updates for the other applications without losing data.
 
 - cd into the receiver folder: `cd backend/HeatingDataMonitor.Receiver`
 - Edit the `appsettings.json` file with the appropriate connection string for the receiver
 - Run install script: `bash deploy-on-rpi.sh`. This will install .NET and publish the app to ~/HeatingDataMonitorReceiver
 - Now just register and enable the systemd service
   - `sudo cp heating-data-monitor-receiver.service /etc/systemd/system/heating-data-monitor-receiver.service`
-  - `sudo systemctl enable heating-data-monitor-receiver`
+  - `sudo systemctl enable heating-data-monitor-receiver` (then once again with start to kick it off if you're ready)
 
 #### Cheatsheet - Managing the systemd service
 
 - `sudo systemctl start heating-data-monitor-receiver`
 - `sudo systemctl stop heating-data-monitor-receiver`
 - `sudo systemctl status heating-data-monitor-receiver`
-- `sudo journalctl -fu heating-data-monitor-receiver`
+- `sudo journalctl -u heating-data-monitor-receiver -f -p 6` (7=Trace/Debug, 6=Information, 4=Warning, 3=Error, 2=Critical)
 
 ### Setup all the other applications
 
