@@ -91,9 +91,11 @@ Then you can install and enable the applications with `sudo docker compose up -d
 
 ## Setup backup job
 
-Run this command to setup a job that creates a db backup every friday at 03:00. \
+Run this command to setup a job that creates a db backup every friday at 03:00. It's a root job because it invokes a command inside a docker container. \
 Make sure to edit the backup script and specify the desired backup location as well as the backup user's db password.
 
 ```bash
-(crontab -l 2>/dev/null; echo "0 3 * * 5 ~/HeatingDataMonitor/backend/HeatingDataMonitor.Database/backup.sh") | crontab -
+(sudo crontab -l 2>/dev/null; echo "0 3 * * 5 /home/pi/HeatingDataMonitor/backend/HeatingDataMonitor.Database/backup.sh") | sudo crontab -
 ```
+
+If you find the need to inspect the logs of the cron job, it won't be as easy as you think. The output is mailed to you so install `postfix` with "local only" mode in the setup prompt. Then use `sudo tail -f /var/mail/root`.
