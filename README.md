@@ -30,7 +30,8 @@ The interface isn't the prettiest but it gets the job done :)
 
 # Architecture & deployment overview
 
-This diagram shows the general architecture of the system with the respective communication channels and deployment locations. The live system is running on a single Raspberry Pi architecture like this, making it the primary guideline for related design decisions.
+This diagram shows the general architecture of the system with the respective communication channels and deployment locations. The live system is running on a single Raspberry Pi architecture like this, making it the primary guideline for related design decisions. \
+The documentation for deploying the system to an architecture like this can be found in [SETUP.md](./SETUP.md).
 
 ![Architecture overview](architectural_overview.drawio.svg)
 
@@ -73,7 +74,7 @@ Now it's mid 2022 and I am working on [another big rework](https://github.com/Jo
 
 There may be more but these are the most notable things in the history of this project; To be continued.
 
-# Credits / Licenses
+# Licenses
 
 This project is licensed under the [GNU Affero General Public License Version 3](https://www.gnu.org/licenses/agpl-3.0.en.html). This applies to every file within this repository unless there is a license notice at the top of the file that says otherwise.  
 If you have any questions about this or would like to use a specific part under a different license, please open an issue and I will try my best to assist.
