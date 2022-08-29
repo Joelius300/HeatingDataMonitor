@@ -84,7 +84,7 @@ Then you can install and enable the applications with `sudo docker compose up -d
 
 - docker-compose.yml contains many config options like the api-base-url and passwords.
 - database passwords for specific SQL users need to be adjusted in the mounted SQL files before the first run.
-- if there is data from an old system you would like to import automatically on the first run, it has to be exported into old-data.csv in the root project folder. The command to export the relevant columns is as follows: \
+- if there is data from an old system you would like to import automatically on the first run, it has to be exported into old-data.csv in the root project folder. The command to export the relevant columns is as follows:
   ```bash
   psql -d "HeatingDataMonitor" -h localhost -U heatingDataMonitorUser -c "\copy \"HeatingData\" (\"SPS_Zeit\",\"ReceivedTime\",\"Kessel\",\"Ruecklauf\",\"Abgas\",\"CO2_Soll\",\"CO2_Ist\",\"Saugzug_Ist\",\"Puffer_Oben\",\"Puffer_Unten\",\"Platine\",\"Betriebsphase_Kessel\",\"Aussen\",\"Vorlauf_HK1_Ist\",\"Vorlauf_HK1_Soll\",\"Betriebsphase_HK1\",\"Vorlauf_HK2_Ist\",\"Vorlauf_HK2_Soll\",\"Betriebsphase_HK2\",\"Boiler_1\",\"DI_0\",\"DI_1\",\"DI_2\",\"DI_3\",\"A_W_0\",\"A_W_1\",\"A_W_2\",\"A_W_3\",\"A_EA_0\",\"A_EA_1\",\"A_EA_2\",\"A_EA_3\",\"A_EA_4\",\"A_PHASE_0\",\"A_PHASE_1\",\"A_PHASE_2\",\"A_PHASE_3\",\"A_PHASE_4\") TO '/mnt/data_backups/$(date +%Y-%m-%dT%H_%M_%S%z).csv' DELIMITER ',' CSV HEADER;"
   ```
@@ -92,7 +92,7 @@ Then you can install and enable the applications with `sudo docker compose up -d
 ## Setup backup job
 
 Run this command to setup a job that creates a db backup every friday at 03:00. \
-Make sure to edit the backup file and specify the desired location as well as the backup user's db password.
+Make sure to edit the backup script and specify the desired backup location as well as the backup user's db password.
 
 ```bash
 (crontab -l 2>/dev/null; echo "0 3 * * 5 ~/HeatingDataMonitor/backend/HeatingDataMonitor.Database/backup.sh") | crontab -
