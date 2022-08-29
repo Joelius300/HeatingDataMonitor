@@ -91,4 +91,9 @@ Then you can install and enable the applications with `sudo docker compose up -d
 
 ## Setup backup job
 
-TODO: document how to register the cron script to backup the current db contents to a csv on the network share.
+Run this command to setup a job that creates a db backup every friday at 03:00. \
+Make sure to edit the backup file and specify the desired location as well as the backup user's db password.
+
+```bash
+(crontab -l 2>/dev/null; echo "0 3 * * 5 ~/HeatingDataMonitor/backend/HeatingDataMonitor.Database/backup.sh") | crontab -
+```
