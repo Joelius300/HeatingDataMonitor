@@ -5,7 +5,7 @@ using HeatingDataMonitor.Receiver.Shared;
 using NodaTime;
 
 IHost host = Host.CreateDefaultBuilder(args)
-    .UseSystemd() // TODO make sure to use Type=notify in Systemd file
+    .UseSystemd()
     .ConfigureServices((context, services) =>
     {
         services.AddSingleton<IClock>(SystemClock.Instance);

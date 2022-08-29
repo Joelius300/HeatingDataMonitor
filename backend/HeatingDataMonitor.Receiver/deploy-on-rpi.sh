@@ -9,7 +9,7 @@ if [[ -z "$DOTNET_ROOT" ]]; then
   # PATH is updated for this process by the installer script
 fi
 
-# install (and update? TODO) .NET
+# install (and maybe even updates?) .NET
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0
 
 dotnet publish -c Release
