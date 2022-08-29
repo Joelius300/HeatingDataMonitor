@@ -42,6 +42,7 @@ services:
       - ./backend/HeatingDataMonitor.API/createDbUser.sql:/docker-entrypoint-initdb.d/02_createAPIUser.sql:ro
       - ./backend/HeatingDataMonitor.Receiver/createDbUser.sql:/docker-entrypoint-initdb.d/03_createReceiverUser.sql:ro
       - ./backend/HeatingDataMonitor.Database/importOldData.sh:/docker-entrypoint-initdb.d/04_importOldData.sh:ro
+      - ./backend/HeatingDataMonitor.Database/createBackupUser.sql:/docker-entrypoint-initdb.d/05_createBackupUser.sql:ro
       - ./old-data.csv:/old-data.csv:ro
 volumes:
   pgdata:
