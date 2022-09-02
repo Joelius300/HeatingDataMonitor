@@ -100,3 +100,34 @@ chmod +x /home/pi/HeatingDataMonitor/backend/HeatingDataMonitor.Database/backup.
 ```
 
 If you find the need to inspect the logs of the cron job, it won't be as easy as you think. The output is mailed to you so install `postfix` with "local only" mode in the setup prompt. Then use `sudo tail -f /var/mail/root`.
+
+### Mount NFS drive as backup folder
+
+In the NAS' control panel, you need to add an NFS permission record for the specific folder with the hostname (without the .local) of the rpi.
+
+Then you can mount it as follows:
+
+```
+sudo apt install nfs-common
+export NAS_HOST=your NAS' hostname/ip
+export MOUNT_PATH=NAS' mount path as dictated by the control panel
+export BACKUP_FOLDER=/mnt/data_backups
+sudo mkdir $BACKUP_FOLDER
+sudo mount -t nfs -vvvv $NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER
+```
+
+If it doesn't work, make sure you can see the folder you want to mount with `showmount -e $NAS_HOST`.
+
+After successfully mounting, touch a file in the mounted folder and see if it shows up on the drive.
+
+To make it persistent across reboots, add the following line to `/etc/fstab` (of course manually replacing the env variables or echoing it first).
+
+```
+$NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0
+```
+
+**Sources:**
+
+- https://linuxize.com/post/how-to-mount-an-nfs-share-in-linux/
+- https://kb.synology.com/en-us/DSM/tutorial/How_to_access_files_on_Synology_NAS_within_the_local_network_NFS
+- https://unix.stackexchange.com/questions/106122/mount-nfs-access-denied-by-server-while-mounting-on-ubuntu-machines
