@@ -6,7 +6,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        API_BASE_URL: "http://localhost:5001/" # must end with slash
+        API_BASE_URL: "/" # must end with slash
     restart: always
     ports:
       - 5001:80
