@@ -131,3 +131,15 @@ $NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0
 - https://linuxize.com/post/how-to-mount-an-nfs-share-in-linux/
 - https://kb.synology.com/en-us/DSM/tutorial/How_to_access_files_on_Synology_NAS_within_the_local_network_NFS
 - https://unix.stackexchange.com/questions/106122/mount-nfs-access-denied-by-server-while-mounting-on-ubuntu-machines
+
+### Archive weather data from nearby weather stations
+
+Add the following user cron job:
+
+```bash
+*/10 * * * * curl https://data.geo.admin.ch/ch.meteoschweiz.messwerte-aktuell/VQHA80.csv -s | grep -E "^(stations|you|care|about)" >> /mnt/data_backups/meteo.csv
+```
+
+**Sources:**
+
+- https://opendata.swiss/en/dataset/automatische-wetterstationen-aktuelle-messwerte/resource/53304634-b947-4415-b19a-c947827f331b
