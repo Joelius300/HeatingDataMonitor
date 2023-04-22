@@ -137,7 +137,7 @@ $NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0
 Add the following user cron job:
 
 ```bash
-/10 * * * * bash ~/meteo-fetch.sh
+*/10 * * * * bash ~/meteo-fetch.sh
 ```
 
 `~/meteo-fetch.sh`
