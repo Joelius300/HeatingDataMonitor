@@ -137,8 +137,25 @@ $NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0
 Add the following user cron job:
 
 ```bash
-*/10 * * * * curl https://data.geo.admin.ch/ch.meteoschweiz.messwerte-aktuell/VQHA80.csv -s | grep -E "^(stations|you|care|about)" >> /mnt/data_backups/meteo.csv
+/10 * * * * bash ~/meteo-fetch.sh
 ```
+
+`~/meteo-fetch.sh`
+```bash
+#!/bin/sh
+LINES=$(curl https://data.geo.admin.ch/ch.meteoschweiz.messwerte-aktuell/VQHA80.csv -s | grep -E "^(stations|you|care|about)")
+{ echo "${LINES}" >> /mnt/data_backups/meteo.csv; } || { echo "${LINES}" >> ~/backup-meteo.csv; }
+```
+
+Check logs with `sudo tail -f /var/mail/pi`
+
+If there was an outage and it couldn't write to the mounted drive, use this to rescue the missed data before rebooting to fix the underlying issue:
+
+```bash
+cat backup-meteo.csv >> /mnt/data_backups/meteo.csv
+```
+
+then you can delete the backup file `rm backup-meteo.csv`
 
 **Sources:**
 
