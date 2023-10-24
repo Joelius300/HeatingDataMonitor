@@ -150,6 +150,7 @@ LINES=$(curl https://data.geo.admin.ch/ch.meteoschweiz.messwerte-aktuell/VQHA80.
 Check logs with `sudo tail -f /var/mail/pi`
 
 If there was an outage and it couldn't write to the mounted drive, use this to rescue the missed data AFTER rebooting and fixing the underlying issue (otherwise it can't write to `/mnt/data_backups`):
+Sometimes a reboot is enough, other times, you need `sudo mount -a` and similar shenanigans. Also, don't forget to start the NAS again after a power outage.
 
 ```bash
 cat backup-meteo.csv >> /mnt/data_backups/meteo.csv
