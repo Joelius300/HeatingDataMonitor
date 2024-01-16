@@ -9,7 +9,7 @@ namespace HeatingDataMonitor.API.Alerting.Alerts;
 /// (first 'suggested', then the more urgent 'required').
 /// Notifications are sent periodically until the heating unit is warm again.
 /// </summary>
-public class HeatingUpRequiredAlert : IAlert
+public class HeatingUpRequiredAlert : Alert
 {
     // TODO move to options
     private readonly int _suggestedThreshold;
@@ -21,7 +21,6 @@ public class HeatingUpRequiredAlert : IAlert
     private readonly IClock _clock;
     // private readonly PropertyInfo _propertyAccessor;
 
-    private bool _suppressNotifications;
     private Instant? _lastAboveSuggested;
     private Instant? _lastAboveRequired;
 
@@ -36,9 +35,7 @@ public class HeatingUpRequiredAlert : IAlert
         _clock = clock;
     }
 
-    public Notification? PendingNotification { get; private set; }
-
-    public void Update(HeatingData data)
+    public override void Update(HeatingData data)
     {
         // TODO also account for buffer temperature (Puffer_Oben) maybe?
         float value = data.Boiler_1;
@@ -47,7 +44,7 @@ public class HeatingUpRequiredAlert : IAlert
         {
             _lastAboveSuggested = now;
             // start sending notifications again once temperature is warm enough for heating to not be suggested anymore
-            _suppressNotifications = false;
+            SuppressNotifications = false;
         }
 
         if (value >= _requiredThreshold)
@@ -57,7 +54,7 @@ public class HeatingUpRequiredAlert : IAlert
         else if (now - _lastAboveRequired >= _reminderDuration)
         {
             // also send notifications again if the temperature has been below the required threshold for a long time
-            _suppressNotifications = false;
+            SuppressNotifications = false;
         }
 
         CheckNotification(now, data);
@@ -65,7 +62,7 @@ public class HeatingUpRequiredAlert : IAlert
 
     private void CheckNotification(Instant now, HeatingData data)
     {
-        if (_suppressNotifications)
+        if (SuppressNotifications)
             return;
 
         // No need to send notifications when the heating unit is running (but heat hasn't been transferred yet)
@@ -89,10 +86,4 @@ public class HeatingUpRequiredAlert : IAlert
         new("Aafüüre " + (required ? "nötig!" : "empfohle"),
             $"Temperatur isch sit {(delta.Hours > 0 ? $"{delta.Hours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
             $"Iz gad isch si {temp:F1}°.");
-
-    public void MarkAsSent()
-    {
-        _suppressNotifications = true;
-        PendingNotification = null;
-    }
 }
