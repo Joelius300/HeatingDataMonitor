@@ -1,5 +1,6 @@
 using HeatingDataMonitor.API.Alerting.Notifications;
 using HeatingDataMonitor.Database.Models;
+using Microsoft.Extensions.Options;
 using NodaTime;
 
 namespace HeatingDataMonitor.API.Alerting.Alerts;
@@ -11,33 +12,30 @@ namespace HeatingDataMonitor.API.Alerting.Alerts;
 /// </summary>
 public class HeatingUpRequiredAlert : Alert
 {
-    // TODO move to options
     private readonly int _suggestedThreshold;
     private readonly int _requiredThreshold;
-    // TODO make configurable
-    private readonly Duration _timeBelowThreshold = Duration.FromMinutes(5);
-    private readonly Duration _reminderDuration = Duration.FromHours(1);
+    private readonly Duration _timeBelowThreshold;
+    private readonly Duration _reminderDuration;
 
     private readonly IClock _clock;
-    // private readonly PropertyInfo _propertyAccessor;
 
     private Instant? _lastAboveSuggested;
     private Instant? _lastAboveRequired;
 
-    public HeatingUpRequiredAlert(int suggestedThreshold, int requiredThreshold, IClock clock)
+    public HeatingUpRequiredAlert(IOptions<HeatingUpRequiredOptions> options, IClock clock)
     {
-        // _propertyAccessor = typeof(HeatingData).GetProperty(monitor, typeof(float)) ??
-        //                     throw new ArgumentException($"Monitor property '{monitor}' not found in HeatingData.",
-        //                         nameof(monitor));
-        //
-        _suggestedThreshold = suggestedThreshold;
-        _requiredThreshold = requiredThreshold;
+        _suggestedThreshold = options.Value.SuggestedThreshold;
+        _requiredThreshold = options.Value.RequiredThreshold;
+        _timeBelowThreshold = Duration.FromMinutes(options.Value.MinutesBelowThreshold);
+        _reminderDuration = Duration.FromHours(options.Value.ReminderHours);
         _clock = clock;
     }
 
     public override void Update(HeatingData data)
     {
-        // TODO also account for buffer temperature (Puffer_Oben) maybe?
+        // TODO
+        // In Summer mode, only the Boiler is relevant
+        // In Winter mode, you need to heat up when either Boiler or Puffer is below
         float value = data.Boiler_1;
         Instant now = _clock.GetCurrentInstant();
         if (value >= _suggestedThreshold)

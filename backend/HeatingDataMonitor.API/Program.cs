@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using HeatingDataMonitor.API.Alerting;
+using HeatingDataMonitor.API.Alerting.Alerts;
 using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
@@ -41,6 +43,10 @@ services.AddCors(options =>
 
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
+
+services.AddOptions<HeatingUpRequiredOptions>()
+        .BindConfiguration("HeatingUpAlert");
+services.AddSingleton<IAlert, HeatingUpRequiredAlert>();
 
 var app = builder.Build();
 
