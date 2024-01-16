@@ -46,13 +46,13 @@ public class HeatingUpRequiredAlert : IAlert
         if (value >= _suggestedThreshold)
         {
             _lastAboveSuggested = now;
+            // start sending notifications again once temperature is warm enough for heating to not be suggested anymore
+            _suppressNotifications = false;
         }
 
         if (value >= _requiredThreshold)
         {
             _lastAboveRequired = now;
-            // start sending notifications again once temperature is warm enough for heating to not be urgent anymore
-            _suppressNotifications = false;
         }
         else if (now - _lastAboveRequired >= _reminderDuration)
         {
@@ -68,7 +68,7 @@ public class HeatingUpRequiredAlert : IAlert
         if (_suppressNotifications)
             return;
 
-        // No need to send notifications when the heating unit is running (but not hot enough yet)
+        // No need to send notifications when the heating unit is running (but heat hasn't been transferred yet)
         if (data.Betriebsphase_Kessel != BetriebsPhaseKessel.Aus)
             return;
 
@@ -84,6 +84,7 @@ public class HeatingUpRequiredAlert : IAlert
         }
     }
 
+    // This could be templated to allow customization and localization but for this project that would be overkill
     private static Notification BuildNotification(bool required, Duration delta, float temp, int threshold) =>
         new("Aafüüre " + (required ? "nötig!" : "empfohle"),
             $"Temperatur isch sit {(delta.Hours > 0 ? $"{delta.Hours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
