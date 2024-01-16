@@ -3,6 +3,10 @@ using HeatingDataMonitor.Database.Models;
 
 namespace HeatingDataMonitor.API.Alerting;
 
+/// <summary>
+/// An alert monitors one or more variables whenever update is called and populates the notification property.
+/// It relies on outside services to publish those notifications and telling it afterwards for resetting.
+/// </summary>
 public interface IAlert
 {
     /// Update alert with current data and check triggers.
