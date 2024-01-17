@@ -29,3 +29,18 @@ Notes on implementation ideas:
 - There will just be one notification service which directly calls the `signal-cli` using CliWrap. The sender and the group to send to are configurable.
 - Before sending, must call receive once. Maybe have some check in place that only calls receive if it's been more than 24h since the last time.
 - Document the setup of the `signal-cli` but don't duplicate their docs.
+
+Alerts to implement:
+
+- Heating up whenever Boiler drops below 40°C (suggested) and remind as urgent when it's below 30°C.
+  - In Summer, only Boiler is relevant but in Winter the alert should also be sent if the Puffer is below the threshold.
+- Add fuel whenever exhaust was recently above 180° and is now below 125°C again.
+  - Repeat until it's below 50°C, then it's over and you don't need to notify.
+- Not burning correctly whenever heating unit goes into operation but then doesn't reach 100°C exhaust within 10 minutes or so. Analyze data to find how you can use Betriebsphase for this
+- Door open whenever door is open for more than 10 minutes at a time
+
+Note on testing:
+
+- could test all the alerts automatically with scripted playback basically but not sure if building an entire test suite makes sense..
+- would be nice to ensure that the alert logic is working correctly because integration is challenging
+- test sending of notifications manually
