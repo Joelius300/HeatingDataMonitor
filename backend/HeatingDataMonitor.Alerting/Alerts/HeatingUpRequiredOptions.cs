@@ -1,4 +1,4 @@
-namespace HeatingDataMonitor.API.Alerting.Alerts;
+namespace HeatingDataMonitor.Alerting.Alerts;
 
 public class HeatingUpRequiredOptions
 {

@@ -1,9 +1,10 @@
-using HeatingDataMonitor.API.Alerting;
-using HeatingDataMonitor.API.Alerting.Notifications;
 using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Notifications;
 using HeatingDataMonitor.Receiver.Shared;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace HeatingDataMonitor.API.Service;
+namespace HeatingDataMonitor.Alerting;
 
 public class AlertMonitor : BackgroundService
 {

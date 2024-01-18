@@ -20,6 +20,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Database.Write", "HeatingDataMonitor.Database.Write\HeatingDataMonitor.Database.Write.csproj", "{B5862305-B55B-4C88-8404-8C900C56B2A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Notifications", "HeatingDataMonitor.Notifications\HeatingDataMonitor.Notifications.csproj", "{5395D699-B5F3-4B05-91A4-1D7160B25F26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeatingDataMonitor.Alerting", "HeatingDataMonitor.Alerting\HeatingDataMonitor.Alerting.csproj", "{8373EC86-1A1D-4E1B-A742-325253D5BB93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,5 +70,13 @@ Global
 		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5862305-B55B-4C88-8404-8C900C56B2A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5395D699-B5F3-4B05-91A4-1D7160B25F26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5395D699-B5F3-4B05-91A4-1D7160B25F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5395D699-B5F3-4B05-91A4-1D7160B25F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5395D699-B5F3-4B05-91A4-1D7160B25F26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8373EC86-1A1D-4E1B-A742-325253D5BB93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8373EC86-1A1D-4E1B-A742-325253D5BB93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8373EC86-1A1D-4E1B-A742-325253D5BB93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8373EC86-1A1D-4E1B-A742-325253D5BB93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

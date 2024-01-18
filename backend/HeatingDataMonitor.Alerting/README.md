@@ -2,7 +2,7 @@
 
 The alerting implemented in this project is very simple at the moment. \
 The `AlertMonitor` service periodically updates and checks the different alerts.
-When an alert proclaims it should be fired, it will produce a notification that is forwarded it to all the registered notification providers.
+When an alert proclaims it should be fired, it will produce a notification that is forwarded to all the registered notification providers.
 After the notifications were sent, the monitoring service resets the alerts.
 If an alert could not be sent, it will not be reset and therefore another attempt at sending the notification will be made in the next iteration.
 

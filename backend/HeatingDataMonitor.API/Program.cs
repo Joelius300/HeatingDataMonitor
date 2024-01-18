@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using HeatingDataMonitor.API.Alerting;
-using HeatingDataMonitor.API.Alerting.Alerts;
+using HeatingDataMonitor.Alerting;
+using HeatingDataMonitor.Alerting.Alerts;
 using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
@@ -44,6 +44,7 @@ services.AddCors(options =>
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
 
+// TODO could be packaged into an extension for services like AddHeatingDataTimescaledbReadonly()
 services.AddOptions<HeatingUpRequiredOptions>()
         .BindConfiguration("HeatingUpAlert");
 services.AddSingleton<IAlert, HeatingUpRequiredAlert>();

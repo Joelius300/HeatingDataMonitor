@@ -1,9 +1,9 @@
-using HeatingDataMonitor.API.Alerting.Notifications;
 using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Notifications;
 using Microsoft.Extensions.Options;
 using NodaTime;
 
-namespace HeatingDataMonitor.API.Alerting.Alerts;
+namespace HeatingDataMonitor.Alerting.Alerts;
 
 /// <summary>
 /// Alert to let users know when they should fire up the heating unit
@@ -89,6 +89,6 @@ public class HeatingUpRequiredAlert : Alert
     private static Notification BuildNotification(bool required, Duration delta, float temp, int threshold,
         string offendingTemperature) =>
         new("Aafüüre " + (required ? "nötig!" : "empfohle"),
-            $"{offendingTemperature} isch sit {((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
-            $"Iz gad isch si {temp:F1}°.");
+            (string) ($"{offendingTemperature} isch sit {((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
+                      $"Iz gad isch si {temp:F1}°."));
 }
