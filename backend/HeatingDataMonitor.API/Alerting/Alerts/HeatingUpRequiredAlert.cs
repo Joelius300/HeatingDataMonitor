@@ -18,19 +18,16 @@ public class HeatingUpRequiredAlert : Alert
     private readonly Duration _timeBelowThreshold;
     private readonly Duration _reminderDuration;
 
-    private readonly IClock _clock;
-
     private Instant? _lastAboveSuggested;
     private Instant? _lastAboveRequired;
 
-    public HeatingUpRequiredAlert(IOptions<HeatingUpRequiredOptions> options, IClock clock)
+    public HeatingUpRequiredAlert(IOptions<HeatingUpRequiredOptions> options)
     {
         _summerMode = options.Value.SummerMode;
         _suggestedThreshold = options.Value.SuggestedThreshold;
         _requiredThreshold = options.Value.RequiredThreshold;
         _timeBelowThreshold = Duration.FromMinutes(options.Value.MinutesBelowThreshold);
         _reminderDuration = Duration.FromHours(options.Value.ReminderHours);
-        _clock = clock;
     }
 
     public override void Update(HeatingData data)
@@ -45,25 +42,24 @@ public class HeatingUpRequiredAlert : Alert
             offendingTemperature = "Puffer";
         }
 
-        Instant now = _clock.GetCurrentInstant();
         if (value >= _suggestedThreshold)
         {
-            _lastAboveSuggested = now;
+            _lastAboveSuggested = data.ReceivedTime;
             // start sending notifications again once temperature is high enough for heating to not be suggested anymore
             SuppressNotifications = false;
         }
 
         if (value >= _requiredThreshold)
         {
-            _lastAboveRequired = now;
+            _lastAboveRequired = data.ReceivedTime;
         }
-        else if (now - _lastAboveRequired >= _reminderDuration)
+        else if (data.ReceivedTime - _lastAboveRequired >= _reminderDuration)
         {
             // also send notifications again once the temperature has been below the required threshold for a long time
             SuppressNotifications = false;
         }
 
-        CheckNotification(now, data, value, offendingTemperature);
+        CheckNotification(data.ReceivedTime, data, value, offendingTemperature);
     }
 
     private void CheckNotification(Instant now, HeatingData data, float value, string offendingTemperature)
