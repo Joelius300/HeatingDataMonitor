@@ -12,6 +12,7 @@ namespace HeatingDataMonitor.API.Alerting.Alerts;
 /// </summary>
 public class HeatingUpRequiredAlert : Alert
 {
+    private readonly bool _summerMode;
     private readonly int _suggestedThreshold;
     private readonly int _requiredThreshold;
     private readonly Duration _timeBelowThreshold;
@@ -24,6 +25,7 @@ public class HeatingUpRequiredAlert : Alert
 
     public HeatingUpRequiredAlert(IOptions<HeatingUpRequiredOptions> options, IClock clock)
     {
+        _summerMode = options.Value.SummerMode;
         _suggestedThreshold = options.Value.SuggestedThreshold;
         _requiredThreshold = options.Value.RequiredThreshold;
         _timeBelowThreshold = Duration.FromMinutes(options.Value.MinutesBelowThreshold);
@@ -33,15 +35,21 @@ public class HeatingUpRequiredAlert : Alert
 
     public override void Update(HeatingData data)
     {
-        // TODO
         // In Summer mode, only the Boiler is relevant
         // In Winter mode, you need to heat up when either Boiler or Puffer is below
+        string offendingTemperature = "Boiler";
         float value = data.Boiler_1;
+        if (!_summerMode && data.Puffer_Oben < data.Boiler_1)
+        {
+            value = data.Puffer_Oben;
+            offendingTemperature = "Puffer";
+        }
+
         Instant now = _clock.GetCurrentInstant();
         if (value >= _suggestedThreshold)
         {
             _lastAboveSuggested = now;
-            // start sending notifications again once temperature is warm enough for heating to not be suggested anymore
+            // start sending notifications again once temperature is high enough for heating to not be suggested anymore
             SuppressNotifications = false;
         }
 
@@ -51,14 +59,14 @@ public class HeatingUpRequiredAlert : Alert
         }
         else if (now - _lastAboveRequired >= _reminderDuration)
         {
-            // also send notifications again if the temperature has been below the required threshold for a long time
+            // also send notifications again once the temperature has been below the required threshold for a long time
             SuppressNotifications = false;
         }
 
-        CheckNotification(now, data);
+        CheckNotification(now, data, value, offendingTemperature);
     }
 
-    private void CheckNotification(Instant now, HeatingData data)
+    private void CheckNotification(Instant now, HeatingData data, float value, string offendingTemperature)
     {
         if (SuppressNotifications)
             return;
@@ -71,17 +79,20 @@ public class HeatingUpRequiredAlert : Alert
         Duration? deltaSuggested = now - _lastAboveSuggested;
         if (deltaRequired >= _timeBelowThreshold)
         {
-            PendingNotification = BuildNotification(required: true, deltaRequired.Value, data.Boiler_1, _requiredThreshold);
+            PendingNotification = BuildNotification(required: true, deltaRequired.Value, value, _requiredThreshold,
+                offendingTemperature);
         }
         else if (deltaSuggested >= _timeBelowThreshold)
         {
-            PendingNotification = BuildNotification(required: false, deltaSuggested.Value, data.Boiler_1, _suggestedThreshold);
+            PendingNotification = BuildNotification(required: false, deltaSuggested.Value, value, _suggestedThreshold,
+                offendingTemperature);
         }
     }
 
-    // This could be templated to allow customization and localization but for this project that would be overkill
-    private static Notification BuildNotification(bool required, Duration delta, float temp, int threshold) =>
+    // This could be templated to allow customization and localization, but that would be overkill for this project
+    private static Notification BuildNotification(bool required, Duration delta, float temp, int threshold,
+        string offendingTemperature) =>
         new("Aafüüre " + (required ? "nötig!" : "empfohle"),
-            $"Temperatur isch sit {(delta.Hours > 0 ? $"{delta.Hours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
+            $"{offendingTemperature} isch sit {((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
             $"Iz gad isch si {temp:F1}°.");
 }
