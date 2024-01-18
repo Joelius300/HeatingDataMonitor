@@ -1,7 +1,7 @@
-using HeatingDataMonitor.API.Alerting.Notifications;
 using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Notifications;
 
-namespace HeatingDataMonitor.API.Alerting;
+namespace HeatingDataMonitor.Alerting;
 
 public abstract class Alert : IAlert
 {

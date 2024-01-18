@@ -1,7 +1,7 @@
-using HeatingDataMonitor.API.Alerting.Notifications;
 using HeatingDataMonitor.Database.Models;
+using HeatingDataMonitor.Notifications;
 
-namespace HeatingDataMonitor.API.Alerting;
+namespace HeatingDataMonitor.Alerting;
 
 /// <summary>
 /// An alert monitors one or more variables whenever update is called and populates the notification property.

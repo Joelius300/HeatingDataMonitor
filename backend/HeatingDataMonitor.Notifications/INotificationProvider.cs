@@ -1,4 +1,4 @@
-namespace HeatingDataMonitor.API.Alerting.Notifications;
+namespace HeatingDataMonitor.Notifications;
 
 public interface INotificationProvider
 {

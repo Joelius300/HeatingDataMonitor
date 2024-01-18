@@ -1,4 +1,4 @@
-namespace HeatingDataMonitor.API.Alerting.Notifications;
+namespace HeatingDataMonitor.Notifications;
 
 /// <summary>
 /// Notification that can be pushed to users via some notification provider.
