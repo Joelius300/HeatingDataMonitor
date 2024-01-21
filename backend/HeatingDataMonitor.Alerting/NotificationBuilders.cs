@@ -13,7 +13,7 @@ public static class NotificationBuilders
 {
     private static Notification BuildHeatingUpRequiredNotification(bool required, Duration delta, float temp, float threshold,
         string offendingTemperature) =>
-        new("Aafüüre " + (required ? "nötig!" : "empfohle"),
+        new("Aafüüre " + (required ? "dringend nötig!" : "wär guet!"),
             $"{offendingTemperature} isch sit " +
             ((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "") +
             $"{delta.Minutes} minute unger {threshold:F1}° C. " +

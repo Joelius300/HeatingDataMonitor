@@ -46,7 +46,7 @@ public class AlertMonitor : BackgroundService
                 {
                     foreach (INotificationProvider provider in _notificationProviders)
                     {
-                        provider.Publish(alert.PendingNotification);
+                        await provider.Publish(alert.PendingNotification);
                     }
 
                     // Notification is only reset when firing was successful, otherwise it'll stay and be fired again
