@@ -50,12 +50,16 @@ public class FellBelowAlert : Alert
             SuppressNotifications = false;
         }
 
+        // No need to send notifications when the heating unit is running (but heat hasn't been transferred yet)
+        if (SuppressNotifications || data.Betriebsphase_Kessel != BetriebsPhaseKessel.Aus)
+            return;
+
         Duration delta = now - _lastAboveThreshold;
-        if (!SuppressNotifications && delta >= _timeThreshold)
-        {
-            // if it was below threshold for long enough and we're not suppressing, publish notification
-            PendingNotification = _notificationBuilder(data, value, _threshold, delta);
-            _lastNotificationSend = now;
-        }
+        if (delta < _timeThreshold)
+            return;
+
+        // if it was below threshold for long enough, publish notification
+        PendingNotification = _notificationBuilder(data, value, _threshold, delta);
+        _lastNotificationSend = now;
     }
 }
