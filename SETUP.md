@@ -48,6 +48,49 @@
   port/tcp (v6)              ALLOW IN    Anywhere (v6)
   ```
 
+## Setup signal notifications
+
+In this setup I used a landline number to create a signal account and link it on the Raspberry Pi.
+The process might change in future `signal-cli` versions, so check [Usage](https://github.com/AsamK/signal-cli#usage), [Registration with captcha](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha) and [Linking other devices (Provisioning)](https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)).
+
+On main PC:
+
+```bash
+./signal-cli -u NUMBER register --captcha SOLVED-CAPTCHA-URL --voice
+# listen for code
+./signal-cli -u NUMBER verify VERIFICATION-CODE
+./signal-cli -u NUMBER updateProfile blablabla
+./signal-cli -u NUMBER receive
+./signal-cli -u NUMBER send -m "Test from signal-cli" SOME-OTHER-NUMBER
+# accept incoming message (trust) on that other number
+# add account to group
+./signal-cli -u NUMBER receive
+./signal-cli -u NUMBER listGroups
+# get the group id from this
+./signal-cli -u NUMBER send -m "Sent from the command line using signal-cli :)" -g GROUP-ID
+# if the message was sent to the group chat, it all works. Can put the number and group-id in config or rather store somewhere for config on PI.
+```
+
+Then on the Raspberry Pi install and link it:
+
+I used the appropriate [binary distribution](https://github.com/AsamK/signal-cli/wiki/Binary-distributions) from [projektzentrisch](https://media.projektzentrisch.de/temp/signal-cli/), you'll need to see which one is recent and works.
+
+```bash
+curl -o signal-cli0127r2-ubuntu2004-arm64.gz https://media.projektzentrisch.de/temp/signal-cli/signal-cli0127r2_ubuntu2004_arm64.gz
+gzip -d signal-cli0127r2-ubuntu2004-arm64.gz
+chmod +x signal-cli0127r2-ubuntu2004-arm64
+signal-cli link -n "Heating Raspberry Pi"
+# copy link and keep process running
+```
+
+On main PC again:
+
+```bash
+signal-cli -u NUMBER addDevice --uri COPIED-LINK
+```
+
+This will end the linking process on the Pi. Then you can send a test message on Raspberry Pi like above. The group-id will not change. Do not forget to receive something first, must be able to fetch a new message from a group.
+
 ## Setup heating-data-monitor
 
 To deploy a certain version of heating-data-monitor, you first need to clone said version locally:
