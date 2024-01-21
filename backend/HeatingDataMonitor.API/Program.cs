@@ -6,6 +6,7 @@ using HeatingDataMonitor.API.Hubs;
 using HeatingDataMonitor.API.Service;
 using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Read;
+using HeatingDataMonitor.Notifications;
 using Microsoft.AspNetCore.HttpOverrides;
 using NodaTime.Serialization.SystemTextJson;
 
@@ -34,11 +35,11 @@ const string debugPolicyName = "DebugPolicy";
 services.AddCors(options =>
 {
     options.AddPolicy(debugPolicyName, b => b
-                                       .AllowAnyMethod()
-                                       .AllowAnyHeader()
-                                       .AllowCredentials()
-                                       // only for the angular development server
-                                       .WithOrigins("http://localhost:4200"));
+                                            .AllowAnyMethod()
+                                            .AllowAnyHeader()
+                                            .AllowCredentials()
+                                            // only for the angular development server
+                                            .WithOrigins("http://localhost:4200"));
 });
 
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
@@ -46,6 +47,10 @@ services.AddHostedService<HeatingDataRealTimeService>();
 
 services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
 services.AddHostedService<AlertMonitor>();
+
+services.AddSingleton<INotificationProvider, SignalCliNotificationProvider>();
+services.AddOptions<SignalNotificationOptions>()
+        .BindConfiguration("SignalNotifications");
 
 var app = builder.Build();
 

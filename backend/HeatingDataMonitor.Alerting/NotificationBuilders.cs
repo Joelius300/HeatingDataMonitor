@@ -11,8 +11,8 @@ namespace HeatingDataMonitor.Alerting;
 // These could be templated to allow customization and localization, but that would be overkill for this project
 public static class NotificationBuilders
 {
-    private static Notification BuildHeatingUpRequiredNotification(bool required, Duration delta, float temp, float threshold,
-        string offendingTemperature) =>
+    private static Notification BuildHeatingUpRequiredNotification(bool required, Duration delta, float temp,
+                                                                   float threshold, string offendingTemperature) =>
         new("Aafüüre " + (required ? "dringend nötig!" : "wär guet!"),
             $"{offendingTemperature} isch sit " +
             ((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "") +
@@ -32,8 +32,7 @@ public static class NotificationBuilders
     /// that is using this method to also use the lower of the two values, otherwise there could be mismatches!
     /// </param>
     public static Notification BuildHeatingUpRequiredNotification(bool required, Duration delta, HeatingData data,
-        float threshold,
-        bool summerMode)
+                                                                  float threshold, bool summerMode)
     {
         // In Summer mode, only the Boiler is relevant
         // In Winter mode, you need to heat up when either Boiler or Puffer is below

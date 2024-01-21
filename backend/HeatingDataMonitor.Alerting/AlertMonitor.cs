@@ -19,7 +19,7 @@ public class AlertMonitor : BackgroundService
     private readonly ICollection<INotificationProvider> _notificationProviders;
 
     public AlertMonitor(ILogger<AlertMonitor> logger, IHeatingDataReceiver heatingDataReceiver,
-        IEnumerable<IAlert> alerts, IEnumerable<INotificationProvider> notificationProviders)
+                        IEnumerable<IAlert> alerts, IEnumerable<INotificationProvider> notificationProviders)
     {
         _logger = logger;
         _receiver = heatingDataReceiver;
