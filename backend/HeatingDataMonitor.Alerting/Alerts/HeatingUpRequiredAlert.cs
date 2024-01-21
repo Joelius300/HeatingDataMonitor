@@ -20,6 +20,8 @@ public class HeatingUpRequiredAlert : Alert
 
     private Instant? _lastAboveSuggested;
     private Instant? _lastAboveRequired;
+    private Instant? _lastNotificationTriggered;
+    private bool _notFallenBelowRequired;
 
     public HeatingUpRequiredAlert(IOptions<HeatingUpRequiredOptions> options)
     {
@@ -46,17 +48,23 @@ public class HeatingUpRequiredAlert : Alert
         {
             _lastAboveSuggested = data.ReceivedTime;
             // start sending notifications again once temperature is high enough for heating to not be suggested anymore
+            // also clear pending notification if there was one that was not sent (very unlikely in correct operation).
             SuppressNotifications = false;
+            PendingNotification = null;
+            _notFallenBelowRequired = true;
         }
 
         if (value >= _requiredThreshold)
         {
             _lastAboveRequired = data.ReceivedTime;
         }
-        else if (data.ReceivedTime - _lastAboveRequired >= _reminderDuration)
+        else if (_notFallenBelowRequired || data.ReceivedTime - _lastNotificationTriggered >= _reminderDuration)
         {
-            // also send notifications again once the temperature has been below the required threshold for a long time
+            // send notifications again when temperature falls below the required threshold for the first time or
+            // if a lot of time has passed since the last notification was sent.
+            // This will also re-trigger the notification periodically when the temperature stays low for a long time.
             SuppressNotifications = false;
+            _notFallenBelowRequired = false;
         }
 
         CheckNotification(data.ReceivedTime, data, value, offendingTemperature);
@@ -77,11 +85,13 @@ public class HeatingUpRequiredAlert : Alert
         {
             PendingNotification = BuildNotification(required: true, deltaRequired.Value, value, _requiredThreshold,
                 offendingTemperature);
+            _lastNotificationTriggered = data.ReceivedTime;
         }
         else if (deltaSuggested >= _timeBelowThreshold)
         {
             PendingNotification = BuildNotification(required: false, deltaSuggested.Value, value, _suggestedThreshold,
                 offendingTemperature);
+            _lastNotificationTriggered = data.ReceivedTime;
         }
     }
 
@@ -89,6 +99,7 @@ public class HeatingUpRequiredAlert : Alert
     private static Notification BuildNotification(bool required, Duration delta, float temp, int threshold,
         string offendingTemperature) =>
         new("Aafüüre " + (required ? "nötig!" : "empfohle"),
-            (string) ($"{offendingTemperature} isch sit {((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
-                      $"Iz gad isch si {temp:F1}°."));
+            (string)(
+                $"{offendingTemperature} isch sit {((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "")}{delta.Minutes} minute unger {threshold}° C. " +
+                $"Iz gad isch si {temp:F1}°."));
 }
