@@ -44,10 +44,7 @@ services.AddCors(options =>
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
 
-// TODO could be packaged into an extension for services like AddHeatingDataTimescaledbReadonly()
-services.AddOptions<HeatingUpRequiredOptions>()
-        .BindConfiguration("HeatingUpAlert");
-services.AddSingleton<IAlert, HeatingUpRequiredAlert>();
+services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
 
 var app = builder.Build();
 
