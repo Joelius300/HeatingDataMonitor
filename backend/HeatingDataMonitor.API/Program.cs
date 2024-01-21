@@ -45,6 +45,7 @@ services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
 
 services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
+services.AddHostedService<AlertMonitor>();
 
 var app = builder.Build();
 

@@ -6,6 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace HeatingDataMonitor.Alerting;
 
+/// <summary>
+/// Monitors all registered alerts and sends their notifications through the registered providers.
+/// </summary>
+// Very simple, no queue, no de-duplication, no escalation in case of error, but it does try to send and
+// if sending fails it just logs the errors and tries again the next time.
 public class AlertMonitor : BackgroundService
 {
     private readonly ILogger<AlertMonitor> _logger;
@@ -14,12 +19,12 @@ public class AlertMonitor : BackgroundService
     private readonly ICollection<INotificationProvider> _notificationProviders;
 
     public AlertMonitor(ILogger<AlertMonitor> logger, IHeatingDataReceiver heatingDataReceiver,
-        ICollection<IAlert> alerts, ICollection<INotificationProvider> notificationProviders)
+        IEnumerable<IAlert> alerts, IEnumerable<INotificationProvider> notificationProviders)
     {
         _logger = logger;
         _receiver = heatingDataReceiver;
-        _alerts = alerts;
-        _notificationProviders = notificationProviders;
+        _alerts = alerts.ToArray();
+        _notificationProviders = notificationProviders.ToArray();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
