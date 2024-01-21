@@ -13,7 +13,8 @@ public class FellBelowAlertTests
     public void ScriptedOperationTriggers()
     {
         Alert alert = new FellBelowAlert(hd => hd.Boiler_1, threshold: 30, Duration.FromMinutes(2), repeatAfter: null,
-            (data, value, threshold, delta) => new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
+                                         (data, value, threshold, delta) =>
+                                             new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
         Instant now = Instant.FromUtc(2000, 1, 1, 0, 0);
 
         // starts without notification
@@ -42,7 +43,8 @@ public class FellBelowAlertTests
     public void MarkAsSendClearsNotification()
     {
         Alert alert = new FellBelowAlert(hd => hd.Boiler_1, threshold: 30, Duration.FromMinutes(2), repeatAfter: null,
-            (data, value, threshold, delta) => new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
+                                         (data, value, threshold, delta) =>
+                                             new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
         Instant now = Instant.FromUtc(2000, 1, 1, 0, 0);
         alert.Update(new HeatingData {ReceivedTime = now, Boiler_1 = 35});
         alert.Update(new HeatingData {ReceivedTime = now + Duration.FromMinutes(10), Boiler_1 = 25});
@@ -61,7 +63,8 @@ public class FellBelowAlertTests
     public void DoesNotRetriggerWithoutRepeat()
     {
         Alert alert = new FellBelowAlert(hd => hd.Boiler_1, threshold: 30, Duration.FromMinutes(2), repeatAfter: null,
-            (data, value, threshold, delta) => new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
+                                         (data, value, threshold, delta) =>
+                                             new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
         Instant now = Instant.FromUtc(2000, 1, 1, 0, 0);
         alert.Update(new HeatingData {ReceivedTime = now, Boiler_1 = 35});
         alert.Update(new HeatingData {ReceivedTime = now + Duration.FromMinutes(10), Boiler_1 = 25});
@@ -77,8 +80,9 @@ public class FellBelowAlertTests
     public void DoesRetriggerWithRepeat()
     {
         Alert alert = new FellBelowAlert(hd => hd.Boiler_1, threshold: 30, Duration.FromMinutes(2),
-            repeatAfter: Duration.FromMinutes(10),
-            (data, value, threshold, delta) => new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
+                                         repeatAfter: Duration.FromMinutes(10),
+                                         (data, value, threshold, delta) =>
+                                             new Notification($"{value:F0}", $"{delta.TotalMinutes:F0}"));
         Instant now = Instant.FromUtc(2000, 1, 1, 0, 0);
 
         alert.Update(new HeatingData {ReceivedTime = now, Boiler_1 = 30});

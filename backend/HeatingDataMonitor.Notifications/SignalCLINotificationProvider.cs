@@ -45,7 +45,7 @@ public class SignalCliNotificationProvider : INotificationProvider
     private Task Receive() => StartSignalCliWith("receive");
 
     private static (string message, string style) FormatNotification(Notification notification) => (
-        $"{notification.Title}\n\n{notification.Text}", $"0:{notification.Title.Length}:BOLD");
+            $"{notification.Title}\n\n{notification.Text}", $"0:{notification.Title.Length}:BOLD");
 
     private CommandTask<CommandResult> StartSignalCliWith(params string[] args) => Cli.Wrap(_options.CliPath)
         .WithArguments(new[]

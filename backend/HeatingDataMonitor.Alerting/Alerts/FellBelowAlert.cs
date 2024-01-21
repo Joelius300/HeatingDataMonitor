@@ -24,7 +24,7 @@ public class FellBelowAlert : Alert
     private Instant _lastNotificationSend;
 
     public FellBelowAlert(Func<HeatingData, float> valueGetter, float threshold, Duration timeThreshold,
-        Duration? repeatAfter, NotificationBuilder notificationBuilder)
+                          Duration? repeatAfter, NotificationBuilder notificationBuilder)
     {
         _valueGetter = valueGetter;
         _threshold = threshold;
@@ -46,7 +46,7 @@ public class FellBelowAlert : Alert
 
         if (_repeatAfter.HasValue && now - _lastNotificationSend >= _repeatAfter)
         {
-            // if we should repeat the notification after a while and that while has passed, so stop suppressing
+            // if we should repeat the notification after a while and that while has passed, stop suppressing
             SuppressNotifications = false;
         }
 

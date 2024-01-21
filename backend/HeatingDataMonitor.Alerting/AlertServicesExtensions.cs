@@ -8,7 +8,7 @@ namespace HeatingDataMonitor.Alerting;
 public static class AlertServicesExtensions
 {
     public static IServiceCollection AddHeatingUpAlerts(this IServiceCollection services,
-        HeatingUpRequiredOptions options)
+                                                        HeatingUpRequiredOptions options)
     {
         // Summer = only Boiler, but Winter = Boiler and Puffer, whichever is lower
         Func<HeatingData, float> valueGetter =
@@ -18,10 +18,12 @@ public static class AlertServicesExtensions
 
         // Recommendation: It's suggested to heat up. This does not repeat.
         services.AddSingleton<IAlert>(new FellBelowAlert(valueGetter, options.SuggestedThreshold, timeThreshold,
-            repeatAfter: null, GetNotificationBuilder(required: false)));
+                                                         repeatAfter: null,
+                                                         GetNotificationBuilder(required: false)));
         // Required: It's required/urgent to heat up. This one repeats.
         services.AddSingleton<IAlert>(new FellBelowAlert(valueGetter, options.RequiredThreshold, timeThreshold,
-            repeatAfter: Duration.FromHours(options.ReminderHours), GetNotificationBuilder(required: true)));
+                                                         repeatAfter: Duration.FromHours(options.ReminderHours),
+                                                         GetNotificationBuilder(required: true)));
 
         return services;
 
@@ -29,7 +31,7 @@ public static class AlertServicesExtensions
         {
             return (data, _, threshold, delta) =>
                 NotificationBuilders.BuildHeatingUpRequiredNotification(required, delta, data, threshold,
-                    options.SummerMode);
+                                                                        options.SummerMode);
         }
     }
 }
