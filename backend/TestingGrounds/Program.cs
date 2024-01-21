@@ -8,6 +8,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TestingGrounds;
 
+await SignalCli.SendSomeMessages();
+
+return;
+
 var logMock = new Mock<ILogger<RealTimeConnectionManager>>();
 IRealTimeConnectionManager connectionManager = new RealTimeConnectionManager(logMock.Object);
 
