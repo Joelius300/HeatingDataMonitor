@@ -8,6 +8,7 @@ using HeatingDataMonitor.Database;
 using HeatingDataMonitor.Database.Read;
 using HeatingDataMonitor.Notifications;
 using Microsoft.AspNetCore.HttpOverrides;
+using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +42,8 @@ services.AddCors(options =>
                                             // only for the angular development server
                                             .WithOrigins("http://localhost:4200"));
 });
+
+services.AddSingleton<IClock>(SystemClock.Instance);
 
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();

@@ -1,4 +1,5 @@
 using CliWrap;
+using Microsoft.Extensions.Options;
 using NodaTime;
 
 namespace HeatingDataMonitor.Notifications;
@@ -12,11 +13,11 @@ public class SignalCliNotificationProvider : INotificationProvider
 
     private Instant? _lastReceived;
 
-    public SignalCliNotificationProvider(SignalNotificationOptions options, IClock clock)
+    public SignalCliNotificationProvider(IOptions<SignalNotificationOptions> options, IClock clock)
     {
-        _options = options;
+        _options = options.Value;
         _clock = clock;
-        _receiveInterval = Duration.FromHours(options.ReceiveHours);
+        _receiveInterval = Duration.FromHours(_options.ReceiveHours);
     }
 
     public async Task Publish(Notification notification)
