@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="CliWrap" Version="3.6.6" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
       <PackageReference Include="NodaTime" Version="3.0.9" />
     </ItemGroup>
 
