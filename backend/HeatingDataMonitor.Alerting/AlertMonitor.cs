@@ -42,6 +42,8 @@ public class AlertMonitor : BackgroundService
                 if (alert.PendingNotification is null)
                     continue;
 
+                _logger.LogInformation("Publishing Alert Notification: {Alert}", alert.PendingNotification);
+
                 try
                 {
                     foreach (INotificationProvider provider in _notificationProviders)
