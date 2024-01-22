@@ -8,7 +8,6 @@ IHost host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
     .ConfigureServices((context, services) =>
     {
-        services.AddSingleton<IClock>(SystemClock.Instance);
         services.AddNpgsqlConnectionProvider(context.Configuration.GetConnectionString("HeatingDataDatabase"));
         services.AddHeatingDataWriteRepositoryTimescaledb();
         services.AddSingleton<IHeatingDataReceiver, CsvHeatingDataReceiver>();
@@ -22,16 +21,21 @@ IHost host = Host.CreateDefaultBuilder(args)
             if (!File.Exists(path))
                 throw new FileNotFoundException("Specified csv file not found", path);
 
-            int delay = context.Configuration.GetValue("FakeSerialPort:NewRecordInterval",
-                context.Configuration.GetValue("DbResilience:ExpectedNewRecordIntervalMilliseconds",
-                    DbResilienceOptions.DefaultExpectedNewRecordIntervalMilliseconds));
+            int expectedInterval = context.Configuration.GetValue("DbResilience:ExpectedNewRecordIntervalMilliseconds",
+                                                                  DbResilienceOptions
+                                                                      .DefaultExpectedNewRecordIntervalMilliseconds);
+            int delay = context.Configuration.GetValue("FakeSerialPort:NewRecordInterval", expectedInterval);
             services.AddSingleton<ICsvHeatingDataReader>(new FileCsvHeatingDataReader(path, delay));
+            float clockMultiplier = (float)expectedInterval / delay;
+            // speed everything up if FakeSerialPort has a faster interval than the expected interval
+            services.AddSingleton<IClock>(new MultiplyingClock(clockMultiplier));
         }
         else
         {
             services.AddOptions<SerialPortOptions>()
                     .BindConfiguration("Serial");
             services.AddSingleton<ICsvHeatingDataReader, SerialPortCsvHeatingDataReader>();
+            services.AddSingleton<IClock>(SystemClock.Instance);
         }
     })
     .Build();
