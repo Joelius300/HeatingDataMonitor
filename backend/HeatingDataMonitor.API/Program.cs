@@ -48,12 +48,10 @@ services.AddSingleton<IClock>(SystemClock.Instance);
 services.AddSingleton<IRealTimeConnectionManager, RealTimeConnectionManager>();
 services.AddHostedService<HeatingDataRealTimeService>();
 
-services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
 services.AddHostedService<AlertMonitor>();
+services.AddSignalNotificationProvider(configuration.GetValue<string>("SignalNotifications:BaseUrl"));
 
-services.AddSingleton<INotificationProvider, SignalCliNotificationProvider>();
-services.AddOptions<SignalNotificationOptions>()
-        .BindConfiguration("SignalNotifications");
+services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
 
 var app = builder.Build();
 

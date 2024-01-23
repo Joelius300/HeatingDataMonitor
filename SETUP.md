@@ -50,7 +50,7 @@
 
 ## Setup signal notifications
 
-In this setup I used a landline number to create a signal account and link it on the Raspberry Pi.
+In this setup I used a landline number to create a Signal account and link it on the Raspberry Pi.
 The process might change in future `signal-cli` versions, so check [Usage](https://github.com/AsamK/signal-cli#usage), [Registration with captcha](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha) and [Linking other devices (Provisioning)](https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)).
 
 On main PC:
@@ -74,6 +74,8 @@ On main PC:
 Then on the Raspberry Pi install and link it:
 
 I used the appropriate [binary distribution](https://github.com/AsamK/signal-cli/wiki/Binary-distributions) from [projektzentrisch](https://media.projektzentrisch.de/temp/signal-cli/), you'll need to see which one is recent and works.
+
+Alternatively, you could do this with the `signal-cli-rest-api` through docker but I found this easier and it also allows testing. The account data is mounted into the docker container anyway, so they act on the same database.
 
 ```bash
 curl -o signal-cli0127r2-ubuntu2004-arm64.gz https://media.projektzentrisch.de/temp/signal-cli/signal-cli0127r2_ubuntu2004_arm64.gz
