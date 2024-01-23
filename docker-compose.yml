@@ -28,6 +28,17 @@ services:
       ConnectionStrings__HeatingDataDatabase: "Server=database;Port=5432;Database=heating_data_monitor;User Id=api_user;Password=dontworrythispasswordwillchangeinproduction;Max Auto Prepare=10;Auto Prepare Min Usages=2;"
     depends_on:
       - database
+  signal-cli-rest-api:
+    image: bbernhard/signal-cli-rest-api:latest
+    expose:
+      - 8080  # just FYI, no operational impact
+    # ports:
+      # - 8080:8080  # only for testing, shouldn't expose the signal api otherwise
+    environment:
+      - MODE=native
+      - AUTO_RECEIVE_SCHEDULE=0 0 * * *  # at midnight, call receive to update the cryptographic keys etc.
+    volumes:
+      - /home/pi/.local/share/signal-cli:/home/.local/share/signal-cli
   database:
     image: timescale/timescaledb:latest-pg14
     restart: always

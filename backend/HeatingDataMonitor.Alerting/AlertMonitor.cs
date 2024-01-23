@@ -44,6 +44,7 @@ public class AlertMonitor : BackgroundService
 
                 _logger.LogInformation("Publishing Alert Notification: {Alert}", alert.PendingNotification);
 
+                // In a system with many providers and many notifications, this would be parallelized and batched.
                 try
                 {
                     foreach (INotificationProvider provider in _notificationProviders)
