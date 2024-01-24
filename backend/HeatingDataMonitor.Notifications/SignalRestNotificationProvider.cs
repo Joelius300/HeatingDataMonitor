@@ -23,7 +23,8 @@ internal class SignalRestNotificationProvider : INotificationProvider
         Number = _options.Sender,
         Recipients = new[]
         {
-            GroupIdToRestApiGroupId(_options.GroupId)
+            // for testing, also allow just a plain number
+            _options.GroupId.StartsWith('+') ? _options.GroupId : GroupIdToRestApiGroupId(_options.GroupId)
         }
     };
 
