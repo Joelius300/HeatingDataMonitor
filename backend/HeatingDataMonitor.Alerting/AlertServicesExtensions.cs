@@ -34,4 +34,13 @@ public static class AlertServicesExtensions
                                                                         options.SummerMode);
         }
     }
+
+    public static IServiceCollection AddAddFuelAlert(this IServiceCollection services, string configurationKey = "AddFuelAlert")
+    {
+        services.AddOptions<AddFuelOptions>()
+                .BindConfiguration(configurationKey);
+        services.AddSingleton<IAlert, AddFuelAlert>();
+
+        return services;
+    }
 }
