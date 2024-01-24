@@ -46,4 +46,12 @@ public static class NotificationBuilders
 
         return BuildHeatingUpRequiredNotification(required, delta, value, threshold, offendingTemperature);
     }
+
+    /// <summary>
+    /// Builds a notification that reminds users to add fuel to the already running heating unit because the exhaust
+    /// temperature has dropped to a certain point.
+    /// </summary>
+    /// <param name="temp">The current exhaust temperature.</param>
+    public static Notification AddingFuelNecessary(float temp) => new("Mä sött schaute!",
+                                                                      $"Abgastemperatur isch {temp:F1}° C aso söttme iz Houz nachegä.");
 }

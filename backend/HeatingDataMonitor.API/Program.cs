@@ -52,6 +52,7 @@ services.AddHostedService<AlertMonitor>();
 services.AddSignalNotificationProvider(configuration.GetValue<string>("SignalNotifications:BaseUrl"));
 
 services.AddHeatingUpAlerts(configuration.GetSection("HeatingUpAlert").Get<HeatingUpRequiredOptions>());
+services.AddAddFuelAlert();
 
 var app = builder.Build();
 
