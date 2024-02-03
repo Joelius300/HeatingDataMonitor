@@ -30,6 +30,7 @@ services:
       - database
   signal-cli-rest-api:
     image: bbernhard/signal-cli-rest-api:latest
+    restart: always
     expose:
       - 8080  # just FYI, no operational impact
     # ports:
