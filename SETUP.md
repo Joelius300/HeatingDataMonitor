@@ -206,3 +206,20 @@ then you can delete the backup file `rm backup-meteo.csv`
 **Sources:**
 
 - https://opendata.swiss/en/dataset/automatische-wetterstationen-aktuelle-messwerte/resource/53304634-b947-4415-b19a-c947827f331b
+
+# Updates
+
+Currently the applications and Docker images are built on the Raspberry Pi directly. This is quite inefficient but has the benefit of ensuring the built images work out of the box without having to fiddle with cross-architecture stuff, even though Docker should simplify that.
+
+The approach below is what I tried to use to update external services but somehow this stopped/crashed the running services, so be careful, I'm not sure what the best way is, especially to avoid downtime.
+There may have been other influences too but during updates and after a power outage, from 02.02.2024 to 07.02.2024, something very weird was happening with the data with parts being lost and other parts getting the same timestamp.
+
+Avoid heavy parallelism which can be too much for the pi and the other services:
+
+```bash
+export COMPOSE_PARALLEL_LIMIT=1
+```
+
+To pull new images for the external services like the database and the signal-cli-rest-api, use `docker compose pull` then selectively `down` and `up -d` them. This way you can also ensure the least downtime for the critical components like the database. I have not use it yet but I assume you would use `docker compose build` to have the same process with images for the internal services.
+
+Afterwards you can remove the unused images and build cache with `docker system prune`.
