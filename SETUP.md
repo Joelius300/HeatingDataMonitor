@@ -1,6 +1,8 @@
+<!-- LTEX: language=en-US -->
+
 # Setup
 
-## Install Raspberry Pi OS 64-bit
+## Install Raspberry Pi OS Lite 64-bit
 
 - Use Raspberry Pi Imager with the appropriate settings (hostname, ssh, internet, locale, etc.)
 - Expand filesystem (in raspi-config)
@@ -18,7 +20,7 @@
 - Disable Login Shell
 - Enable Serial Hardware
 - Reboot
-- `sudo vi /boot/config.txt`
+- `sudo vi /boot/firmware/config.txt` (formerly `/boot/config.txt`)
 - Add line `dtoverlay=pi3-miniuart-bt` to the end (below enable_uart)
 - Reboot
 - Test (cat, echo, minicom and putty are all reasonable choices)
@@ -73,15 +75,15 @@ On main PC:
 
 Then on the Raspberry Pi install and link it:
 
-I used the appropriate [binary distribution](https://github.com/AsamK/signal-cli/wiki/Binary-distributions) from [projektzentrisch](https://media.projektzentrisch.de/temp/signal-cli/), you'll need to see which one is recent and works.
+I used the appropriate [binary distribution](https://github.com/AsamK/signal-cli/wiki/Binary-distributions) from [projektzentrisch](https://media.projektzentrisch.de/temp/signal-cli/), you'll need to see which one is recent and works. The last time I successfully used `signal-cli0128_ubuntu2004_arm64.gz`.
 
-Alternatively, you could do this with the `signal-cli-rest-api` through docker but I found this easier and it also allows testing. The account data is mounted into the docker container anyway, so they act on the same database.
+Alternatively, you could do this with the `signal-cli-rest-api` through docker, but I found this easier and it also allows testing. The account data is mounted into the docker container anyway, so they act on the same database.
 
 ```bash
-curl -o signal-cli0127r2-ubuntu2004-arm64.gz https://media.projektzentrisch.de/temp/signal-cli/signal-cli0127r2_ubuntu2004_arm64.gz
-gzip -d signal-cli0127r2-ubuntu2004-arm64.gz
-chmod +x signal-cli0127r2-ubuntu2004-arm64
-signal-cli link -n "Heating Raspberry Pi"
+curl -o signal.gz https://media.projektzentrisch.de/temp/signal-cli/signal-cli0128_ubuntu2004_arm64.gz
+gzip -d signal.gz
+chmod +x signal
+./signal link -n "Heating Raspberry Pi"
 # copy link and keep process running
 ```
 
@@ -91,7 +93,9 @@ On main PC again:
 signal-cli -u NUMBER addDevice --uri COPIED-LINK
 ```
 
-This will end the linking process on the Pi. Then you can send a test message on Raspberry Pi like above. The group-id will not change. Do not forget to receive something first, must be able to fetch a new message from a group.
+If you need to remove previous ones, use `listDevices` and then `removeDevice -d ID`.
+
+This will end the linking process on the Pi. Then you can send a test message on Raspberry Pi like above. The group-id will not change. Do not forget to receive something first, must be able to fetch a new message from the group, otherwise it won't recognize it.
 
 ## Setup heating-data-monitor
 
@@ -159,17 +163,13 @@ export MOUNT_PATH=NAS' mount path as dictated by the control panel
 export BACKUP_FOLDER=/mnt/data_backups
 sudo mkdir $BACKUP_FOLDER
 sudo mount -t nfs -vvvv $NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER
+echo "$NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0" | sudo tee -a /etc/fstab
+cat /etc/fstab
 ```
 
 If it doesn't work, make sure you can see the folder you want to mount with `showmount -e $NAS_HOST`.
 
 After successfully mounting, touch a file in the mounted folder and see if it shows up on the drive.
-
-To make it persistent across reboots, add the following line to `/etc/fstab` (of course manually replacing the env variables or echoing it first).
-
-```
-$NAS_HOST:$MOUNT_PATH $BACKUP_FOLDER nfs defaults 0 0
-```
 
 **Sources:**
 
@@ -211,8 +211,8 @@ then you can delete the backup file `rm backup-meteo.csv`
 
 Currently the applications and Docker images are built on the Raspberry Pi directly. This is quite inefficient but has the benefit of ensuring the built images work out of the box without having to fiddle with cross-architecture stuff, even though Docker should simplify that.
 
-The approach below is what I tried to use to update external services but somehow this stopped/crashed the running services, so be careful, I'm not sure what the best way is, especially to avoid downtime.
-There may have been other influences too but during updates and after a power outage, from 02.02.2024 to 07.02.2024, something very weird was happening with the data with parts being lost and other parts getting the same timestamp.
+The approach below is what I tried to use to update external services, but somehow this stopped/crashed the running services, so be careful, I'm not sure what the best way is, especially to avoid downtime.
+Chances are that it'll just work the next time around because this time the SD card was damaged somehow (it always reset after reboot and there were very weird issues when writing to it sometimes).
 
 Avoid heavy parallelism which can be too much for the pi and the other services:
 
@@ -222,4 +222,26 @@ export COMPOSE_PARALLEL_LIMIT=1
 
 To pull new images for the external services like the database and the signal-cli-rest-api, use `docker compose pull` then selectively `down` and `up -d` them. This way you can also ensure the least downtime for the critical components like the database. I have not use it yet but I assume you would use `docker compose build` to have the same process with images for the internal services.
 
-Afterwards you can remove the unused images and build cache with `docker system prune`.
+Afterwards, you can remove the unused images and build cache with `docker system prune`.
+
+# Miscellaneous commands
+
+### Moving a patch from the Pi to your workstation
+
+Assuming there's a commit "[DO NOT PUSH] Adjust to production setup" which contains all the local config changes for production, use the following to create a patch:
+
+```bash
+git format-patch -1 HEAD
+```
+
+and the following to copy it locally
+
+```bash
+scp -P SSH_PORT pi@heating-data-monitor.local:~/HeatingDataMonitor/0001-DO-NOT-PUSH-Adjust-to-production-setup.patch ./0001-DO-NOT-PUSH-Adjust-to-production-setup.patch
+```
+
+If you want to apply it to a code base use
+
+```bash
+git am < ./0001-DO-NOT-PUSH-Adjust-to-production-setup.patch
+```
