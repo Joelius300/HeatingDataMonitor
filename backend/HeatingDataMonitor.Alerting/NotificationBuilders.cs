@@ -12,12 +12,19 @@ namespace HeatingDataMonitor.Alerting;
 public static class NotificationBuilders
 {
     private static Notification BuildHeatingUpRequiredNotification(bool required, Duration delta, float temp,
-                                                                   float threshold, string offendingTemperature) =>
-        new("Aafüüre " + (required ? "dringend nötig!" : "wär guet!"),
-            $"{offendingTemperature} isch sit " +
-            ((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "") +
-            $"{delta.Minutes} minute unger {threshold:F1}° C. " +
-            $"Iz gad isch si {temp:F1}°.");
+                                                                   float threshold, string offendingTemperature)
+    {
+        string timeComponent = delta > Duration.FromDays(100)
+                                   ? "?" // if it's a very long duration, we don't know the precise one
+                                   : ((int)delta.TotalHours > 0 ? $"{(int)delta.TotalHours} stung u " : "") +
+                                     $"{delta.Minutes} minute";
+
+        return new Notification("Aafüüre " + (required ? "dringend nötig!" : "wär guet!"),
+                                $"{offendingTemperature} isch sit " +
+                                timeComponent +
+                                $" unger {threshold:F1}° C. " +
+                                $"Iz gad isch {temp:F1}° C.");
+    }
 
     /// <summary>
     /// Builds a notification to tell you that you should heat up aka fire up the heating unit.
