@@ -53,7 +53,7 @@
 ## Setup signal notifications
 
 In this setup I used a landline number to create a Signal account and link it on the Raspberry Pi.
-The process might change in future `signal-cli` versions, so check [Usage](https://github.com/AsamK/signal-cli#usage), [Registration with captcha](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha) and [Linking other devices (Provisioning)](https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)).
+The process might change in future `signal-cli` versions, so check [Usage](https://github.com/AsamK/signal-cli#usage), [Registration with captcha](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha) and [Linking other devices (Provisioning)](<https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)>).
 
 On main PC:
 
@@ -96,6 +96,19 @@ signal-cli -u NUMBER addDevice --uri COPIED-LINK
 If you need to remove previous ones, use `listDevices` and then `removeDevice -d ID`.
 
 This will end the linking process on the Pi. Then you can send a test message on Raspberry Pi like above. The group-id will not change. Do not forget to receive something first, must be able to fetch a new message from the group, otherwise it won't recognize it.
+
+### Re-link
+
+If for some reason the signal-cli on the pi isn't linked with the PC anymore (error "User NUMBER is not registered"), you can use the following. These commands are adapted from the logs of the signal-cli-rest-api container.
+Note, this is just an alternative to the way written above using the running signal-cli-rest-api container directly. Also, if you get the error "User NUMBER is not registered" on the main PC as well, you need to re-register with the register --captcha --voice command as written above (and see the docs).
+
+```bash
+sudo docker exec -it ID_OF_CONTAINER /bin/bash
+su signal-api
+signal-cli-native --config /home/.local/share/signal-cli -a NUMBER link
+... addDevice on main PC. then check that receive works in the container.
+signal-cli-native --config /home/.local/share/signal-cli -a NUMBER receive
+```
 
 ## Setup heating-data-monitor
 
@@ -186,6 +199,7 @@ Add the following user cron job:
 ```
 
 `~/meteo-fetch.sh`
+
 ```bash
 #!/bin/sh
 LINES=$(curl https://data.geo.admin.ch/ch.meteoschweiz.messwerte-aktuell/VQHA80.csv -s | grep -E "^(stations|you|care|about)")
