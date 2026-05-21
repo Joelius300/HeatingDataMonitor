@@ -105,9 +105,9 @@ Note, this is just an alternative to the way written above using the running sig
 ```bash
 sudo docker exec -it ID_OF_CONTAINER /bin/bash
 su signal-api
-signal-cli-native --config /home/.local/share/signal-cli -a NUMBER link
+signal-cli --config /home/.local/share/signal-cli link
 ... addDevice on main PC. then check that receive works in the container.
-signal-cli-native --config /home/.local/share/signal-cli -a NUMBER receive
+signal-cli --config /home/.local/share/signal-cli -a NUMBER receive
 ```
 
 ## Setup heating-data-monitor
